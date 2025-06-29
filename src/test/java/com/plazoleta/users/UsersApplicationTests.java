@@ -1,13 +1,13 @@
-package com.plazoleta.usuarios;
+package com.plazoleta.users;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-class UsuariosApplicationTests {
+class UsersApplicationTests {
 
 	@Test
 	void mainMethodShouldRunWithoutException() {
-		assertDoesNotThrow(() -> UsuariosApplication.main(new String[] {}));
+		assertDoesNotThrow(() -> UsersApplication.main(new String[] {}));
 	}
 }
