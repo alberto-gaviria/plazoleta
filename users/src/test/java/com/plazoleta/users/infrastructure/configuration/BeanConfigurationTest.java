@@ -1,0 +1,152 @@
+package com.plazoleta.users.infrastructure.configuration;
+
+import com.plazoleta.users.adapters.driven.mysql.mapper.IUserEntityMapper;
+import com.plazoleta.users.adapters.driven.mysql.repository.IUserRepository;
+import com.plazoleta.users.domain.api.IAdminUserManagementServicePort;
+import com.plazoleta.users.domain.api.IUserQueryServicePort;
+import com.plazoleta.users.domain.spi.IPasswordEncoderPort;
+import com.plazoleta.users.domain.spi.IUserPersistencePort;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(MockitoExtension.class)
+class BeanConfigurationTest {
+
+    @Mock
+    private IUserRepository userRepository;
+
+    @Mock
+    private IUserEntityMapper userEntityMapper;
+
+    @Mock
+    private IUserPersistencePort userPersistencePort;
+
+    @Mock
+    private IPasswordEncoderPort passwordEncoderPort;
+
+    private BeanConfiguration beanConfiguration;
+
+    @BeforeEach
+    void setUp() {
+        beanConfiguration = new BeanConfiguration(); // Constructor sin argumentos
+    }
+
+    @Test
+    void passwordEncoderPort_ShouldReturnPasswordEncoderAdapter() {
+        // When
+        IPasswordEncoderPort result = beanConfiguration.passwordEncoderPort();
+
+        // Then
+        assertNotNull(result);
+        assertInstanceOf(IPasswordEncoderPort.class, result);
+    }
+
+    @Test
+    void userPersistencePort_ShouldReturnAdminUserManagement() {
+        // When
+        IUserPersistencePort result = beanConfiguration.userPersistencePort(userRepository, userEntityMapper);
+
+        // Then
+        assertNotNull(result);
+        assertInstanceOf(IUserPersistencePort.class, result);
+    }
+
+    @Test
+    void adminUserManagementServicePort_ShouldReturnAdminUserManagementUseCase() {
+        // When
+        IAdminUserManagementServicePort result = beanConfiguration.adminUserManagementServicePort(
+                userPersistencePort, passwordEncoderPort);
+
+        // Then
+        assertNotNull(result);
+        assertInstanceOf(IAdminUserManagementServicePort.class, result);
+    }
+
+    @Test
+    void userQueryServicePort_ShouldReturnUserQueryUseCase() {
+        // When
+        IUserQueryServicePort result = beanConfiguration.userQueryServicePort(userPersistencePort);
+
+        // Then
+        assertNotNull(result);
+        assertInstanceOf(IUserQueryServicePort.class, result);
+    }
+
+    @Test
+    void beanConfiguration_ShouldCreateWithDefaultConstructor() {
+        // When
+        BeanConfiguration config = new BeanConfiguration();
+
+        // Then
+        assertNotNull(config);
+    }
+
+    @Test
+    void userPersistencePort_WithNullRepository_ShouldHandleGracefully() {
+        // When & Then - Esto podría lanzar excepción dependiendo de la implementación
+        assertDoesNotThrow(() -> {
+            IUserPersistencePort result = beanConfiguration.userPersistencePort(null, userEntityMapper);
+            // Nota: Esto podría fallar en runtime dependiendo de la implementación de AdminUserManagement
+        });
+    }
+
+    @Test
+    void userPersistencePort_WithNullMapper_ShouldHandleGracefully() {
+        // When & Then
+        assertDoesNotThrow(() -> {
+            IUserPersistencePort result = beanConfiguration.userPersistencePort(userRepository, null);
+            // Nota: Esto podría fallar en runtime dependiendo de la implementación de AdminUserManagement
+        });
+    }
+
+    @Test
+    void adminUserManagementServicePort_WithNullDependencies_ShouldHandleGracefully() {
+        // When & Then
+        assertDoesNotThrow(() -> {
+            IAdminUserManagementServicePort result = beanConfiguration.adminUserManagementServicePort(null, null);
+            // Nota: Esto podría fallar en runtime dependiendo de la implementación
+        });
+    }
+
+    @Test
+    void userQueryServicePort_WithNullPersistencePort_ShouldHandleGracefully() {
+        // When & Then
+        assertDoesNotThrow(() -> {
+            IUserQueryServicePort result = beanConfiguration.userQueryServicePort(null);
+            // Nota: Esto podría fallar en runtime dependiendo de la implementación
+        });
+    }
+
+    @Test
+    void passwordEncoderPort_ShouldReturnSameTypeOnMultipleCalls() {
+        // When
+        IPasswordEncoderPort result1 = beanConfiguration.passwordEncoderPort();
+        IPasswordEncoderPort result2 = beanConfiguration.passwordEncoderPort();
+
+        // Then
+        assertNotNull(result1);
+        assertNotNull(result2);
+        assertEquals(result1.getClass(), result2.getClass());
+        // Nota: En Spring serían singleton, pero aquí llamamos directamente al método
+    }
+
+    @Test
+    void allBeanMethods_ShouldReturnNonNullInstances() {
+        // When
+        IPasswordEncoderPort passwordEncoder = beanConfiguration.passwordEncoderPort();
+        IUserPersistencePort userPersistence = beanConfiguration.userPersistencePort(userRepository, userEntityMapper);
+        IAdminUserManagementServicePort adminService = beanConfiguration.adminUserManagementServicePort(userPersistencePort, passwordEncoderPort);
+        IUserQueryServicePort queryService = beanConfiguration.userQueryServicePort(userPersistencePort);
+
+        // Then
+        assertNotNull(passwordEncoder);
+        assertNotNull(userPersistence);
+        assertNotNull(adminService);
+        assertNotNull(queryService);
+    }
+}

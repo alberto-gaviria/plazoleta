@@ -3,8 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Plazoleta.iml" filepath="$PROJECT_DIR$/.idea/Plazoleta.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/com.plazoleta.usuarios.main.iml" filepath="$PROJECT_DIR$/.idea/modules/com.plazoleta.usuarios.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/com.plazoleta.usuarios.test.iml" filepath="$PROJECT_DIR$/.idea/modules/com.plazoleta.usuarios.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/restaurants.main.iml" filepath="$PROJECT_DIR$/.idea/modules/restaurants.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/restaurants.test.iml" filepath="$PROJECT_DIR$/.idea/modules/restaurants.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/usuarios.main.iml" filepath="$PROJECT_DIR$/.idea/modules/usuarios.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/usuarios.test.iml" filepath="$PROJECT_DIR$/.idea/modules/usuarios.test.iml" />
     </modules>
