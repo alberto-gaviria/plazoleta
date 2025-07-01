@@ -8,14 +8,16 @@ public final class DomainConstants {
 
     public static final class Restaurant {
 
-        // Patrones de validación
         public static final String SOLO_NUMEROS_PATTERN = "^[0-9]+$";
         public static final String TELEFONO_PATTERN = "^\\+?[0-9]{1,13}$";
 
-        // Roles de dominio
         public static final String ROL_PROPIETARIO = "PROPIETARIO";
+        public static final String ROL_ADMINISTRADOR = "ADMINISTRADOR";
 
-        // Mensajes de error
+
+        public static final Long ROL_ADMINISTRADOR_ID = 1L;
+        public static final Long ROL_PROPIETARIO_ID = 2L;
+
         public static final String ERROR_RESTAURANT_NULO = "El restaurante no puede ser nulo";
         public static final String ERROR_NOMBRE_REQUERIDO = "El nombre es obligatorio";
         public static final String ERROR_NIT_REQUERIDO = "El NIT es obligatorio";
@@ -28,6 +30,10 @@ public final class DomainConstants {
         public static final String ERROR_NOMBRE_SOLO_NUMEROS = "El nombre del restaurante no puede contener sólo números";
         public static final String ERROR_NIT_FORMATO_INVALIDO = "El NIT debe contener únicamente números";
         public static final String ERROR_TELEFONO_FORMATO_INVALIDO = "El teléfono debe contener máximo 13 caracteres numéricos y puede incluir el símbolo +";
+
+        public static final String ERROR_ADMIN_ID_REQUERIDO = "El ID del administrador es obligatorio";
+        public static final String ERROR_ADMINISTRADOR_NO_ENCONTRADO = "No se encontró el usuario administrador especificado";
+        public static final String ERROR_ADMINISTRADOR_NO_VALIDO = "El ID del administrador no corresponde a un usuario con rol administrador";
 
         private Restaurant() {
             throw new IllegalStateException("Clase de constantes");

@@ -1,4 +1,3 @@
-
 package com.plazoleta.restaurants;
 
 import org.junit.jupiter.api.Test;

@@ -19,9 +19,10 @@ public class RestaurantUseCase implements IRestaurantServicePort {
     }
 
     @Override
-    public void saveRestaurant(Restaurant restaurant) {
+    public void saveRestaurant(Restaurant restaurant, Long adminId) {
         validateRestaurant(restaurant);
         validateRestaurantBusinessRules(restaurant);
+        validateAdministrador(adminId);
         validatePropietario(restaurant.getIdPropietario());
 
         restaurantPersistencePort.saveRestaurant(restaurant);
@@ -78,6 +79,20 @@ public class RestaurantUseCase implements IRestaurantServicePort {
     private void validateTelefonoFormat(String telefono) {
         if (!telefono.matches(DomainConstants.Restaurant.TELEFONO_PATTERN)) {
             throw new InvalidRestaurantException(DomainConstants.Restaurant.ERROR_TELEFONO_FORMATO_INVALIDO);
+        }
+    }
+
+    private void validateAdministrador(Long adminId) {
+        if (adminId == null) {
+            throw new InvalidRestaurantException(DomainConstants.Restaurant.ERROR_ADMIN_ID_REQUERIDO);
+        }
+
+        if (!userValidationPort.existsUserById(adminId)) {
+            throw new InvalidRestaurantException(DomainConstants.Restaurant.ERROR_ADMINISTRADOR_NO_ENCONTRADO);
+        }
+
+        if (!userValidationPort.hasRequiredRole(adminId, DomainConstants.Restaurant.ROL_ADMINISTRADOR)) {
+            throw new InvalidRestaurantException(DomainConstants.Restaurant.ERROR_ADMINISTRADOR_NO_VALIDO);
         }
     }
 
