@@ -11,6 +11,7 @@ public final class AdapterConstants {
         public static final String RESTAURANT_NOMBRE_DUPLICADO = "Ya existe un restaurante con ese nombre";
         public static final String RESTAURANT_NO_ENCONTRADO = "No se encontró el restaurante solicitado";
         public static final String PROPIETARIO_NO_ENCONTRADO = "No se encontró el propietario solicitado";
+        public static final String DISH_NO_ENCONTRADO = "No se encontró el plato solicitado";
 
         private ErrorMessages() {
             throw new IllegalStateException("Clase de constantes");

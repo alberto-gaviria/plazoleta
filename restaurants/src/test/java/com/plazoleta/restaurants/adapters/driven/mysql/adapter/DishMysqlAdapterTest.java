@@ -137,4 +137,79 @@ class DishMysqlAdapterTest {
         assertEquals(AdapterConstants.ErrorMessages.RESTAURANT_NO_ENCONTRADO, exception.getMessage());
         verify(restaurantRepository).findById(restaurantId);
     }
+
+    @Test
+    void findDishById_WhenDishExists_ShouldReturnDish() {
+        // Given
+        Long dishId = 1L;
+        when(dishRepository.findById(dishId)).thenReturn(Optional.of(dishEntity));
+        when(dishEntityMapper.toModel(dishEntity)).thenReturn(dish);
+
+        // When
+        Optional<Dish> result = dishMysqlAdapter.findDishById(dishId);
+
+        // Then
+        assertTrue(result.isPresent());
+        assertEquals(dish, result.get());
+        verify(dishRepository).findById(dishId);
+        verify(dishEntityMapper).toModel(dishEntity);
+    }
+
+    @Test
+    void findDishById_WhenDishDoesNotExist_ShouldReturnEmpty() {
+        // Given
+        Long dishId = 1L;
+        when(dishRepository.findById(dishId)).thenReturn(Optional.empty());
+
+        // When
+        Optional<Dish> result = dishMysqlAdapter.findDishById(dishId);
+
+        // Then
+        assertFalse(result.isPresent());
+        verify(dishRepository).findById(dishId);
+        verifyNoInteractions(dishEntityMapper);
+    }
+
+    @Test
+    void updateDish_ShouldMapAndSaveDishEntity() {
+        // Given
+        when(dishEntityMapper.toEntity(dish)).thenReturn(dishEntity);
+        when(dishRepository.save(dishEntity)).thenReturn(dishEntity);
+
+        // When
+        dishMysqlAdapter.updateDish(dish);
+
+        // Then
+        verify(dishEntityMapper).toEntity(dish);
+        verify(dishRepository).save(dishEntity);
+    }
+
+    @Test
+    void getDishRestaurantId_WhenDishExists_ShouldReturnRestaurantId() {
+        // Given
+        Long dishId = 1L;
+        Long expectedRestaurantId = 1L;
+        when(dishRepository.findById(dishId)).thenReturn(Optional.of(dishEntity));
+
+        // When
+        Long result = dishMysqlAdapter.getDishRestaurantId(dishId);
+
+        // Then
+        assertEquals(expectedRestaurantId, result);
+        verify(dishRepository).findById(dishId);
+    }
+
+    @Test
+    void getDishRestaurantId_WhenDishDoesNotExist_ShouldThrowElementNotFoundException() {
+        // Given
+        Long dishId = 1L;
+        when(dishRepository.findById(dishId)).thenReturn(Optional.empty());
+
+        // When & Then
+        ElementNotFoundException exception = assertThrows(ElementNotFoundException.class,
+                () -> dishMysqlAdapter.getDishRestaurantId(dishId));
+
+        assertEquals(AdapterConstants.ErrorMessages.DISH_NO_ENCONTRADO, exception.getMessage());
+        verify(dishRepository).findById(dishId);
+    }
 }

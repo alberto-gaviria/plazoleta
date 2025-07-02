@@ -53,5 +53,7 @@ class AdapterConstantsTest {
                 AdapterConstants.ErrorMessages.RESTAURANT_NO_ENCONTRADO);
         assertEquals("No se encontró el propietario solicitado",
                 AdapterConstants.ErrorMessages.PROPIETARIO_NO_ENCONTRADO);
+        assertEquals("No se encontró el plato solicitado",
+                AdapterConstants.ErrorMessages.DISH_NO_ENCONTRADO);
     }
 }

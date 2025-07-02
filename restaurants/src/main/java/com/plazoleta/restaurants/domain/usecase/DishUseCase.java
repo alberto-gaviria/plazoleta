@@ -8,6 +8,7 @@ import com.plazoleta.restaurants.domain.util.DomainConstants;
 import com.plazoleta.restaurants.domain.util.exceptions.InvalidDishException;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 public class DishUseCase implements IDishServicePort {
 
@@ -28,6 +29,46 @@ public class DishUseCase implements IDishServicePort {
         validateOwnership(dish.getIdRestaurante(), currentUserId);
 
         dishPersistencePort.saveDish(dish);
+    }
+
+    @Override
+    public Dish updateDish(Long dishId, BigDecimal precio, String descripcion, Long currentUserId) {
+        validateUpdateParameters(dishId, precio, descripcion, currentUserId);
+
+        Optional<Dish> dishOptional = dishPersistencePort.findDishById(dishId);
+        if (dishOptional.isEmpty()) {
+            throw new InvalidDishException(DomainConstants.Dish.ERROR_DISH_NO_ENCONTRADO);
+        }
+
+        Dish dish = dishOptional.get();
+        Long restaurantId = dishPersistencePort.getDishRestaurantId(dishId);
+
+        validateOwnership(restaurantId, currentUserId);
+        validatePrecioPositivo(precio);
+
+        dish.setPrecio(precio);
+        dish.setDescripcion(descripcion);
+
+        dishPersistencePort.updateDish(dish);
+        return dish;
+    }
+
+    private void validateUpdateParameters(Long dishId, BigDecimal precio, String descripcion, Long currentUserId) {
+        if (dishId == null) {
+            throw new InvalidDishException(DomainConstants.Dish.ERROR_DISH_ID_REQUERIDO);
+        }
+
+        if (currentUserId == null) {
+            throw new InvalidDishException(DomainConstants.Dish.ERROR_USUARIO_REQUERIDO);
+        }
+
+        if (precio == null) {
+            throw new InvalidDishException(DomainConstants.Dish.ERROR_PRECIO_REQUERIDO);
+        }
+
+        if (descripcion == null || descripcion.trim().isEmpty()) {
+            throw new InvalidDishException(DomainConstants.Dish.ERROR_DESCRIPCION_REQUERIDA);
+        }
     }
 
     private void validateDish(Dish dish) {

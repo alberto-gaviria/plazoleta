@@ -2,6 +2,7 @@ package com.plazoleta.restaurants.adapters.driving.http.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.AddDishRequest;
+import com.plazoleta.restaurants.adapters.driving.http.dto.request.UpdateDishRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.response.DishResponse;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IDishRequestMapper;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IDishResponseMapper;
@@ -21,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(DishController.class)
@@ -42,9 +44,11 @@ class DishControllerTest {
     private ObjectMapper objectMapper;
 
     private AddDishRequest validDishRequest;
+    private UpdateDishRequest validUpdateRequest;
     private Dish dish;
     private DishResponse dishResponse;
     private final Long validUserId = 1L;
+    private final Long validDishId = 1L;
 
     @BeforeEach
     void setUp() {
@@ -55,6 +59,11 @@ class DishControllerTest {
                 "https://example.com/pizza.jpg",
                 2L,
                 1L
+        );
+
+        validUpdateRequest = new UpdateDishRequest(
+                BigDecimal.valueOf(30.00),
+                "Nueva descripción actualizada del plato"
         );
 
         dish = new Dish();
@@ -406,5 +415,227 @@ class DishControllerTest {
 
         verify(dishRequestMapper, never()).addRequestToDish(any());
         verify(dishServicePort, never()).saveDish(any(), any());
+    }
+
+    // Tests para updateDish - Historia de Usuario 4
+
+    @Test
+    void updateDish_WithValidData_ShouldReturnOk() throws Exception {
+        // Given
+        Dish updatedDish = new Dish();
+        updatedDish.setId(validDishId);
+        updatedDish.setNombre("Pizza Margherita");
+        updatedDish.setPrecio(validUpdateRequest.getPrecio());
+        updatedDish.setDescripcion(validUpdateRequest.getDescripcion());
+        updatedDish.setUrlImagen("https://example.com/pizza.jpg");
+        updatedDish.setIdCategoria(2L);
+        updatedDish.setIdRestaurante(1L);
+        updatedDish.setActivo(true);
+
+        DishResponse updatedResponse = new DishResponse();
+        updatedResponse.setId(validDishId);
+        updatedResponse.setNombre("Pizza Margherita");
+        updatedResponse.setPrecio(validUpdateRequest.getPrecio());
+        updatedResponse.setDescripcion(validUpdateRequest.getDescripcion());
+        updatedResponse.setUrlImagen("https://example.com/pizza.jpg");
+        updatedResponse.setIdCategoria(2L);
+        updatedResponse.setIdRestaurante(1L);
+        updatedResponse.setActivo(true);
+
+        when(dishServicePort.updateDish(eq(validDishId), eq(validUpdateRequest.getPrecio()),
+                eq(validUpdateRequest.getDescripcion()), eq(validUserId)))
+                .thenReturn(updatedDish);
+        when(dishResponseMapper.dishToResponse(updatedDish)).thenReturn(updatedResponse);
+
+        // When & Then
+        mockMvc.perform(put("/platos/{dishId}", validDishId)
+                        .header("X-User-Id", validUserId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validUpdateRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(validDishId))
+                .andExpect(jsonPath("$.precio").value(30.00))
+                .andExpect(jsonPath("$.descripcion").value("Nueva descripción actualizada del plato"));
+
+        verify(dishServicePort).updateDish(eq(validDishId), eq(validUpdateRequest.getPrecio()),
+                eq(validUpdateRequest.getDescripcion()), eq(validUserId));
+        verify(dishResponseMapper).dishToResponse(updatedDish);
+    }
+
+    @Test
+    void updateDish_WithNullPrice_ShouldReturnBadRequest() throws Exception {
+        // Given
+        validUpdateRequest.setPrecio(null);
+
+        // When & Then
+        mockMvc.perform(put("/platos/{dishId}", validDishId)
+                        .header("X-User-Id", validUserId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validUpdateRequest)))
+                .andExpect(status().isBadRequest());
+
+        verify(dishServicePort, never()).updateDish(any(), any(), any(), any());
+    }
+
+    @Test
+    void updateDish_WithZeroPrice_ShouldReturnBadRequest() throws Exception {
+        // Given
+        validUpdateRequest.setPrecio(BigDecimal.ZERO);
+
+        // When & Then
+        mockMvc.perform(put("/platos/{dishId}", validDishId)
+                        .header("X-User-Id", validUserId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validUpdateRequest)))
+                .andExpect(status().isBadRequest());
+
+        verify(dishServicePort, never()).updateDish(any(), any(), any(), any());
+    }
+
+    @Test
+    void updateDish_WithNegativePrice_ShouldReturnBadRequest() throws Exception {
+        // Given
+        validUpdateRequest.setPrecio(BigDecimal.valueOf(-5.00));
+
+        // When & Then
+        mockMvc.perform(put("/platos/{dishId}", validDishId)
+                        .header("X-User-Id", validUserId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validUpdateRequest)))
+                .andExpect(status().isBadRequest());
+
+        verify(dishServicePort, never()).updateDish(any(), any(), any(), any());
+    }
+
+    @Test
+    void updateDish_WithNullDescription_ShouldReturnBadRequest() throws Exception {
+        // Given
+        validUpdateRequest.setDescripcion(null);
+
+        // When & Then
+        mockMvc.perform(put("/platos/{dishId}", validDishId)
+                        .header("X-User-Id", validUserId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validUpdateRequest)))
+                .andExpect(status().isBadRequest());
+
+        verify(dishServicePort, never()).updateDish(any(), any(), any(), any());
+    }
+
+    @Test
+    void updateDish_WithEmptyDescription_ShouldReturnBadRequest() throws Exception {
+        // Given
+        validUpdateRequest.setDescripcion("");
+
+        // When & Then
+        mockMvc.perform(put("/platos/{dishId}", validDishId)
+                        .header("X-User-Id", validUserId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validUpdateRequest)))
+                .andExpect(status().isBadRequest());
+
+        verify(dishServicePort, never()).updateDish(any(), any(), any(), any());
+    }
+
+    @Test
+    void updateDish_WithLongDescription_ShouldReturnBadRequest() throws Exception {
+        // Given - Descripción de más de 500 caracteres
+        String longDescription = "a".repeat(501);
+        validUpdateRequest.setDescripcion(longDescription);
+
+        // When & Then
+        mockMvc.perform(put("/platos/{dishId}", validDishId)
+                        .header("X-User-Id", validUserId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validUpdateRequest)))
+                .andExpect(status().isBadRequest());
+
+        verify(dishServicePort, never()).updateDish(any(), any(), any(), any());
+    }
+
+    @Test
+    void updateDish_WithMissingUserId_ShouldReturnBadRequest() throws Exception {
+        // When & Then
+        mockMvc.perform(put("/platos/{dishId}", validDishId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validUpdateRequest)))
+                .andExpect(status().isBadRequest());
+
+        verify(dishServicePort, never()).updateDish(any(), any(), any(), any());
+    }
+
+    @Test
+    void updateDish_WithInvalidUserId_ShouldReturnBadRequest() throws Exception {
+        // When & Then
+        mockMvc.perform(put("/platos/{dishId}", validDishId)
+                        .header("X-User-Id", "invalid")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validUpdateRequest)))
+                .andExpect(status().isBadRequest());
+
+        verify(dishServicePort, never()).updateDish(any(), any(), any(), any());
+    }
+
+    @Test
+    void updateDish_WithValidMinimumPrice_ShouldReturnOk() throws Exception {
+        // Given - Precio mínimo válido
+        validUpdateRequest.setPrecio(BigDecimal.valueOf(0.01));
+
+        Dish updatedDish = new Dish();
+        updatedDish.setId(validDishId);
+        updatedDish.setPrecio(BigDecimal.valueOf(0.01));
+        updatedDish.setDescripcion(validUpdateRequest.getDescripcion());
+
+        DishResponse updatedResponse = new DishResponse();
+        updatedResponse.setId(validDishId);
+        updatedResponse.setPrecio(BigDecimal.valueOf(0.01));
+        updatedResponse.setDescripcion(validUpdateRequest.getDescripcion());
+
+        when(dishServicePort.updateDish(eq(validDishId), eq(BigDecimal.valueOf(0.01)),
+                eq(validUpdateRequest.getDescripcion()), eq(validUserId)))
+                .thenReturn(updatedDish);
+        when(dishResponseMapper.dishToResponse(updatedDish)).thenReturn(updatedResponse);
+
+        // When & Then
+        mockMvc.perform(put("/platos/{dishId}", validDishId)
+                        .header("X-User-Id", validUserId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validUpdateRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.precio").value(0.01));
+
+        verify(dishServicePort).updateDish(eq(validDishId), eq(BigDecimal.valueOf(0.01)),
+                eq(validUpdateRequest.getDescripcion()), eq(validUserId));
+    }
+
+    @Test
+    void updateDish_ShouldPassCorrectParametersToService() throws Exception {
+        // Given
+        Long specificDishId = 99L;
+        Long specificUserId = 88L;
+        BigDecimal specificPrice = BigDecimal.valueOf(15.75);
+        String specificDescription = "Descripción específica para test";
+
+        UpdateDishRequest specificRequest = new UpdateDishRequest(specificPrice, specificDescription);
+
+        Dish updatedDish = new Dish();
+        updatedDish.setId(specificDishId);
+        updatedDish.setPrecio(specificPrice);
+        updatedDish.setDescripcion(specificDescription);
+
+        when(dishServicePort.updateDish(eq(specificDishId), eq(specificPrice),
+                eq(specificDescription), eq(specificUserId)))
+                .thenReturn(updatedDish);
+        when(dishResponseMapper.dishToResponse(updatedDish)).thenReturn(new DishResponse());
+
+        // When & Then
+        mockMvc.perform(put("/platos/{dishId}", specificDishId)
+                        .header("X-User-Id", specificUserId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(specificRequest)))
+                .andExpect(status().isOk());
+
+        verify(dishServicePort).updateDish(eq(specificDishId), eq(specificPrice),
+                eq(specificDescription), eq(specificUserId));
     }
 }

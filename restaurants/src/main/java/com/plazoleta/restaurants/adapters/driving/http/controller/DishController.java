@@ -1,6 +1,7 @@
 package com.plazoleta.restaurants.adapters.driving.http.controller;
 
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.AddDishRequest;
+import com.plazoleta.restaurants.adapters.driving.http.dto.request.UpdateDishRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.response.DishResponse;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IDishRequestMapper;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IDishResponseMapper;
@@ -54,5 +55,27 @@ public class DishController {
 
         DishResponse response = dishResponseMapper.dishToResponse(dish);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @Operation(summary = "Modificar un plato existente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Plato modificado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+            @ApiResponse(responseCode = "403", description = "No autorizado para modificar este plato"),
+            @ApiResponse(responseCode = "404", description = "Plato no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @PutMapping("/{dishId}")
+    public ResponseEntity<DishResponse> updateDish(
+            @Parameter(description = "ID del plato a modificar", required = true)
+            @PathVariable Long dishId,
+            @Parameter(description = "ID del usuario que modifica el plato", required = true)
+            @RequestHeader("X-User-Id") @NotNull Long currentUserId,
+            @Parameter(description = "Datos a actualizar del plato", required = true)
+            @Valid @RequestBody UpdateDishRequest request) {
+
+        Dish updatedDish = dishServicePort.updateDish(dishId, request.getPrecio(), request.getDescripcion(), currentUserId);
+        DishResponse response = dishResponseMapper.dishToResponse(updatedDish);
+        return ResponseEntity.ok(response);
     }
 }

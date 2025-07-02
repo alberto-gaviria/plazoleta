@@ -53,7 +53,10 @@ public final class DomainConstants {
         public static final String ERROR_CATEGORIA_REQUERIDA = "La categoría es obligatoria";
         public static final String ERROR_RESTAURANTE_REQUERIDO = "El restaurante es obligatorio";
         public static final String ERROR_RESTAURANTE_NO_ENCONTRADO = "No se encontró el restaurante especificado";
-        public static final String ERROR_PROPIETARIO_NO_AUTORIZADO = "Solo el propietario del restaurante puede crear platos";
+        public static final String ERROR_PROPIETARIO_NO_AUTORIZADO = "Solo el propietario del restaurante puede crear o modificar platos";
+        public static final String ERROR_DISH_NO_ENCONTRADO = "No se encontró el plato especificado";
+        public static final String ERROR_DISH_ID_REQUERIDO = "El ID del plato es obligatorio";
+        public static final String ERROR_USUARIO_REQUERIDO = "El ID del usuario es obligatorio";
 
         private Dish() {
             throw new IllegalStateException("Clase de constantes");

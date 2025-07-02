@@ -45,4 +45,25 @@ public class DishMysqlAdapter implements IDishPersistencePort {
         }
         throw new ElementNotFoundException(AdapterConstants.ErrorMessages.RESTAURANT_NO_ENCONTRADO);
     }
+
+    @Override
+    public Optional<Dish> findDishById(Long dishId) {
+        Optional<DishEntity> dishEntity = dishRepository.findById(dishId);
+        return dishEntity.map(dishEntityMapper::toModel);
+    }
+
+    @Override
+    public void updateDish(Dish dish) {
+        DishEntity dishEntity = dishEntityMapper.toEntity(dish);
+        dishRepository.save(dishEntity);
+    }
+
+    @Override
+    public Long getDishRestaurantId(Long dishId) {
+        Optional<DishEntity> dishEntity = dishRepository.findById(dishId);
+        if (dishEntity.isPresent()) {
+            return dishEntity.get().getIdRestaurante();
+        }
+        throw new ElementNotFoundException(AdapterConstants.ErrorMessages.DISH_NO_ENCONTRADO);
+    }
 }

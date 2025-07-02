@@ -21,7 +21,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ControllerAdvisor {
 
-    // Para validaciones de @RequestBody (Restaurant - Spring Boot < 3.2)
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ExceptionResponse> handleValidationExceptions(MethodArgumentNotValidException exception) {
         Map<String, String> errors = new HashMap<>();
@@ -35,7 +35,7 @@ public class ControllerAdvisor {
                 LocalDateTime.now()));
     }
 
-    // Para validaciones de @RequestBody + @RequestHeader (Dish - Spring Boot >= 3.2)
+
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<ExceptionResponse> handleHandlerMethodValidationException(HandlerMethodValidationException exception) {
         String errorMessage = exception.getAllValidationResults()
@@ -51,7 +51,7 @@ public class ControllerAdvisor {
                 LocalDateTime.now()));
     }
 
-    // Para headers faltantes (@RequestHeader sin valor)
+
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ResponseEntity<ExceptionResponse> handleMissingRequestHeaderException(MissingRequestHeaderException exception) {
         String headerName = exception.getHeaderName();
@@ -63,7 +63,7 @@ public class ControllerAdvisor {
                 LocalDateTime.now()));
     }
 
-    // Para headers con formato inválido (ej: "invalid" cuando se espera Long)
+
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ExceptionResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
         String paramName = exception.getName();

@@ -45,6 +45,9 @@ class DomainConstantsTest {
         assertEquals("^[0-9]+$", DomainConstants.Restaurant.SOLO_NUMEROS_PATTERN);
         assertEquals("^\\+?[0-9]{1,13}$", DomainConstants.Restaurant.TELEFONO_PATTERN);
         assertEquals("PROPIETARIO", DomainConstants.Restaurant.ROL_PROPIETARIO);
+        assertEquals("ADMINISTRADOR", DomainConstants.Restaurant.ROL_ADMINISTRADOR);
+        assertEquals(Long.valueOf(1L), DomainConstants.Restaurant.ROL_ADMINISTRADOR_ID);
+        assertEquals(Long.valueOf(2L), DomainConstants.Restaurant.ROL_PROPIETARIO_ID);
     }
 
     @Test
@@ -62,6 +65,9 @@ class DomainConstantsTest {
         assertEquals("El nombre del restaurante no puede contener sólo números", DomainConstants.Restaurant.ERROR_NOMBRE_SOLO_NUMEROS);
         assertEquals("El NIT debe contener únicamente números", DomainConstants.Restaurant.ERROR_NIT_FORMATO_INVALIDO);
         assertEquals("El teléfono debe contener máximo 13 caracteres numéricos y puede incluir el símbolo +", DomainConstants.Restaurant.ERROR_TELEFONO_FORMATO_INVALIDO);
+        assertEquals("El ID del administrador es obligatorio", DomainConstants.Restaurant.ERROR_ADMIN_ID_REQUERIDO);
+        assertEquals("No se encontró el usuario administrador especificado", DomainConstants.Restaurant.ERROR_ADMINISTRADOR_NO_ENCONTRADO);
+        assertEquals("El ID del administrador no corresponde a un usuario con rol administrador", DomainConstants.Restaurant.ERROR_ADMINISTRADOR_NO_VALIDO);
     }
 
     @Test
@@ -82,7 +88,10 @@ class DomainConstantsTest {
         assertEquals("La categoría es obligatoria", DomainConstants.Dish.ERROR_CATEGORIA_REQUERIDA);
         assertEquals("El restaurante es obligatorio", DomainConstants.Dish.ERROR_RESTAURANTE_REQUERIDO);
         assertEquals("No se encontró el restaurante especificado", DomainConstants.Dish.ERROR_RESTAURANTE_NO_ENCONTRADO);
-        assertEquals("Solo el propietario del restaurante puede crear platos", DomainConstants.Dish.ERROR_PROPIETARIO_NO_AUTORIZADO);
+        assertEquals("Solo el propietario del restaurante puede crear o modificar platos", DomainConstants.Dish.ERROR_PROPIETARIO_NO_AUTORIZADO);
+        assertEquals("No se encontró el plato especificado", DomainConstants.Dish.ERROR_DISH_NO_ENCONTRADO);
+        assertEquals("El ID del plato es obligatorio", DomainConstants.Dish.ERROR_DISH_ID_REQUERIDO);
+        assertEquals("El ID del usuario es obligatorio", DomainConstants.Dish.ERROR_USUARIO_REQUERIDO);
     }
 
     @Test
@@ -91,6 +100,9 @@ class DomainConstantsTest {
         assertNotNull(DomainConstants.Restaurant.SOLO_NUMEROS_PATTERN);
         assertNotNull(DomainConstants.Restaurant.TELEFONO_PATTERN);
         assertNotNull(DomainConstants.Restaurant.ROL_PROPIETARIO);
+        assertNotNull(DomainConstants.Restaurant.ROL_ADMINISTRADOR);
+        assertNotNull(DomainConstants.Restaurant.ROL_ADMINISTRADOR_ID);
+        assertNotNull(DomainConstants.Restaurant.ROL_PROPIETARIO_ID);
         assertNotNull(DomainConstants.Restaurant.ERROR_RESTAURANT_NULO);
         assertNotNull(DomainConstants.Restaurant.ERROR_NOMBRE_REQUERIDO);
         assertNotNull(DomainConstants.Restaurant.ERROR_NIT_REQUERIDO);
@@ -103,6 +115,9 @@ class DomainConstantsTest {
         assertNotNull(DomainConstants.Restaurant.ERROR_NOMBRE_SOLO_NUMEROS);
         assertNotNull(DomainConstants.Restaurant.ERROR_NIT_FORMATO_INVALIDO);
         assertNotNull(DomainConstants.Restaurant.ERROR_TELEFONO_FORMATO_INVALIDO);
+        assertNotNull(DomainConstants.Restaurant.ERROR_ADMIN_ID_REQUERIDO);
+        assertNotNull(DomainConstants.Restaurant.ERROR_ADMINISTRADOR_NO_ENCONTRADO);
+        assertNotNull(DomainConstants.Restaurant.ERROR_ADMINISTRADOR_NO_VALIDO);
 
         // Dish constants
         assertNotNull(DomainConstants.Dish.ROL_PROPIETARIO);
@@ -116,6 +131,9 @@ class DomainConstantsTest {
         assertNotNull(DomainConstants.Dish.ERROR_RESTAURANTE_REQUERIDO);
         assertNotNull(DomainConstants.Dish.ERROR_RESTAURANTE_NO_ENCONTRADO);
         assertNotNull(DomainConstants.Dish.ERROR_PROPIETARIO_NO_AUTORIZADO);
+        assertNotNull(DomainConstants.Dish.ERROR_DISH_NO_ENCONTRADO);
+        assertNotNull(DomainConstants.Dish.ERROR_DISH_ID_REQUERIDO);
+        assertNotNull(DomainConstants.Dish.ERROR_USUARIO_REQUERIDO);
     }
 
     @Test
@@ -124,6 +142,7 @@ class DomainConstantsTest {
         assertFalse(DomainConstants.Restaurant.SOLO_NUMEROS_PATTERN.isEmpty());
         assertFalse(DomainConstants.Restaurant.TELEFONO_PATTERN.isEmpty());
         assertFalse(DomainConstants.Restaurant.ROL_PROPIETARIO.isEmpty());
+        assertFalse(DomainConstants.Restaurant.ROL_ADMINISTRADOR.isEmpty());
         assertFalse(DomainConstants.Restaurant.ERROR_RESTAURANT_NULO.isEmpty());
         assertFalse(DomainConstants.Restaurant.ERROR_NOMBRE_REQUERIDO.isEmpty());
         assertFalse(DomainConstants.Restaurant.ERROR_NIT_REQUERIDO.isEmpty());
@@ -136,6 +155,9 @@ class DomainConstantsTest {
         assertFalse(DomainConstants.Restaurant.ERROR_NOMBRE_SOLO_NUMEROS.isEmpty());
         assertFalse(DomainConstants.Restaurant.ERROR_NIT_FORMATO_INVALIDO.isEmpty());
         assertFalse(DomainConstants.Restaurant.ERROR_TELEFONO_FORMATO_INVALIDO.isEmpty());
+        assertFalse(DomainConstants.Restaurant.ERROR_ADMIN_ID_REQUERIDO.isEmpty());
+        assertFalse(DomainConstants.Restaurant.ERROR_ADMINISTRADOR_NO_ENCONTRADO.isEmpty());
+        assertFalse(DomainConstants.Restaurant.ERROR_ADMINISTRADOR_NO_VALIDO.isEmpty());
 
         // Dish constants
         assertFalse(DomainConstants.Dish.ROL_PROPIETARIO.isEmpty());
@@ -149,5 +171,8 @@ class DomainConstantsTest {
         assertFalse(DomainConstants.Dish.ERROR_RESTAURANTE_REQUERIDO.isEmpty());
         assertFalse(DomainConstants.Dish.ERROR_RESTAURANTE_NO_ENCONTRADO.isEmpty());
         assertFalse(DomainConstants.Dish.ERROR_PROPIETARIO_NO_AUTORIZADO.isEmpty());
+        assertFalse(DomainConstants.Dish.ERROR_DISH_NO_ENCONTRADO.isEmpty());
+        assertFalse(DomainConstants.Dish.ERROR_DISH_ID_REQUERIDO.isEmpty());
+        assertFalse(DomainConstants.Dish.ERROR_USUARIO_REQUERIDO.isEmpty());
     }
 }

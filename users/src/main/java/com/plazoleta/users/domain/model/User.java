@@ -11,7 +11,7 @@ public class User {
     private LocalDate fechaNacimiento;
     private String correo;
     private String clave;
-    private RoleType roleType; // ← USAR ENUM en lugar de Long
+    private RoleType roleType;
 
     public User() {}
 
@@ -29,7 +29,6 @@ public class User {
         this.roleType = roleType;
     }
 
-    // Getters y Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
