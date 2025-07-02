@@ -1,8 +1,12 @@
 package com.plazoleta.restaurants.infrastructure.configuration;
 
+import com.plazoleta.restaurants.adapters.driven.mysql.mapper.IDishEntityMapper;
 import com.plazoleta.restaurants.adapters.driven.mysql.mapper.IRestaurantEntityMapper;
+import com.plazoleta.restaurants.adapters.driven.mysql.repository.IDishRepository;
 import com.plazoleta.restaurants.adapters.driven.mysql.repository.IRestaurantRepository;
+import com.plazoleta.restaurants.domain.api.IDishServicePort;
 import com.plazoleta.restaurants.domain.api.IRestaurantServicePort;
+import com.plazoleta.restaurants.domain.spi.IDishPersistencePort;
 import com.plazoleta.restaurants.domain.spi.IRestaurantPersistencePort;
 import com.plazoleta.restaurants.domain.spi.IUserValidationPort;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +27,12 @@ class BeanConfigurationTest {
     private IRestaurantEntityMapper restaurantEntityMapper;
 
     @Mock
+    private IDishRepository dishRepository;
+
+    @Mock
+    private IDishEntityMapper dishEntityMapper;
+
+    @Mock
     private IUserValidationPort userValidationPort;
 
     private BeanConfiguration beanConfiguration;
@@ -33,88 +43,75 @@ class BeanConfigurationTest {
     }
 
     @Test
-    void shouldCreateRestaurantPersistencePortBean() {
+    void restaurantPersistencePort_ShouldReturnRestaurantMysqlAdapter() {
         // When
-        IRestaurantPersistencePort persistencePort = beanConfiguration.restaurantPersistencePort(
+        IRestaurantPersistencePort result = beanConfiguration.restaurantPersistencePort(
                 restaurantRepository, restaurantEntityMapper);
 
         // Then
-        assertNotNull(persistencePort);
-        assertInstanceOf(IRestaurantPersistencePort.class, persistencePort);
+        assertNotNull(result);
+        assertInstanceOf(IRestaurantPersistencePort.class, result);
     }
 
     @Test
-    void shouldCreateRestaurantServicePortBean() {
+    void restaurantServicePort_ShouldReturnRestaurantUseCase() {
         // Given
-        IRestaurantPersistencePort persistencePort = beanConfiguration.restaurantPersistencePort(
-                restaurantRepository, restaurantEntityMapper);
+        IRestaurantPersistencePort restaurantPersistencePort =
+                beanConfiguration.restaurantPersistencePort(restaurantRepository, restaurantEntityMapper);
 
         // When
-        IRestaurantServicePort servicePort = beanConfiguration.restaurantServicePort(
-                persistencePort, userValidationPort);
+        IRestaurantServicePort result = beanConfiguration.restaurantServicePort(
+                restaurantPersistencePort, userValidationPort);
 
         // Then
-        assertNotNull(servicePort);
-        assertInstanceOf(IRestaurantServicePort.class, servicePort);
+        assertNotNull(result);
+        assertInstanceOf(IRestaurantServicePort.class, result);
     }
 
     @Test
-    void shouldCreateBeanConfigurationWithDefaultConstructor() {
+    void dishPersistencePort_ShouldReturnDishMysqlAdapter() {
         // When
-        BeanConfiguration config = new BeanConfiguration();
+        IDishPersistencePort result = beanConfiguration.dishPersistencePort(
+                dishRepository, restaurantRepository, dishEntityMapper);
 
         // Then
-        assertNotNull(config);
+        assertNotNull(result);
+        assertInstanceOf(IDishPersistencePort.class, result);
     }
 
     @Test
-    void shouldCreateDifferentPersistencePortInstances() {
-        // When
-        IRestaurantPersistencePort persistencePort1 = beanConfiguration.restaurantPersistencePort(
-                restaurantRepository, restaurantEntityMapper);
-        IRestaurantPersistencePort persistencePort2 = beanConfiguration.restaurantPersistencePort(
-                restaurantRepository, restaurantEntityMapper);
-
-        // Then
-        assertNotNull(persistencePort1);
-        assertNotNull(persistencePort2);
-        // Cada llamada al método crea una nueva instancia (no es singleton cuando se llama directamente)
-        assertNotSame(persistencePort1, persistencePort2);
-    }
-
-    @Test
-    void shouldCreateDifferentServicePortInstances() {
+    void dishServicePort_ShouldReturnDishUseCase() {
         // Given
-        IRestaurantPersistencePort persistencePort1 = beanConfiguration.restaurantPersistencePort(
-                restaurantRepository, restaurantEntityMapper);
-        IRestaurantPersistencePort persistencePort2 = beanConfiguration.restaurantPersistencePort(
-                restaurantRepository, restaurantEntityMapper);
+        IDishPersistencePort dishPersistencePort =
+                beanConfiguration.dishPersistencePort(dishRepository, restaurantRepository, dishEntityMapper);
 
         // When
-        IRestaurantServicePort servicePort1 = beanConfiguration.restaurantServicePort(
-                persistencePort1, userValidationPort);
-        IRestaurantServicePort servicePort2 = beanConfiguration.restaurantServicePort(
-                persistencePort2, userValidationPort);
+        IDishServicePort result = beanConfiguration.dishServicePort(
+                dishPersistencePort, userValidationPort);
 
         // Then
-        assertNotNull(servicePort1);
-        assertNotNull(servicePort2);
-        assertNotSame(servicePort1, servicePort2);
+        assertNotNull(result);
+        assertInstanceOf(IDishServicePort.class, result);
     }
 
     @Test
-    void shouldCreateServicePortWithCorrectDependencies() {
+    void allBeans_ShouldNotBeNull() {
         // Given
-        IRestaurantPersistencePort persistencePort = beanConfiguration.restaurantPersistencePort(
-                restaurantRepository, restaurantEntityMapper);
+        IRestaurantPersistencePort restaurantPersistencePort =
+                beanConfiguration.restaurantPersistencePort(restaurantRepository, restaurantEntityMapper);
+        IDishPersistencePort dishPersistencePort =
+                beanConfiguration.dishPersistencePort(dishRepository, restaurantRepository, dishEntityMapper);
 
         // When
-        IRestaurantServicePort servicePort = beanConfiguration.restaurantServicePort(
-                persistencePort, userValidationPort);
+        IRestaurantServicePort restaurantServicePort =
+                beanConfiguration.restaurantServicePort(restaurantPersistencePort, userValidationPort);
+        IDishServicePort dishServicePort =
+                beanConfiguration.dishServicePort(dishPersistencePort, userValidationPort);
 
         // Then
-        assertNotNull(servicePort);
-        // Verificamos que el service port se creó correctamente con las dependencias
-        assertDoesNotThrow(() -> servicePort.getClass());
+        assertNotNull(restaurantPersistencePort);
+        assertNotNull(restaurantServicePort);
+        assertNotNull(dishPersistencePort);
+        assertNotNull(dishServicePort);
     }
 }

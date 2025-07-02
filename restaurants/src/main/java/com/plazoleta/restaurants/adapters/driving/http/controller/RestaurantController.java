@@ -3,6 +3,7 @@ package com.plazoleta.restaurants.adapters.driving.http.controller;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.AddRestaurantRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.response.RestaurantResponse;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IRestaurantRequestMapper;
+import com.plazoleta.restaurants.adapters.driving.http.mapper.IRestaurantResponseMapper;
 import com.plazoleta.restaurants.domain.api.IRestaurantServicePort;
 import com.plazoleta.restaurants.domain.model.Restaurant;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,11 +24,14 @@ public class RestaurantController {
 
     private final IRestaurantServicePort restaurantServicePort;
     private final IRestaurantRequestMapper restaurantRequestMapper;
+    private final IRestaurantResponseMapper restaurantResponseMapper;
 
     public RestaurantController(IRestaurantServicePort restaurantServicePort,
-                                IRestaurantRequestMapper restaurantRequestMapper) {
+                                IRestaurantRequestMapper restaurantRequestMapper,
+                                IRestaurantResponseMapper restaurantResponseMapper) {
         this.restaurantServicePort = restaurantServicePort;
         this.restaurantRequestMapper = restaurantRequestMapper;
+        this.restaurantResponseMapper = restaurantResponseMapper;
     }
 
     @Operation(summary = "Crear un nuevo restaurante",
@@ -50,7 +54,7 @@ public class RestaurantController {
         Restaurant restaurant = restaurantRequestMapper.addRequestToRestaurant(request);
         restaurantServicePort.saveRestaurant(restaurant, adminId);
 
-        RestaurantResponse response = restaurantRequestMapper.restaurantToResponse(restaurant);
+        RestaurantResponse response = restaurantResponseMapper.restaurantToResponse(restaurant);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

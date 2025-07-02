@@ -39,4 +39,24 @@ public final class DomainConstants {
             throw new IllegalStateException("Clase de constantes");
         }
     }
+
+    public static final class Dish {
+
+        public static final String ROL_PROPIETARIO = "PROPIETARIO";
+
+        public static final String ERROR_DISH_NULO = "El plato no puede ser nulo";
+        public static final String ERROR_NOMBRE_REQUERIDO = "El nombre del plato es obligatorio";
+        public static final String ERROR_PRECIO_REQUERIDO = "El precio del plato es obligatorio";
+        public static final String ERROR_PRECIO_POSITIVO = "El precio del plato debe ser un número entero positivo y mayor a 0";
+        public static final String ERROR_DESCRIPCION_REQUERIDA = "La descripción del plato es obligatoria";
+        public static final String ERROR_URL_IMAGEN_REQUERIDA = "La URL de la imagen es obligatoria";
+        public static final String ERROR_CATEGORIA_REQUERIDA = "La categoría es obligatoria";
+        public static final String ERROR_RESTAURANTE_REQUERIDO = "El restaurante es obligatorio";
+        public static final String ERROR_RESTAURANTE_NO_ENCONTRADO = "No se encontró el restaurante especificado";
+        public static final String ERROR_PROPIETARIO_NO_AUTORIZADO = "Solo el propietario del restaurante puede crear platos";
+
+        private Dish() {
+            throw new IllegalStateException("Clase de constantes");
+        }
+    }
 }

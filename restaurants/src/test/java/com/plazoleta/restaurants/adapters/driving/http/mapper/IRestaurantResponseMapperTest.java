@@ -33,7 +33,7 @@ class IRestaurantResponseMapperTest {
         restaurant.setIdPropietario(1L);
 
         // When
-        RestaurantResponse response = restaurantResponseMapper.toRestaurantResponse(restaurant);
+        RestaurantResponse response = restaurantResponseMapper.restaurantToResponse(restaurant);
 
         // Then
         assertNotNull(response);
@@ -74,7 +74,7 @@ class IRestaurantResponseMapperTest {
     @Test
     void shouldHandleNullRestaurant() {
         // When
-        RestaurantResponse response = restaurantResponseMapper.toRestaurantResponse(null);
+        RestaurantResponse response = restaurantResponseMapper.restaurantToResponse(null);
 
         // Then
         assertNull(response);
@@ -98,7 +98,7 @@ class IRestaurantResponseMapperTest {
         // Otros campos quedan null
 
         // When
-        RestaurantResponse response = restaurantResponseMapper.toRestaurantResponse(restaurant);
+        RestaurantResponse response = restaurantResponseMapper.restaurantToResponse(restaurant);
 
         // Then
         assertNotNull(response);

@@ -1,7 +1,6 @@
 package com.plazoleta.restaurants.adapters.driving.http.mapper;
 
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.AddRestaurantRequest;
-import com.plazoleta.restaurants.adapters.driving.http.dto.response.RestaurantResponse;
 import com.plazoleta.restaurants.domain.model.Restaurant;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,32 +41,6 @@ class IRestaurantRequestMapperTest {
     }
 
     @Test
-    void shouldMapRestaurantToResponse() {
-        // Given
-        Restaurant restaurant = new Restaurant();
-        restaurant.setId(1L);
-        restaurant.setNombre("Restaurante Test");
-        restaurant.setNit("123456789");
-        restaurant.setDireccion("Calle 123 #45-67");
-        restaurant.setTelefono("+573001234567");
-        restaurant.setUrlLogo("https://restaurante.com/logo.png");
-        restaurant.setIdPropietario(1L);
-
-        // When
-        RestaurantResponse response = restaurantRequestMapper.restaurantToResponse(restaurant);
-
-        // Then
-        assertNotNull(response);
-        assertEquals(1L, response.getId());
-        assertEquals("Restaurante Test", response.getNombre());
-        assertEquals("123456789", response.getNit());
-        assertEquals("Calle 123 #45-67", response.getDireccion());
-        assertEquals("+573001234567", response.getTelefono());
-        assertEquals("https://restaurante.com/logo.png", response.getUrlLogo());
-        assertEquals(1L, response.getIdPropietario());
-    }
-
-    @Test
     void shouldHandleNullValuesInAddRequest() {
         // Given
         AddRestaurantRequest request = new AddRestaurantRequest(
@@ -89,67 +62,12 @@ class IRestaurantRequestMapperTest {
     }
 
     @Test
-    void shouldHandleNullValuesInRestaurant() {
-        // Given
-        Restaurant restaurant = new Restaurant();
-        // All fields are null by default
-
-        // When
-        RestaurantResponse response = restaurantRequestMapper.restaurantToResponse(restaurant);
-
-        // Then
-        assertNotNull(response);
-        assertNull(response.getId());
-        assertNull(response.getNombre());
-        assertNull(response.getNit());
-        assertNull(response.getDireccion());
-        assertNull(response.getTelefono());
-        assertNull(response.getUrlLogo());
-        assertNull(response.getIdPropietario());
-    }
-
-    @Test
     void shouldHandleNullRequest() {
         // When
         Restaurant restaurant = restaurantRequestMapper.addRequestToRestaurant(null);
 
         // Then
         assertNull(restaurant);
-    }
-
-    @Test
-    void shouldHandleNullRestaurant() {
-        // When
-        RestaurantResponse response = restaurantRequestMapper.restaurantToResponse(null);
-
-        // Then
-        assertNull(response);
-    }
-
-    @Test
-    void shouldMapCompleteRestaurantDataToResponse() {
-        // Given
-        Restaurant restaurant = new Restaurant();
-        restaurant.setId(999L);
-        restaurant.setNombre("El Mejor Restaurante");
-        restaurant.setNit("987654321");
-        restaurant.setDireccion("Carrera 10 #20-30");
-        restaurant.setTelefono("+5712345678");
-        restaurant.setUrlLogo("https://ejemplo.com/logo.jpg");
-        restaurant.setIdPropietario(100L);
-
-        // When
-        RestaurantResponse response = restaurantRequestMapper.restaurantToResponse(restaurant);
-
-        // Then
-        assertNotNull(response);
-        assertEquals(999L, response.getId());
-        assertEquals("El Mejor Restaurante", response.getNombre());
-        assertEquals("987654321", response.getNit());
-        assertEquals("Carrera 10 #20-30", response.getDireccion());
-        assertEquals("+5712345678", response.getTelefono());
-        assertEquals("https://ejemplo.com/logo.jpg", response.getUrlLogo());
-        assertEquals(100L, response.getIdPropietario());
     }
 
     @Test
@@ -176,5 +94,31 @@ class IRestaurantRequestMapperTest {
         assertEquals("+573009876543", restaurant.getTelefono());
         assertEquals("https://pizzapalace.com/logo.svg", restaurant.getUrlLogo());
         assertEquals(50L, restaurant.getIdPropietario());
+    }
+
+    @Test
+    void shouldMapRequestWithSpecialCharacters() {
+        // Given
+        AddRestaurantRequest request = new AddRestaurantRequest(
+                "Café & Té",
+                "987654321",
+                "Carrera 15 #23-45",
+                "+571234567890",
+                "https://example.com/logo.jpg",
+                99L
+        );
+
+        // When
+        Restaurant restaurant = restaurantRequestMapper.addRequestToRestaurant(request);
+
+        // Then
+        assertNotNull(restaurant);
+        assertNull(restaurant.getId());
+        assertEquals("Café & Té", restaurant.getNombre());
+        assertEquals("987654321", restaurant.getNit());
+        assertEquals("Carrera 15 #23-45", restaurant.getDireccion());
+        assertEquals("+571234567890", restaurant.getTelefono());
+        assertEquals("https://example.com/logo.jpg", restaurant.getUrlLogo());
+        assertEquals(99L, restaurant.getIdPropietario());
     }
 }

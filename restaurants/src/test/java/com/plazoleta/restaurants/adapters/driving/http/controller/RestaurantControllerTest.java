@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.AddRestaurantRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.response.RestaurantResponse;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IRestaurantRequestMapper;
+import com.plazoleta.restaurants.adapters.driving.http.mapper.IRestaurantResponseMapper;
 import com.plazoleta.restaurants.domain.api.IRestaurantServicePort;
 import com.plazoleta.restaurants.domain.model.Restaurant;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +32,9 @@ class RestaurantControllerTest {
 
     @MockBean
     private IRestaurantRequestMapper restaurantRequestMapper;
+
+    @MockBean
+    private IRestaurantResponseMapper restaurantResponseMapper;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -75,7 +79,7 @@ class RestaurantControllerTest {
         // Given
         when(restaurantRequestMapper.addRequestToRestaurant(any(AddRestaurantRequest.class)))
                 .thenReturn(restaurant);
-        when(restaurantRequestMapper.restaurantToResponse(any(Restaurant.class)))
+        when(restaurantResponseMapper.restaurantToResponse(any(Restaurant.class)))
                 .thenReturn(restaurantResponse);
         doNothing().when(restaurantServicePort).saveRestaurant(any(Restaurant.class), eq(validAdminId));
 
@@ -95,7 +99,7 @@ class RestaurantControllerTest {
 
         verify(restaurantRequestMapper).addRequestToRestaurant(any(AddRestaurantRequest.class));
         verify(restaurantServicePort).saveRestaurant(any(Restaurant.class), eq(validAdminId));
-        verify(restaurantRequestMapper).restaurantToResponse(any(Restaurant.class));
+        verify(restaurantResponseMapper).restaurantToResponse(any(Restaurant.class));
     }
 
     @Test
@@ -104,7 +108,7 @@ class RestaurantControllerTest {
         mockMvc.perform(post("/restaurantes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isInternalServerError()); // Spring devuelve 500 para headers faltantes
+                .andExpect(status().isBadRequest());
 
         verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
         verify(restaurantServicePort, never()).saveRestaurant(any(), any());
@@ -117,7 +121,7 @@ class RestaurantControllerTest {
                         .header("X-Admin-Id", "")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isInternalServerError()); // Spring devuelve 500 para headers vacíos
+                .andExpect(status().isBadRequest());
 
         verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
         verify(restaurantServicePort, never()).saveRestaurant(any(), any());
@@ -130,7 +134,7 @@ class RestaurantControllerTest {
                         .header("X-Admin-Id", "invalid")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isInternalServerError()); // Spring devuelve 500 para conversión de tipos inválida
+                .andExpect(status().isBadRequest());
 
         verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
         verify(restaurantServicePort, never()).saveRestaurant(any(), any());
@@ -146,7 +150,7 @@ class RestaurantControllerTest {
                         .header("X-Admin-Id", validAdminId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isInternalServerError()); // Spring devuelve 500 para validaciones fallidas
+                .andExpect(status().isBadRequest());
 
         verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
         verify(restaurantServicePort, never()).saveRestaurant(any(), any());
@@ -162,7 +166,7 @@ class RestaurantControllerTest {
                         .header("X-Admin-Id", validAdminId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isInternalServerError()); // Spring devuelve 500 para validaciones fallidas
+                .andExpect(status().isBadRequest());
 
         verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
         verify(restaurantServicePort, never()).saveRestaurant(any(), any());
@@ -178,7 +182,7 @@ class RestaurantControllerTest {
                         .header("X-Admin-Id", validAdminId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isInternalServerError()); // Spring devuelve 500 para validaciones fallidas
+                .andExpect(status().isBadRequest());
 
         verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
         verify(restaurantServicePort, never()).saveRestaurant(any(), any());
@@ -194,7 +198,7 @@ class RestaurantControllerTest {
                         .header("X-Admin-Id", validAdminId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isInternalServerError()); // Spring devuelve 500 para validaciones fallidas
+                .andExpect(status().isBadRequest());
 
         verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
         verify(restaurantServicePort, never()).saveRestaurant(any(), any());
@@ -210,7 +214,7 @@ class RestaurantControllerTest {
                         .header("X-Admin-Id", validAdminId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isInternalServerError()); // Spring devuelve 500 para validaciones fallidas
+                .andExpect(status().isBadRequest());
 
         verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
         verify(restaurantServicePort, never()).saveRestaurant(any(), any());
@@ -226,7 +230,7 @@ class RestaurantControllerTest {
                         .header("X-Admin-Id", validAdminId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isInternalServerError()); // Spring devuelve 500 para validaciones fallidas
+                .andExpect(status().isBadRequest());
 
         verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
         verify(restaurantServicePort, never()).saveRestaurant(any(), any());
@@ -242,7 +246,7 @@ class RestaurantControllerTest {
                         .header("X-Admin-Id", validAdminId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isInternalServerError()); // Spring devuelve 500 para validaciones fallidas
+                .andExpect(status().isBadRequest());
 
         verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
         verify(restaurantServicePort, never()).saveRestaurant(any(), any());
@@ -279,7 +283,7 @@ class RestaurantControllerTest {
 
         when(restaurantRequestMapper.addRequestToRestaurant(any(AddRestaurantRequest.class)))
                 .thenReturn(validRestaurant);
-        when(restaurantRequestMapper.restaurantToResponse(any(Restaurant.class)))
+        when(restaurantResponseMapper.restaurantToResponse(any(Restaurant.class)))
                 .thenReturn(validResponse);
         doNothing().when(restaurantServicePort).saveRestaurant(any(Restaurant.class), eq(validAdminId));
 
@@ -295,7 +299,7 @@ class RestaurantControllerTest {
 
         verify(restaurantRequestMapper).addRequestToRestaurant(any(AddRestaurantRequest.class));
         verify(restaurantServicePort).saveRestaurant(any(Restaurant.class), eq(validAdminId));
-        verify(restaurantRequestMapper).restaurantToResponse(any(Restaurant.class));
+        verify(restaurantResponseMapper).restaurantToResponse(any(Restaurant.class));
     }
 
     @Test
@@ -304,7 +308,7 @@ class RestaurantControllerTest {
         Long specificAdminId = 7L;
         when(restaurantRequestMapper.addRequestToRestaurant(any(AddRestaurantRequest.class)))
                 .thenReturn(restaurant);
-        when(restaurantRequestMapper.restaurantToResponse(any(Restaurant.class)))
+        when(restaurantResponseMapper.restaurantToResponse(any(Restaurant.class)))
                 .thenReturn(restaurantResponse);
         doNothing().when(restaurantServicePort).saveRestaurant(any(Restaurant.class), eq(specificAdminId));
 
@@ -345,7 +349,7 @@ class RestaurantControllerTest {
 
         when(restaurantRequestMapper.addRequestToRestaurant(any(AddRestaurantRequest.class)))
                 .thenReturn(restaurantWithPlus);
-        when(restaurantRequestMapper.restaurantToResponse(any(Restaurant.class)))
+        when(restaurantResponseMapper.restaurantToResponse(any(Restaurant.class)))
                 .thenReturn(responseWithPlus);
         doNothing().when(restaurantServicePort).saveRestaurant(any(Restaurant.class), eq(validAdminId));
 
@@ -358,7 +362,7 @@ class RestaurantControllerTest {
 
         verify(restaurantRequestMapper).addRequestToRestaurant(any(AddRestaurantRequest.class));
         verify(restaurantServicePort).saveRestaurant(any(Restaurant.class), eq(validAdminId));
-        verify(restaurantRequestMapper).restaurantToResponse(any(Restaurant.class));
+        verify(restaurantResponseMapper).restaurantToResponse(any(Restaurant.class));
     }
 
     @Test
@@ -368,7 +372,7 @@ class RestaurantControllerTest {
 
         when(restaurantRequestMapper.addRequestToRestaurant(any(AddRestaurantRequest.class)))
                 .thenReturn(restaurant);
-        when(restaurantRequestMapper.restaurantToResponse(any(Restaurant.class)))
+        when(restaurantResponseMapper.restaurantToResponse(any(Restaurant.class)))
                 .thenReturn(restaurantResponse);
         doNothing().when(restaurantServicePort).saveRestaurant(any(Restaurant.class), eq(validAdminId));
 
