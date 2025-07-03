@@ -1,7 +1,9 @@
 package com.plazoleta.users.adapters.driving.http.controller;
 
 import com.plazoleta.users.adapters.driving.http.dto.request.AddUserRequest;
+import com.plazoleta.users.adapters.driving.http.dto.response.UserResponse;
 import com.plazoleta.users.adapters.driving.http.mapper.IUserRequestMapper;
+import com.plazoleta.users.adapters.driving.http.mapper.IUserResponseMapper;
 import com.plazoleta.users.domain.api.IAdminUserManagementServicePort;
 import com.plazoleta.users.domain.model.User;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,11 +23,14 @@ public class AdminUserManagementRestControllerAdapter {
 
     private final IAdminUserManagementServicePort usuarioServicePort;
     private final IUserRequestMapper usuarioRequestMapper;
+    private final IUserResponseMapper userResponseMapper; // Agregar esta línea
 
     public AdminUserManagementRestControllerAdapter(IAdminUserManagementServicePort usuarioServicePort,
-                                                    IUserRequestMapper usuarioRequestMapper) {
+                                                    IUserRequestMapper usuarioRequestMapper,
+                                                    IUserResponseMapper userResponseMapper) { // Agregar parámetro
         this.usuarioServicePort = usuarioServicePort;
         this.usuarioRequestMapper = usuarioRequestMapper;
+        this.userResponseMapper = userResponseMapper; // Agregar esta línea
     }
 
     @Operation(summary = "Crear un nuevo propietario")
@@ -37,9 +42,10 @@ public class AdminUserManagementRestControllerAdapter {
     })
     @PostMapping("/propietario")
     @PreAuthorize("hasAuthority('ADMINISTRADOR')")
-    public ResponseEntity<Void> createPropietario(@Valid @RequestBody AddUserRequest request) {
+    public ResponseEntity<UserResponse> createPropietario(@Valid @RequestBody AddUserRequest request) { // Cambiar Void por UserResponse
         User user = usuarioRequestMapper.addRequestToUsuario(request);
-        usuarioServicePort.savePropietario(user);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        User propietarioCreado = usuarioServicePort.savePropietario(user);
+        UserResponse response = userResponseMapper.userToDto(propietarioCreado);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

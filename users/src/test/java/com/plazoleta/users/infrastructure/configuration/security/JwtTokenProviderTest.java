@@ -2,7 +2,6 @@ package com.plazoleta.users.infrastructure.configuration.security;
 
 import com.plazoleta.users.domain.model.RoleType;
 import com.plazoleta.users.domain.model.User;
-import com.plazoleta.users.infrastructure.configuration.security.jwt.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

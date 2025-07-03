@@ -52,11 +52,13 @@ class AdminUserManagementUseCaseTest {
         doNothing().when(usuarioPersistencePort).saveUsuario(any(User.class));
 
         // When
-        usuarioUseCase.savePropietario(user);
+        User result = usuarioUseCase.savePropietario(user);
 
         // Then
-        assertEquals(RoleType.PROPIETARIO, user.getRoleType()); // Usando getRoleType() en lugar de getIdRol()
-        assertEquals(encodedPassword, user.getClave());
+        assertNotNull(result);
+        assertEquals(RoleType.PROPIETARIO, result.getRoleType());
+        assertEquals(encodedPassword, result.getClave());
+        assertEquals(user, result);
         verify(passwordEncoderPort).encode("password123");
         verify(usuarioPersistencePort).saveUsuario(user);
     }
@@ -144,11 +146,12 @@ class AdminUserManagementUseCaseTest {
         doNothing().when(usuarioPersistencePort).saveUsuario(any(User.class));
 
         // When
-        usuarioUseCase.savePropietario(user);
+        User result = usuarioUseCase.savePropietario(user);
 
         // Then
-        assertEquals(RoleType.PROPIETARIO, user.getRoleType()); // Usando getRoleType()
-        assertEquals(encodedPassword, user.getClave());
+        assertNotNull(result);
+        assertEquals(RoleType.PROPIETARIO, result.getRoleType());
+        assertEquals(encodedPassword, result.getClave());
         verify(passwordEncoderPort).encode("password123");
         verify(usuarioPersistencePort).saveUsuario(user);
     }
@@ -227,11 +230,12 @@ class AdminUserManagementUseCaseTest {
         doNothing().when(usuarioPersistencePort).saveUsuario(any(User.class));
 
         // When
-        usuarioUseCase.savePropietario(user);
+        User result = usuarioUseCase.savePropietario(user);
 
         // Then
-        assertEquals(RoleType.PROPIETARIO, user.getRoleType()); // Solo verificar que se asignó el rol correcto
-        assertNotNull(user.getRoleType());
+        assertNotNull(result);
+        assertEquals(RoleType.PROPIETARIO, result.getRoleType());
+        assertNotNull(result.getRoleType());
         verify(passwordEncoderPort).encode("password123");
         verify(usuarioPersistencePort).saveUsuario(user);
     }
@@ -268,12 +272,13 @@ class AdminUserManagementUseCaseTest {
         doNothing().when(usuarioPersistencePort).saveUsuario(any(User.class));
 
         // When
-        usuarioUseCase.savePropietario(user);
+        User result = usuarioUseCase.savePropietario(user);
 
         // Then
-        assertEquals(RoleType.PROPIETARIO, user.getRoleType());
-        assertEquals(encodedPassword, user.getClave());
-        assertNotEquals(originalPassword, user.getClave()); // La clave debe estar codificada
+        assertNotNull(result);
+        assertEquals(RoleType.PROPIETARIO, result.getRoleType());
+        assertEquals(encodedPassword, result.getClave());
+        assertNotEquals(originalPassword, result.getClave()); // La clave debe estar codificada
         verify(passwordEncoderPort).encode(originalPassword);
         verify(usuarioPersistencePort).saveUsuario(user);
     }
@@ -287,11 +292,12 @@ class AdminUserManagementUseCaseTest {
         doNothing().when(usuarioPersistencePort).saveUsuario(any(User.class));
 
         // When
-        usuarioUseCase.savePropietario(user);
+        User result = usuarioUseCase.savePropietario(user);
 
         // Then
-        assertEquals(RoleType.PROPIETARIO, user.getRoleType());
-        assertEquals(encodedPassword, user.getClave());
+        assertNotNull(result);
+        assertEquals(RoleType.PROPIETARIO, result.getRoleType());
+        assertEquals(encodedPassword, result.getClave());
         verify(passwordEncoderPort).encode("password123");
         verify(usuarioPersistencePort).saveUsuario(user);
     }

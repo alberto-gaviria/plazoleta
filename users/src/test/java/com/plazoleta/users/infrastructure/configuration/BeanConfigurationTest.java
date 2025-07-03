@@ -3,9 +3,12 @@ package com.plazoleta.users.infrastructure.configuration;
 import com.plazoleta.users.adapters.driven.mysql.mapper.IUserEntityMapper;
 import com.plazoleta.users.adapters.driven.mysql.repository.IUserRepository;
 import com.plazoleta.users.domain.api.IAdminUserManagementServicePort;
+import com.plazoleta.users.domain.api.IOwnerUserManagementServicePort;
 import com.plazoleta.users.domain.api.IUserQueryServicePort;
+import com.plazoleta.users.domain.api.IAuthenticationServicePort;
 import com.plazoleta.users.domain.spi.IPasswordEncoderPort;
 import com.plazoleta.users.domain.spi.IUserPersistencePort;
+import com.plazoleta.users.domain.spi.ITokenServicePort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,11 +32,14 @@ class BeanConfigurationTest {
     @Mock
     private IPasswordEncoderPort passwordEncoderPort;
 
+    @Mock
+    private ITokenServicePort tokenServicePort;
+
     private BeanConfiguration beanConfiguration;
 
     @BeforeEach
     void setUp() {
-        beanConfiguration = new BeanConfiguration(); // Constructor sin argumentos
+        beanConfiguration = new BeanConfiguration();
     }
 
     @Test
@@ -68,6 +74,17 @@ class BeanConfigurationTest {
     }
 
     @Test
+    void ownerUserManagementServicePort_ShouldReturnOwnerUserManagementUseCase() {
+        // When
+        IOwnerUserManagementServicePort result = beanConfiguration.ownerUserManagementServicePort(
+                userPersistencePort, passwordEncoderPort);
+
+        // Then
+        assertNotNull(result);
+        assertInstanceOf(IOwnerUserManagementServicePort.class, result);
+    }
+
+    @Test
     void userQueryServicePort_ShouldReturnUserQueryUseCase() {
         // When
         IUserQueryServicePort result = beanConfiguration.userQueryServicePort(userPersistencePort);
@@ -75,6 +92,17 @@ class BeanConfigurationTest {
         // Then
         assertNotNull(result);
         assertInstanceOf(IUserQueryServicePort.class, result);
+    }
+
+    @Test
+    void authenticationServicePort_ShouldReturnAuthenticationUseCase() {
+        // When
+        IAuthenticationServicePort result = beanConfiguration.authenticationServicePort(
+                userPersistencePort, passwordEncoderPort, tokenServicePort);
+
+        // Then
+        assertNotNull(result);
+        assertInstanceOf(IAuthenticationServicePort.class, result);
     }
 
     @Test
@@ -114,10 +142,28 @@ class BeanConfigurationTest {
     }
 
     @Test
+    void ownerUserManagementServicePort_WithNullDependencies_ShouldHandleGracefully() {
+        // When & Then
+        assertDoesNotThrow(() -> {
+            IOwnerUserManagementServicePort result = beanConfiguration.ownerUserManagementServicePort(null, null);
+            // Nota: Esto podría fallar en runtime dependiendo de la implementación
+        });
+    }
+
+    @Test
     void userQueryServicePort_WithNullPersistencePort_ShouldHandleGracefully() {
         // When & Then
         assertDoesNotThrow(() -> {
             IUserQueryServicePort result = beanConfiguration.userQueryServicePort(null);
+            // Nota: Esto podría fallar en runtime dependiendo de la implementación
+        });
+    }
+
+    @Test
+    void authenticationServicePort_WithNullDependencies_ShouldHandleGracefully() {
+        // When & Then
+        assertDoesNotThrow(() -> {
+            IAuthenticationServicePort result = beanConfiguration.authenticationServicePort(null, null, null);
             // Nota: Esto podría fallar en runtime dependiendo de la implementación
         });
     }
@@ -141,12 +187,16 @@ class BeanConfigurationTest {
         IPasswordEncoderPort passwordEncoder = beanConfiguration.passwordEncoderPort();
         IUserPersistencePort userPersistence = beanConfiguration.userPersistencePort(userRepository, userEntityMapper);
         IAdminUserManagementServicePort adminService = beanConfiguration.adminUserManagementServicePort(userPersistencePort, passwordEncoderPort);
+        IOwnerUserManagementServicePort ownerService = beanConfiguration.ownerUserManagementServicePort(userPersistencePort, passwordEncoderPort);
         IUserQueryServicePort queryService = beanConfiguration.userQueryServicePort(userPersistencePort);
+        IAuthenticationServicePort authService = beanConfiguration.authenticationServicePort(userPersistencePort, passwordEncoderPort, tokenServicePort);
 
         // Then
         assertNotNull(passwordEncoder);
         assertNotNull(userPersistence);
         assertNotNull(adminService);
+        assertNotNull(ownerService);
         assertNotNull(queryService);
+        assertNotNull(authService);
     }
 }

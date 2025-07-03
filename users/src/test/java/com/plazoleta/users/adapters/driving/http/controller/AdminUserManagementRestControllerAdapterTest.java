@@ -3,7 +3,9 @@ package com.plazoleta.users.adapters.driving.http.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.plazoleta.users.adapters.driving.http.dto.request.AddUserRequest;
+import com.plazoleta.users.adapters.driving.http.dto.response.UserResponse;
 import com.plazoleta.users.adapters.driving.http.mapper.IUserRequestMapper;
+import com.plazoleta.users.adapters.driving.http.mapper.IUserResponseMapper;
 import com.plazoleta.users.domain.api.IAdminUserManagementServicePort;
 import com.plazoleta.users.domain.model.User;
 import com.plazoleta.users.domain.model.RoleType;
@@ -19,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -34,8 +37,12 @@ class AdminUserManagementRestControllerAdapterTest {
     @Mock
     private IUserRequestMapper usuarioRequestMapper;
 
+    @Mock
+    private IUserResponseMapper userResponseMapper;
+
     private AddUserRequest addUserRequest;
     private User user;
+    private UserResponse userResponse;
 
     @BeforeEach
     void setUp() {
@@ -49,6 +56,7 @@ class AdminUserManagementRestControllerAdapterTest {
         addUserRequest.setClave("password123");
 
         user = new User();
+        user.setId(1L);
         user.setNombre("Juan");
         user.setApellido("Pérez");
         user.setNumeroDocumento("12345678");
@@ -57,42 +65,58 @@ class AdminUserManagementRestControllerAdapterTest {
         user.setCorreo("juan@email.com");
         user.setClave("password123");
         user.setRoleType(RoleType.PROPIETARIO);
+
+        userResponse = new UserResponse();
+        userResponse.setId(1L);
+        userResponse.setNombre("Juan");
+        userResponse.setApellido("Pérez");
+        userResponse.setIdRol(2L);
+        userResponse.setRolNombre("PROPIETARIO");
     }
 
     @Test
     void createPropietario_WhenValidRequest_ShouldReturnCreated() {
         // Given
         when(usuarioRequestMapper.addRequestToUsuario(any(AddUserRequest.class))).thenReturn(user);
-        doNothing().when(usuarioServicePort).savePropietario(any(User.class));
+        when(usuarioServicePort.savePropietario(any(User.class))).thenReturn(user);
+        when(userResponseMapper.userToDto(any(User.class))).thenReturn(userResponse);
 
         // When
-        ResponseEntity<Void> result = controller.createPropietario(addUserRequest);
+        ResponseEntity<UserResponse> result = controller.createPropietario(addUserRequest);
 
         // Then
         assertEquals(HttpStatus.CREATED, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertEquals(userResponse, result.getBody());
         verify(usuarioRequestMapper).addRequestToUsuario(any(AddUserRequest.class));
         verify(usuarioServicePort).savePropietario(any(User.class));
+        verify(userResponseMapper).userToDto(any(User.class));
     }
 
     @Test
     void createPropietario_WhenMapperReturnsUser_ShouldCallServiceAndReturnCreated() {
         // Given
         when(usuarioRequestMapper.addRequestToUsuario(addUserRequest)).thenReturn(user);
-        doNothing().when(usuarioServicePort).savePropietario(user);
+        when(usuarioServicePort.savePropietario(user)).thenReturn(user);
+        when(userResponseMapper.userToDto(user)).thenReturn(userResponse);
 
         // When
-        ResponseEntity<Void> result = controller.createPropietario(addUserRequest);
+        ResponseEntity<UserResponse> result = controller.createPropietario(addUserRequest);
 
         // Then
         assertEquals(HttpStatus.CREATED, result.getStatusCode());
+        assertEquals(userResponse, result.getBody());
         verify(usuarioRequestMapper).addRequestToUsuario(addUserRequest);
         verify(usuarioServicePort).savePropietario(user);
+        verify(userResponseMapper).userToDto(user);
     }
 
     @Test
     void createPropietario_WhenServiceCalled_ShouldDelegateToCorrectService() {
         // Given
         when(usuarioRequestMapper.addRequestToUsuario(any(AddUserRequest.class))).thenReturn(user);
+        when(usuarioServicePort.savePropietario(user)).thenReturn(user);
+        when(userResponseMapper.userToDto(any(User.class))).thenReturn(userResponse);
 
         // When
         controller.createPropietario(addUserRequest);
@@ -105,7 +129,8 @@ class AdminUserManagementRestControllerAdapterTest {
     void createPropietario_WhenCalled_ShouldMapRequestCorrectly() {
         // Given
         when(usuarioRequestMapper.addRequestToUsuario(addUserRequest)).thenReturn(user);
-        doNothing().when(usuarioServicePort).savePropietario(any(User.class));
+        when(usuarioServicePort.savePropietario(any(User.class))).thenReturn(user);
+        when(userResponseMapper.userToDto(any(User.class))).thenReturn(userResponse);
 
         // When
         controller.createPropietario(addUserRequest);
@@ -118,14 +143,15 @@ class AdminUserManagementRestControllerAdapterTest {
     void createPropietario_WhenServiceExecutesSuccessfully_ShouldReturnCreatedStatus() {
         // Given
         when(usuarioRequestMapper.addRequestToUsuario(any(AddUserRequest.class))).thenReturn(user);
-        doNothing().when(usuarioServicePort).savePropietario(any(User.class));
+        when(usuarioServicePort.savePropietario(any(User.class))).thenReturn(user);
+        when(userResponseMapper.userToDto(any(User.class))).thenReturn(userResponse);
 
         // When
-        ResponseEntity<Void> response = controller.createPropietario(addUserRequest);
+        ResponseEntity<UserResponse> response = controller.createPropietario(addUserRequest);
 
         // Then
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(null, response.getBody());
+        assertEquals(userResponse, response.getBody());
     }
 
     @Test
@@ -144,32 +170,37 @@ class AdminUserManagementRestControllerAdapterTest {
         mappedUser.setRoleType(RoleType.PROPIETARIO);
 
         when(usuarioRequestMapper.addRequestToUsuario(fullRequest)).thenReturn(mappedUser);
-        doNothing().when(usuarioServicePort).savePropietario(mappedUser);
+        when(usuarioServicePort.savePropietario(mappedUser)).thenReturn(mappedUser);
+        when(userResponseMapper.userToDto(mappedUser)).thenReturn(userResponse);
 
         // When
-        ResponseEntity<Void> result = controller.createPropietario(fullRequest);
+        ResponseEntity<UserResponse> result = controller.createPropietario(fullRequest);
 
         // Then
         assertEquals(HttpStatus.CREATED, result.getStatusCode());
+        assertEquals(userResponse, result.getBody());
         verify(usuarioRequestMapper).addRequestToUsuario(fullRequest);
         verify(usuarioServicePort).savePropietario(mappedUser);
+        verify(userResponseMapper).userToDto(mappedUser);
     }
 
     @Test
     void createPropietario_WhenControllerMethodCalled_ShouldFollowExpectedFlow() {
         // Given
         when(usuarioRequestMapper.addRequestToUsuario(any(AddUserRequest.class))).thenReturn(user);
-        doNothing().when(usuarioServicePort).savePropietario(any(User.class));
+        when(usuarioServicePort.savePropietario(any(User.class))).thenReturn(user);
+        when(userResponseMapper.userToDto(any(User.class))).thenReturn(userResponse);
 
         // When
-        ResponseEntity<Void> result = controller.createPropietario(addUserRequest);
+        ResponseEntity<UserResponse> result = controller.createPropietario(addUserRequest);
 
         // Then
         // Verify the complete flow
         verify(usuarioRequestMapper, times(1)).addRequestToUsuario(addUserRequest);
         verify(usuarioServicePort, times(1)).savePropietario(user);
+        verify(userResponseMapper, times(1)).userToDto(user);
         assertEquals(HttpStatus.CREATED, result.getStatusCode());
-        assertEquals(null, result.getBody());
+        assertEquals(userResponse, result.getBody());
     }
 
     @Test
@@ -189,21 +220,26 @@ class AdminUserManagementRestControllerAdapterTest {
         customUser.setRoleType(RoleType.PROPIETARIO);
 
         when(usuarioRequestMapper.addRequestToUsuario(customRequest)).thenReturn(customUser);
-        doNothing().when(usuarioServicePort).savePropietario(customUser);
+        when(usuarioServicePort.savePropietario(customUser)).thenReturn(customUser);
+        when(userResponseMapper.userToDto(customUser)).thenReturn(userResponse);
 
         // When
-        ResponseEntity<Void> result = controller.createPropietario(customRequest);
+        ResponseEntity<UserResponse> result = controller.createPropietario(customRequest);
 
         // Then
         assertEquals(HttpStatus.CREATED, result.getStatusCode());
+        assertEquals(userResponse, result.getBody());
         verify(usuarioRequestMapper).addRequestToUsuario(customRequest);
         verify(usuarioServicePort).savePropietario(customUser);
+        verify(userResponseMapper).userToDto(customUser);
     }
 
     @Test
     void createPropietario_WhenMockingDependencies_ShouldInteractCorrectly() {
         // Given
         when(usuarioRequestMapper.addRequestToUsuario(any(AddUserRequest.class))).thenReturn(user);
+        when(usuarioServicePort.savePropietario(user)).thenReturn(user);
+        when(userResponseMapper.userToDto(user)).thenReturn(userResponse);
 
         // When
         controller.createPropietario(addUserRequest);
@@ -211,21 +247,23 @@ class AdminUserManagementRestControllerAdapterTest {
         // Then
         verify(usuarioRequestMapper).addRequestToUsuario(addUserRequest);
         verify(usuarioServicePort).savePropietario(user);
-        verifyNoMoreInteractions(usuarioRequestMapper, usuarioServicePort);
+        verify(userResponseMapper).userToDto(user);
+        verifyNoMoreInteractions(usuarioRequestMapper, usuarioServicePort, userResponseMapper);
     }
 
     @Test
     void createPropietario_WhenValidExecution_ShouldReturnCorrectResponseEntity() {
         // Given
         when(usuarioRequestMapper.addRequestToUsuario(any(AddUserRequest.class))).thenReturn(user);
-        doNothing().when(usuarioServicePort).savePropietario(any(User.class));
+        when(usuarioServicePort.savePropietario(any(User.class))).thenReturn(user);
+        when(userResponseMapper.userToDto(any(User.class))).thenReturn(userResponse);
 
         // When
-        ResponseEntity<Void> response = controller.createPropietario(addUserRequest);
+        ResponseEntity<UserResponse> response = controller.createPropietario(addUserRequest);
 
         // Then
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(null, response.getBody());
+        assertEquals(userResponse, response.getBody());
         assertEquals(201, response.getStatusCodeValue());
     }
 }

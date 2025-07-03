@@ -1,37 +1,49 @@
 package com.plazoleta.users.domain.usecase;
 
-import com.plazoleta.users.domain.api.IAdminUserManagementServicePort;
+import com.plazoleta.users.domain.api.IOwnerUserManagementServicePort;
 import com.plazoleta.users.domain.model.RoleType;
 import com.plazoleta.users.domain.model.User;
 import com.plazoleta.users.domain.spi.IUserPersistencePort;
 import com.plazoleta.users.domain.spi.IPasswordEncoderPort;
 import com.plazoleta.users.domain.util.DomainConstants;
 import com.plazoleta.users.domain.util.exceptions.InvalidUsuarioException;
+import com.plazoleta.users.domain.util.exceptions.UserNotFoundException;
 
 import java.time.LocalDate;
 import java.time.Period;
 
-public class AdminUserManagementUseCase implements IAdminUserManagementServicePort {
+public class OwnerUserManagementUseCase implements IOwnerUserManagementServicePort {
 
-    private final IUserPersistencePort usuarioPersistencePort;
+    private final IUserPersistencePort userPersistencePort;
     private final IPasswordEncoderPort passwordEncoderPort;
 
-    public AdminUserManagementUseCase(IUserPersistencePort usuarioPersistencePort,
+    public OwnerUserManagementUseCase(IUserPersistencePort userPersistencePort,
                                       IPasswordEncoderPort passwordEncoderPort) {
-        this.usuarioPersistencePort = usuarioPersistencePort;
+        this.userPersistencePort = userPersistencePort;
         this.passwordEncoderPort = passwordEncoderPort;
     }
 
     @Override
-    public User savePropietario(User user) {
+    public User saveEmpleado(User user, Long propietarioId) {
+        validatePropietario(propietarioId);
         validateUsuario(user);
         validateMayorEdad(user.getFechaNacimiento());
 
-        user.setRoleType(RoleType.PROPIETARIO);
+        user.setRoleType(RoleType.EMPLEADO);
         user.setClave(passwordEncoderPort.encode(user.getClave()));
 
-        usuarioPersistencePort.saveUsuario(user);
+        userPersistencePort.saveUsuario(user);
         return user;
+    }
+
+    private void validatePropietario(Long propietarioId) {
+        User propietario = userPersistencePort.findById(propietarioId)
+                .orElseThrow(() -> new UserNotFoundException(
+                        DomainConstants.Usuario.ERROR_USUARIO_NO_ENCONTRADO + propietarioId));
+
+        if (propietario.getRoleType() != RoleType.PROPIETARIO) {
+            throw new InvalidUsuarioException(DomainConstants.Usuario.ERROR_SOLO_PROPIETARIO_CREAR_EMPLEADO);
+        }
     }
 
     private void validateUsuario(User user) {

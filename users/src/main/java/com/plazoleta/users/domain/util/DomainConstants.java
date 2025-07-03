@@ -19,6 +19,7 @@ public final class DomainConstants {
         public static final String ERROR_FECHA_NACIMIENTO_REQUERIDA = "La fecha de nacimiento es obligatoria";
         public static final String ERROR_MENOR_EDAD = "El usuario debe ser mayor de edad";
         public static final String ERROR_USUARIO_NO_ENCONTRADO = "Usuario no encontrado con ID: ";
+        public static final String ERROR_SOLO_PROPIETARIO_CREAR_EMPLEADO = "Solo el propietario puede crear cuentas de empleados";
 
         private Usuario() {
             throw new IllegalStateException("Clase de constantes");

@@ -293,9 +293,10 @@ class ControllerAdvisorTest {
         // Then
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
-        // CORREGIDO: El comportamiento real del ControllerAdvisor puede devolver un mensaje por defecto
+
+        // CORREGIDO: Cuando no hay field errors, el ControllerAdvisor devuelve "{}" (mapa vacío como string)
         String message = response.getBody().getMessage();
-        assertTrue(message == null || message.trim().isEmpty() || message.equals("Error de validación"));
+        assertEquals("{}", message);
         assertEquals(HttpStatus.BAD_REQUEST.toString(), response.getBody().getStatus());
     }
 

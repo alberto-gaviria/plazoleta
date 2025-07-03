@@ -1,7 +1,6 @@
 package com.plazoleta.users.infrastructure.configuration.security;
 
 import com.plazoleta.users.infrastructure.configuration.security.jwt.JwtAuthenticationEntryPoint;
-import com.plazoleta.users.infrastructure.configuration.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -39,6 +38,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuarios/propietario").hasAuthority("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.POST, "/usuarios/empleado").hasAuthority("PROPIETARIO")
                         .anyRequest().authenticated()
                 );
 
