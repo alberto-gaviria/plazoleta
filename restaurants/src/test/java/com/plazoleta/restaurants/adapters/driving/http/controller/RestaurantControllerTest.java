@@ -1,6 +1,5 @@
 package com.plazoleta.restaurants.adapters.driving.http.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.AddRestaurantRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.response.RestaurantResponse;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IRestaurantRequestMapper;
@@ -9,380 +8,311 @@ import com.plazoleta.restaurants.domain.api.IRestaurantServicePort;
 import com.plazoleta.restaurants.domain.model.Restaurant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(RestaurantController.class)
+@ExtendWith(MockitoExtension.class)
 class RestaurantControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @InjectMocks
+    private RestaurantController controller;
 
-    @MockBean
+    @Mock
     private IRestaurantServicePort restaurantServicePort;
 
-    @MockBean
+    @Mock
     private IRestaurantRequestMapper restaurantRequestMapper;
 
-    @MockBean
+    @Mock
     private IRestaurantResponseMapper restaurantResponseMapper;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Mock
+    private Authentication authentication;
 
     private AddRestaurantRequest addRestaurantRequest;
     private Restaurant restaurant;
     private RestaurantResponse restaurantResponse;
-    private final Long validAdminId = 1L;
 
     @BeforeEach
     void setUp() {
-        addRestaurantRequest = new AddRestaurantRequest(
-                "Restaurante Test",
-                "123456789",
-                "Calle 123 #45-67",
-                "+573001234567",
-                "https://restaurante.com/logo.png",
-                2L // ID del propietario (diferente al admin)
-        );
+        addRestaurantRequest = new AddRestaurantRequest();
+        addRestaurantRequest.setNombre("Restaurante El Buen Sabor");
+        addRestaurantRequest.setNit("900123456-7");
+        addRestaurantRequest.setDireccion("Calle 123 #45-67");
+        addRestaurantRequest.setTelefono("+573001234567");
+        addRestaurantRequest.setUrlLogo("https://ejemplo.com/logo.png");
+        addRestaurantRequest.setIdPropietario(2L);
 
         restaurant = new Restaurant();
         restaurant.setId(1L);
-        restaurant.setNombre("Restaurante Test");
-        restaurant.setNit("123456789");
+        restaurant.setNombre("Restaurante El Buen Sabor");
+        restaurant.setNit("900123456-7");
         restaurant.setDireccion("Calle 123 #45-67");
         restaurant.setTelefono("+573001234567");
-        restaurant.setUrlLogo("https://restaurante.com/logo.png");
+        restaurant.setUrlLogo("https://ejemplo.com/logo.png");
         restaurant.setIdPropietario(2L);
 
         restaurantResponse = new RestaurantResponse();
         restaurantResponse.setId(1L);
-        restaurantResponse.setNombre("Restaurante Test");
-        restaurantResponse.setNit("123456789");
+        restaurantResponse.setNombre("Restaurante El Buen Sabor");
+        restaurantResponse.setNit("900123456-7");
         restaurantResponse.setDireccion("Calle 123 #45-67");
         restaurantResponse.setTelefono("+573001234567");
-        restaurantResponse.setUrlLogo("https://restaurante.com/logo.png");
-        restaurantResponse.setIdPropietario(2L);
+        restaurantResponse.setUrlLogo("https://ejemplo.com/logo.png");
     }
 
     @Test
-    void shouldCreateRestaurantSuccessfully() throws Exception {
+    void createRestaurant_WhenValidRequest_ShouldReturnCreated() {
         // Given
-        when(restaurantRequestMapper.addRequestToRestaurant(any(AddRestaurantRequest.class)))
-                .thenReturn(restaurant);
-        when(restaurantResponseMapper.restaurantToResponse(any(Restaurant.class)))
-                .thenReturn(restaurantResponse);
-        doNothing().when(restaurantServicePort).saveRestaurant(any(Restaurant.class), eq(validAdminId));
+        when(authentication.getName()).thenReturn("1");
+        when(restaurantRequestMapper.addRequestToRestaurant(any(AddRestaurantRequest.class))).thenReturn(restaurant);
+        doNothing().when(restaurantServicePort).saveRestaurant(any(Restaurant.class), anyLong());
+        when(restaurantResponseMapper.restaurantToResponse(any(Restaurant.class))).thenReturn(restaurantResponse);
 
-        // When & Then
-        mockMvc.perform(post("/restaurantes")
-                        .header("X-Admin-Id", validAdminId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.nombre").value("Restaurante Test"))
-                .andExpect(jsonPath("$.nit").value("123456789"))
-                .andExpect(jsonPath("$.direccion").value("Calle 123 #45-67"))
-                .andExpect(jsonPath("$.telefono").value("+573001234567"))
-                .andExpect(jsonPath("$.urlLogo").value("https://restaurante.com/logo.png"))
-                .andExpect(jsonPath("$.idPropietario").value(2L));
+        // When
+        ResponseEntity<RestaurantResponse> result = controller.createRestaurant(addRestaurantRequest, authentication);
 
+        // Then
+        assertEquals(HttpStatus.CREATED, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertEquals(restaurantResponse, result.getBody());
         verify(restaurantRequestMapper).addRequestToRestaurant(any(AddRestaurantRequest.class));
-        verify(restaurantServicePort).saveRestaurant(any(Restaurant.class), eq(validAdminId));
+        verify(restaurantServicePort).saveRestaurant(any(Restaurant.class), anyLong());
         verify(restaurantResponseMapper).restaurantToResponse(any(Restaurant.class));
     }
 
     @Test
-    void shouldReturnBadRequestWhenAdminIdHeaderIsMissing() throws Exception {
-        // When & Then
-        mockMvc.perform(post("/restaurantes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isBadRequest());
-
-        verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
-        verify(restaurantServicePort, never()).saveRestaurant(any(), any());
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenAdminIdIsNull() throws Exception {
-        // When & Then
-        mockMvc.perform(post("/restaurantes")
-                        .header("X-Admin-Id", "")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isBadRequest());
-
-        verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
-        verify(restaurantServicePort, never()).saveRestaurant(any(), any());
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenAdminIdIsInvalid() throws Exception {
-        // When & Then
-        mockMvc.perform(post("/restaurantes")
-                        .header("X-Admin-Id", "invalid")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isBadRequest());
-
-        verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
-        verify(restaurantServicePort, never()).saveRestaurant(any(), any());
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenNombreIsBlank() throws Exception {
+    void createRestaurant_WhenMapperReturnsRestaurant_ShouldCallServiceAndReturnCreated() {
         // Given
-        addRestaurantRequest.setNombre("");
+        when(authentication.getName()).thenReturn("1");
+        when(restaurantRequestMapper.addRequestToRestaurant(addRestaurantRequest)).thenReturn(restaurant);
+        doNothing().when(restaurantServicePort).saveRestaurant(restaurant, 1L);
+        when(restaurantResponseMapper.restaurantToResponse(restaurant)).thenReturn(restaurantResponse);
 
-        // When & Then
-        mockMvc.perform(post("/restaurantes")
-                        .header("X-Admin-Id", validAdminId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isBadRequest());
+        // When
+        ResponseEntity<RestaurantResponse> result = controller.createRestaurant(addRestaurantRequest, authentication);
 
-        verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
-        verify(restaurantServicePort, never()).saveRestaurant(any(), any());
+        // Then
+        assertEquals(HttpStatus.CREATED, result.getStatusCode());
+        assertEquals(restaurantResponse, result.getBody());
+        verify(restaurantRequestMapper).addRequestToRestaurant(addRestaurantRequest);
+        verify(restaurantServicePort).saveRestaurant(restaurant, 1L);
+        verify(restaurantResponseMapper).restaurantToResponse(restaurant);
     }
 
     @Test
-    void shouldReturnBadRequestWhenNitIsInvalid() throws Exception {
+    void createRestaurant_WhenServiceCalled_ShouldDelegateToCorrectService() {
         // Given
-        addRestaurantRequest.setNit("abc123");
+        when(authentication.getName()).thenReturn("1");
+        when(restaurantRequestMapper.addRequestToRestaurant(any(AddRestaurantRequest.class))).thenReturn(restaurant);
+        when(restaurantResponseMapper.restaurantToResponse(any(Restaurant.class))).thenReturn(restaurantResponse);
 
-        // When & Then
-        mockMvc.perform(post("/restaurantes")
-                        .header("X-Admin-Id", validAdminId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isBadRequest());
+        // When
+        controller.createRestaurant(addRestaurantRequest, authentication);
 
-        verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
-        verify(restaurantServicePort, never()).saveRestaurant(any(), any());
+        // Then
+        verify(restaurantServicePort, times(1)).saveRestaurant(restaurant, 1L);
     }
 
     @Test
-    void shouldReturnBadRequestWhenTelefonoIsInvalid() throws Exception {
+    void createRestaurant_WhenCalled_ShouldMapRequestCorrectly() {
         // Given
-        addRestaurantRequest.setTelefono("123456789012345"); // Más de 13 caracteres
+        when(authentication.getName()).thenReturn("1");
+        when(restaurantRequestMapper.addRequestToRestaurant(addRestaurantRequest)).thenReturn(restaurant);
+        doNothing().when(restaurantServicePort).saveRestaurant(any(Restaurant.class), anyLong());
+        when(restaurantResponseMapper.restaurantToResponse(any(Restaurant.class))).thenReturn(restaurantResponse);
 
-        // When & Then
-        mockMvc.perform(post("/restaurantes")
-                        .header("X-Admin-Id", validAdminId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isBadRequest());
+        // When
+        controller.createRestaurant(addRestaurantRequest, authentication);
 
-        verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
-        verify(restaurantServicePort, never()).saveRestaurant(any(), any());
+        // Then
+        verify(restaurantRequestMapper, times(1)).addRequestToRestaurant(addRestaurantRequest);
     }
 
     @Test
-    void shouldReturnBadRequestWhenTelefonoHasInvalidFormat() throws Exception {
+    void createRestaurant_WhenServiceExecutesSuccessfully_ShouldReturnCreatedStatus() {
         // Given
-        addRestaurantRequest.setTelefono("abc123def"); // Formato inválido
+        when(authentication.getName()).thenReturn("1");
+        when(restaurantRequestMapper.addRequestToRestaurant(any(AddRestaurantRequest.class))).thenReturn(restaurant);
+        doNothing().when(restaurantServicePort).saveRestaurant(any(Restaurant.class), anyLong());
+        when(restaurantResponseMapper.restaurantToResponse(any(Restaurant.class))).thenReturn(restaurantResponse);
 
-        // When & Then
-        mockMvc.perform(post("/restaurantes")
-                        .header("X-Admin-Id", validAdminId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isBadRequest());
+        // When
+        ResponseEntity<RestaurantResponse> response = controller.createRestaurant(addRestaurantRequest, authentication);
 
-        verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
-        verify(restaurantServicePort, never()).saveRestaurant(any(), any());
+        // Then
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(restaurantResponse, response.getBody());
     }
 
     @Test
-    void shouldReturnBadRequestWhenIdPropietarioIsNull() throws Exception {
+    void createRestaurant_WhenRequestHasAllFields_ShouldProcessSuccessfully() {
         // Given
-        addRestaurantRequest.setIdPropietario(null);
+        AddRestaurantRequest fullRequest = new AddRestaurantRequest();
+        fullRequest.setNombre("Restaurante La Plaza");
+        fullRequest.setNit("800987654-3");
+        fullRequest.setDireccion("Avenida 456 #78-90");
+        fullRequest.setTelefono("+573009876543");
+        fullRequest.setUrlLogo("https://ejemplo.com/plaza-logo.png");
+        fullRequest.setIdPropietario(3L);
 
-        // When & Then
-        mockMvc.perform(post("/restaurantes")
-                        .header("X-Admin-Id", validAdminId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isBadRequest());
+        Restaurant mappedRestaurant = new Restaurant();
+        mappedRestaurant.setId(2L);
+        mappedRestaurant.setNombre("Restaurante La Plaza");
 
-        verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
-        verify(restaurantServicePort, never()).saveRestaurant(any(), any());
+        RestaurantResponse fullResponse = new RestaurantResponse();
+        fullResponse.setId(2L);
+        fullResponse.setNombre("Restaurante La Plaza");
+
+        when(authentication.getName()).thenReturn("1");
+        when(restaurantRequestMapper.addRequestToRestaurant(fullRequest)).thenReturn(mappedRestaurant);
+        doNothing().when(restaurantServicePort).saveRestaurant(mappedRestaurant, 1L);
+        when(restaurantResponseMapper.restaurantToResponse(mappedRestaurant)).thenReturn(fullResponse);
+
+        // When
+        ResponseEntity<RestaurantResponse> result = controller.createRestaurant(fullRequest, authentication);
+
+        // Then
+        assertEquals(HttpStatus.CREATED, result.getStatusCode());
+        assertEquals(fullResponse, result.getBody());
+        verify(restaurantRequestMapper).addRequestToRestaurant(fullRequest);
+        verify(restaurantServicePort).saveRestaurant(mappedRestaurant, 1L);
+        verify(restaurantResponseMapper).restaurantToResponse(mappedRestaurant);
     }
 
     @Test
-    void shouldReturnBadRequestWhenDireccionIsBlank() throws Exception {
+    void createRestaurant_WhenControllerMethodCalled_ShouldFollowExpectedFlow() {
         // Given
-        addRestaurantRequest.setDireccion("");
+        when(authentication.getName()).thenReturn("1");
+        when(restaurantRequestMapper.addRequestToRestaurant(any(AddRestaurantRequest.class))).thenReturn(restaurant);
+        doNothing().when(restaurantServicePort).saveRestaurant(any(Restaurant.class), anyLong());
+        when(restaurantResponseMapper.restaurantToResponse(any(Restaurant.class))).thenReturn(restaurantResponse);
 
-        // When & Then
-        mockMvc.perform(post("/restaurantes")
-                        .header("X-Admin-Id", validAdminId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isBadRequest());
+        // When
+        ResponseEntity<RestaurantResponse> result = controller.createRestaurant(addRestaurantRequest, authentication);
 
-        verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
-        verify(restaurantServicePort, never()).saveRestaurant(any(), any());
+        // Then
+        // Verify the complete flow
+        verify(authentication, times(1)).getName();
+        verify(restaurantRequestMapper, times(1)).addRequestToRestaurant(addRestaurantRequest);
+        verify(restaurantServicePort, times(1)).saveRestaurant(restaurant, 1L);
+        verify(restaurantResponseMapper, times(1)).restaurantToResponse(restaurant);
+        assertEquals(HttpStatus.CREATED, result.getStatusCode());
+        assertEquals(restaurantResponse, result.getBody());
     }
 
     @Test
-    void shouldReturnBadRequestWhenUrlLogoIsBlank() throws Exception {
+    void createRestaurant_WhenDifferentRestaurantData_ShouldMapAndSaveCorrectly() {
         // Given
-        addRestaurantRequest.setUrlLogo("");
+        AddRestaurantRequest customRequest = new AddRestaurantRequest();
+        customRequest.setNombre("Comida Rápida Central");
+        customRequest.setNit("700555444-1");
+        customRequest.setDireccion("Centro Comercial 123");
+        customRequest.setTelefono("+573001112233");
+        customRequest.setUrlLogo("https://ejemplo.com/central-logo.png");
+        customRequest.setIdPropietario(4L);
 
-        // When & Then
-        mockMvc.perform(post("/restaurantes")
-                        .header("X-Admin-Id", validAdminId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isBadRequest());
+        Restaurant customRestaurant = new Restaurant();
+        customRestaurant.setId(3L);
+        customRestaurant.setNombre("Comida Rápida Central");
 
-        verify(restaurantRequestMapper, never()).addRequestToRestaurant(any());
-        verify(restaurantServicePort, never()).saveRestaurant(any(), any());
+        RestaurantResponse customResponse = new RestaurantResponse();
+        customResponse.setId(3L);
+        customResponse.setNombre("Comida Rápida Central");
+
+        when(authentication.getName()).thenReturn("2");
+        when(restaurantRequestMapper.addRequestToRestaurant(customRequest)).thenReturn(customRestaurant);
+        doNothing().when(restaurantServicePort).saveRestaurant(customRestaurant, 2L);
+        when(restaurantResponseMapper.restaurantToResponse(customRestaurant)).thenReturn(customResponse);
+
+        // When
+        ResponseEntity<RestaurantResponse> result = controller.createRestaurant(customRequest, authentication);
+
+        // Then
+        assertEquals(HttpStatus.CREATED, result.getStatusCode());
+        assertEquals(customResponse, result.getBody());
+        verify(restaurantRequestMapper).addRequestToRestaurant(customRequest);
+        verify(restaurantServicePort).saveRestaurant(customRestaurant, 2L);
+        verify(restaurantResponseMapper).restaurantToResponse(customRestaurant);
     }
 
     @Test
-    void shouldAcceptValidRestaurantWithValidAdminId() throws Exception {
-        // Given - Crear un request completamente válido
-        AddRestaurantRequest validRequest = new AddRestaurantRequest(
-                "Pizza Palace",
-                "987654321",
-                "Carrera 80 #30-40",
-                "+573009876543",
-                "https://pizzapalace.com/logo.png",
-                3L
-        );
-
-        Restaurant validRestaurant = new Restaurant();
-        validRestaurant.setNombre("Pizza Palace");
-        validRestaurant.setNit("987654321");
-        validRestaurant.setDireccion("Carrera 80 #30-40");
-        validRestaurant.setTelefono("+573009876543");
-        validRestaurant.setUrlLogo("https://pizzapalace.com/logo.png");
-        validRestaurant.setIdPropietario(3L);
-
-        RestaurantResponse validResponse = new RestaurantResponse();
-        validResponse.setId(2L);
-        validResponse.setNombre("Pizza Palace");
-        validResponse.setNit("987654321");
-        validResponse.setDireccion("Carrera 80 #30-40");
-        validResponse.setTelefono("+573009876543");
-        validResponse.setUrlLogo("https://pizzapalace.com/logo.png");
-        validResponse.setIdPropietario(3L);
-
-        when(restaurantRequestMapper.addRequestToRestaurant(any(AddRestaurantRequest.class)))
-                .thenReturn(validRestaurant);
-        when(restaurantResponseMapper.restaurantToResponse(any(Restaurant.class)))
-                .thenReturn(validResponse);
-        doNothing().when(restaurantServicePort).saveRestaurant(any(Restaurant.class), eq(validAdminId));
-
-        // When & Then
-        mockMvc.perform(post("/restaurantes")
-                        .header("X-Admin-Id", validAdminId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(validRequest)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.nombre").value("Pizza Palace"))
-                .andExpect(jsonPath("$.nit").value("987654321"))
-                .andExpect(jsonPath("$.idPropietario").value(3L));
-
-        verify(restaurantRequestMapper).addRequestToRestaurant(any(AddRestaurantRequest.class));
-        verify(restaurantServicePort).saveRestaurant(any(Restaurant.class), eq(validAdminId));
-        verify(restaurantResponseMapper).restaurantToResponse(any(Restaurant.class));
-    }
-
-    @Test
-    void shouldPassCorrectAdminIdToService() throws Exception {
+    void createRestaurant_WhenMockingDependencies_ShouldInteractCorrectly() {
         // Given
-        Long specificAdminId = 7L;
-        when(restaurantRequestMapper.addRequestToRestaurant(any(AddRestaurantRequest.class)))
-                .thenReturn(restaurant);
-        when(restaurantResponseMapper.restaurantToResponse(any(Restaurant.class)))
-                .thenReturn(restaurantResponse);
-        doNothing().when(restaurantServicePort).saveRestaurant(any(Restaurant.class), eq(specificAdminId));
+        when(authentication.getName()).thenReturn("1");
+        when(restaurantRequestMapper.addRequestToRestaurant(any(AddRestaurantRequest.class))).thenReturn(restaurant);
+        when(restaurantResponseMapper.restaurantToResponse(any(Restaurant.class))).thenReturn(restaurantResponse);
 
-        // When & Then
-        mockMvc.perform(post("/restaurantes")
-                        .header("X-Admin-Id", specificAdminId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isCreated());
+        // When
+        controller.createRestaurant(addRestaurantRequest, authentication);
 
-        // Verificar que se pasó el ID correcto del administrador
-        verify(restaurantServicePort).saveRestaurant(any(Restaurant.class), eq(specificAdminId));
+        // Then
+        verify(authentication).getName();
+        verify(restaurantRequestMapper).addRequestToRestaurant(addRestaurantRequest);
+        verify(restaurantServicePort).saveRestaurant(restaurant, 1L);
+        verify(restaurantResponseMapper).restaurantToResponse(restaurant);
+        verifyNoMoreInteractions(restaurantRequestMapper, restaurantServicePort, restaurantResponseMapper);
     }
 
     @Test
-    void shouldAcceptValidTelefonoWithPlus() throws Exception {
+    void createRestaurant_WhenValidExecution_ShouldReturnCorrectResponseEntity() {
         // Given
-        AddRestaurantRequest requestWithPlus = new AddRestaurantRequest(
-                "Burger King",
-                "555666777",
-                "Avenida Principal #100-200",
-                "+573001112233",
-                "https://burgerking.com/logo.png",
-                4L
-        );
+        when(authentication.getName()).thenReturn("1");
+        when(restaurantRequestMapper.addRequestToRestaurant(any(AddRestaurantRequest.class))).thenReturn(restaurant);
+        doNothing().when(restaurantServicePort).saveRestaurant(any(Restaurant.class), anyLong());
+        when(restaurantResponseMapper.restaurantToResponse(any(Restaurant.class))).thenReturn(restaurantResponse);
 
-        Restaurant restaurantWithPlus = new Restaurant();
-        restaurantWithPlus.setNombre("Burger King");
-        restaurantWithPlus.setNit("555666777");
-        restaurantWithPlus.setDireccion("Avenida Principal #100-200");
-        restaurantWithPlus.setTelefono("+573001112233");
-        restaurantWithPlus.setUrlLogo("https://burgerking.com/logo.png");
-        restaurantWithPlus.setIdPropietario(4L);
+        // When
+        ResponseEntity<RestaurantResponse> response = controller.createRestaurant(addRestaurantRequest, authentication);
 
-        RestaurantResponse responseWithPlus = new RestaurantResponse();
-        responseWithPlus.setNombre("Burger King");
-        responseWithPlus.setTelefono("+573001112233");
-
-        when(restaurantRequestMapper.addRequestToRestaurant(any(AddRestaurantRequest.class)))
-                .thenReturn(restaurantWithPlus);
-        when(restaurantResponseMapper.restaurantToResponse(any(Restaurant.class)))
-                .thenReturn(responseWithPlus);
-        doNothing().when(restaurantServicePort).saveRestaurant(any(Restaurant.class), eq(validAdminId));
-
-        // When & Then
-        mockMvc.perform(post("/restaurantes")
-                        .header("X-Admin-Id", validAdminId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestWithPlus)))
-                .andExpect(status().isCreated());
-
-        verify(restaurantRequestMapper).addRequestToRestaurant(any(AddRestaurantRequest.class));
-        verify(restaurantServicePort).saveRestaurant(any(Restaurant.class), eq(validAdminId));
-        verify(restaurantResponseMapper).restaurantToResponse(any(Restaurant.class));
+        // Then
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(restaurantResponse, response.getBody());
+        assertEquals(201, response.getStatusCodeValue());
+        assertNotNull(response.getBody());
     }
 
     @Test
-    void shouldAcceptValidNitOnlyNumbers() throws Exception {
+    void createRestaurant_WhenAuthenticationProvidesDifferentUserId_ShouldUseCorrectAdminId() {
         // Given
-        addRestaurantRequest.setNit("999888777666");
+        when(authentication.getName()).thenReturn("5");
+        when(restaurantRequestMapper.addRequestToRestaurant(any(AddRestaurantRequest.class))).thenReturn(restaurant);
+        doNothing().when(restaurantServicePort).saveRestaurant(any(Restaurant.class), eq(5L));
+        when(restaurantResponseMapper.restaurantToResponse(any(Restaurant.class))).thenReturn(restaurantResponse);
 
-        when(restaurantRequestMapper.addRequestToRestaurant(any(AddRestaurantRequest.class)))
-                .thenReturn(restaurant);
-        when(restaurantResponseMapper.restaurantToResponse(any(Restaurant.class)))
-                .thenReturn(restaurantResponse);
-        doNothing().when(restaurantServicePort).saveRestaurant(any(Restaurant.class), eq(validAdminId));
+        // When
+        ResponseEntity<RestaurantResponse> result = controller.createRestaurant(addRestaurantRequest, authentication);
 
-        // When & Then
-        mockMvc.perform(post("/restaurantes")
-                        .header("X-Admin-Id", validAdminId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(addRestaurantRequest)))
-                .andExpect(status().isCreated());
+        // Then
+        assertEquals(HttpStatus.CREATED, result.getStatusCode());
+        verify(restaurantServicePort).saveRestaurant(restaurant, 5L);
+        verify(authentication, times(1)).getName();
+    }
 
-        verify(restaurantServicePort).saveRestaurant(any(Restaurant.class), eq(validAdminId));
+    @Test
+    void createRestaurant_WhenResponseMapperCalled_ShouldReturnMappedResponse() {
+        // Given
+        when(authentication.getName()).thenReturn("1");
+        when(restaurantRequestMapper.addRequestToRestaurant(any(AddRestaurantRequest.class))).thenReturn(restaurant);
+        doNothing().when(restaurantServicePort).saveRestaurant(any(Restaurant.class), anyLong());
+        when(restaurantResponseMapper.restaurantToResponse(restaurant)).thenReturn(restaurantResponse);
+
+        // When
+        ResponseEntity<RestaurantResponse> result = controller.createRestaurant(addRestaurantRequest, authentication);
+
+        // Then
+        assertEquals(restaurantResponse, result.getBody());
+        verify(restaurantResponseMapper, times(1)).restaurantToResponse(restaurant);
     }
 }

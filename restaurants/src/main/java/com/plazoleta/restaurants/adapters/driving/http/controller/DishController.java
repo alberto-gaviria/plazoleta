@@ -13,9 +13,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -39,17 +40,19 @@ public class DishController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Plato creado exitosamente"),
             @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autorizado - Token requerido"),
             @ApiResponse(responseCode = "403", description = "No autorizado para crear platos en este restaurante"),
             @ApiResponse(responseCode = "404", description = "Restaurante no encontrado"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @PostMapping
+    @PreAuthorize("hasAuthority('PROPIETARIO')")
     public ResponseEntity<DishResponse> createDish(
-            @Parameter(description = "ID del usuario que crea el plato", required = true)
-            @RequestHeader("X-User-Id") @NotNull Long currentUserId,
             @Parameter(description = "Datos del plato a crear", required = true)
-            @Valid @RequestBody AddDishRequest request) {
+            @Valid @RequestBody AddDishRequest request,
+            Authentication authentication) {
 
+        Long currentUserId = Long.valueOf(authentication.getName());
         Dish dish = dishRequestMapper.addRequestToDish(request);
         dishServicePort.saveDish(dish, currentUserId);
 
@@ -61,19 +64,21 @@ public class DishController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Plato modificado exitosamente"),
             @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autorizado - Token requerido"),
             @ApiResponse(responseCode = "403", description = "No autorizado para modificar este plato"),
             @ApiResponse(responseCode = "404", description = "Plato no encontrado"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @PutMapping("/{dishId}")
+    @PreAuthorize("hasAuthority('PROPIETARIO')")
     public ResponseEntity<DishResponse> updateDish(
             @Parameter(description = "ID del plato a modificar", required = true)
             @PathVariable Long dishId,
-            @Parameter(description = "ID del usuario que modifica el plato", required = true)
-            @RequestHeader("X-User-Id") @NotNull Long currentUserId,
             @Parameter(description = "Datos a actualizar del plato", required = true)
-            @Valid @RequestBody UpdateDishRequest request) {
+            @Valid @RequestBody UpdateDishRequest request,
+            Authentication authentication) {
 
+        Long currentUserId = Long.valueOf(authentication.getName());
         Dish updatedDish = dishServicePort.updateDish(dishId, request.getPrecio(), request.getDescripcion(), currentUserId);
         DishResponse response = dishResponseMapper.dishToResponse(updatedDish);
         return ResponseEntity.ok(response);

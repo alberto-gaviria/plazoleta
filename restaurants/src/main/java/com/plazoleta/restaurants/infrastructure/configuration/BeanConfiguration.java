@@ -10,7 +10,6 @@ import com.plazoleta.restaurants.domain.api.IDishServicePort;
 import com.plazoleta.restaurants.domain.api.IRestaurantServicePort;
 import com.plazoleta.restaurants.domain.spi.IDishPersistencePort;
 import com.plazoleta.restaurants.domain.spi.IRestaurantPersistencePort;
-import com.plazoleta.restaurants.domain.spi.IUserValidationPort;
 import com.plazoleta.restaurants.domain.usecase.DishUseCase;
 import com.plazoleta.restaurants.domain.usecase.RestaurantUseCase;
 import org.springframework.context.annotation.Bean;
@@ -28,9 +27,8 @@ public class BeanConfiguration {
 
     @Bean
     public IRestaurantServicePort restaurantServicePort(
-            IRestaurantPersistencePort restaurantPersistencePort,
-            IUserValidationPort userValidationPort) {
-        return new RestaurantUseCase(restaurantPersistencePort, userValidationPort);
+            IRestaurantPersistencePort restaurantPersistencePort) {
+        return new RestaurantUseCase(restaurantPersistencePort);
     }
 
     @Bean
@@ -43,8 +41,7 @@ public class BeanConfiguration {
 
     @Bean
     public IDishServicePort dishServicePort(
-            IDishPersistencePort dishPersistencePort,
-            IUserValidationPort userValidationPort) {
-        return new DishUseCase(dishPersistencePort, userValidationPort);
+            IDishPersistencePort dishPersistencePort) {
+        return new DishUseCase(dishPersistencePort);
     }
 }

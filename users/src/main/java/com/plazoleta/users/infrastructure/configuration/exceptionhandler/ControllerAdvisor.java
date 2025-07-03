@@ -2,9 +2,12 @@ package com.plazoleta.users.infrastructure.configuration.exceptionhandler;
 
 import com.plazoleta.users.adapters.driven.mysql.exception.*;
 import com.plazoleta.users.domain.util.exceptions.InvalidUsuarioException;
+import com.plazoleta.users.domain.util.exceptions.InvalidCredentialsException;
+import com.plazoleta.users.domain.util.exceptions.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -70,6 +73,38 @@ public class ControllerAdvisor {
                 LocalDateTime.now()));
     }
 
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleUserNotFoundException(UserNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ExceptionResponse(
+                ex.getMessage(),
+                HttpStatus.NOT_FOUND.toString(),
+                LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(RoleNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleRoleNotFoundException(RoleNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ExceptionResponse(
+                ex.getMessage(),
+                HttpStatus.NOT_FOUND.toString(),
+                LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ExceptionResponse> handleInvalidCredentialsException(InvalidCredentialsException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ExceptionResponse(
+                ex.getMessage(),
+                HttpStatus.UNAUTHORIZED.toString(),
+                LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ExceptionResponse> handleAccessDeniedException(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ExceptionResponse(
+                "Acceso denegado - No tiene permisos para realizar esta acción",
+                HttpStatus.FORBIDDEN.toString(),
+                LocalDateTime.now()));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ExceptionResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
         return ResponseEntity.badRequest().body(new ExceptionResponse(
@@ -83,14 +118,6 @@ public class ControllerAdvisor {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ExceptionResponse(
                 ex.getMessage(),
                 HttpStatus.INTERNAL_SERVER_ERROR.toString(),
-                LocalDateTime.now()));
-    }
-
-    @ExceptionHandler(RoleNotFoundException.class)
-    public ResponseEntity<ExceptionResponse> handleRoleNotFoundException(RoleNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ExceptionResponse(
-                ex.getMessage(),
-                HttpStatus.NOT_FOUND.toString(),
                 LocalDateTime.now()));
     }
 }

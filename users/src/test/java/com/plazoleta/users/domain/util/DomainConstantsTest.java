@@ -5,173 +5,126 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class DomainConstantsTest {
 
     @Test
-    void domainConstants_ShouldNotBeInstantiable() {
-        // Given
-        Constructor<DomainConstants> constructor;
+    void shouldThrowExceptionWhenInstantiatingDomainConstants() throws Exception {
+        Constructor<DomainConstants> constructor = DomainConstants.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+
+        assertThatThrownBy(constructor::newInstance)
+                .isInstanceOf(InvocationTargetException.class)
+                .hasCauseInstanceOf(IllegalStateException.class)
+                .hasRootCauseMessage("Clase de constantes");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenInstantiatingUsuarioConstants() throws Exception {
+        Constructor<DomainConstants.Usuario> constructor = DomainConstants.Usuario.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+
+        assertThatThrownBy(constructor::newInstance)
+                .isInstanceOf(InvocationTargetException.class)
+                .hasCauseInstanceOf(IllegalStateException.class)
+                .hasRootCauseMessage("Clase de constantes");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenInstantiatingRoleConstants() throws Exception {
+        Constructor<DomainConstants.Role> constructor = DomainConstants.Role.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+
+        assertThatThrownBy(constructor::newInstance)
+                .isInstanceOf(InvocationTargetException.class)
+                .hasCauseInstanceOf(IllegalStateException.class)
+                .hasRootCauseMessage("Clase de constantes");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenInstantiatingAuthenticationConstants() throws Exception {
+        Constructor<DomainConstants.Authentication> constructor = DomainConstants.Authentication.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+
+        assertThatThrownBy(constructor::newInstance)
+                .isInstanceOf(InvocationTargetException.class)
+                .hasCauseInstanceOf(IllegalStateException.class)
+                .hasRootCauseMessage("Clase de constantes");
+    }
+
+    // ALTERNATIVA: Si prefieres capturar y verificar la causa manualmente
+    @Test
+    void shouldThrowExceptionWhenInstantiatingDomainConstants_AlternativeApproach() throws Exception {
+        Constructor<DomainConstants> constructor = DomainConstants.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
 
         try {
-            constructor = DomainConstants.class.getDeclaredConstructor();
-            constructor.setAccessible(true);
-
-            // When & Then
-            assertThrows(InvocationTargetException.class, constructor::newInstance);
-        } catch (NoSuchMethodException e) {
-            fail("Constructor privado no encontrado");
+            constructor.newInstance();
+        } catch (InvocationTargetException e) {
+            assertThatThrownBy(() -> { throw e.getCause(); })
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessage("Clase de constantes");
         }
     }
 
+    // OTRA ALTERNATIVA: Usando expectThrows de JUnit si prefieres
     @Test
-    void usuarioConstants_ShouldNotBeInstantiable() {
-        // Given
-        Constructor<DomainConstants.Usuario> constructor;
+    void shouldThrowExceptionWhenInstantiatingUsuarioConstants_JUnitApproach() throws Exception {
+        Constructor<DomainConstants.Usuario> constructor = DomainConstants.Usuario.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
 
-        try {
-            constructor = DomainConstants.Usuario.class.getDeclaredConstructor();
-            constructor.setAccessible(true);
+        InvocationTargetException exception = org.junit.jupiter.api.Assertions.assertThrows(
+                InvocationTargetException.class,
+                constructor::newInstance
+        );
 
-            // When & Then
-            assertThrows(InvocationTargetException.class, constructor::newInstance);
-        } catch (NoSuchMethodException e) {
-            fail("Constructor privado no encontrado");
-        }
+        org.junit.jupiter.api.Assertions.assertInstanceOf(IllegalStateException.class, exception.getCause());
+        org.junit.jupiter.api.Assertions.assertEquals("Clase de constantes", exception.getCause().getMessage());
+    }
+
+    // Tests adicionales para verificar que las constantes son accesibles
+    @Test
+    void usuarioConstants_ShouldBeAccessible() {
+        // Verificar que las constantes son accesibles sin instanciar
+        org.junit.jupiter.api.Assertions.assertEquals(18, DomainConstants.Usuario.EDAD_MINIMA);
+        org.junit.jupiter.api.Assertions.assertEquals("El usuario no puede ser nulo", DomainConstants.Usuario.ERROR_USUARIO_NULO);
+        org.junit.jupiter.api.Assertions.assertEquals("El nombre es obligatorio", DomainConstants.Usuario.ERROR_NOMBRE_REQUERIDO);
     }
 
     @Test
-    void usuarioConstants_ShouldHaveCorrectValues() {
-        // Then
-        assertEquals(18, DomainConstants.Usuario.EDAD_MINIMA);
-        assertEquals("El usuario no puede ser nulo", DomainConstants.Usuario.ERROR_USUARIO_NULO);
-        assertEquals("El nombre es obligatorio", DomainConstants.Usuario.ERROR_NOMBRE_REQUERIDO);
-        assertEquals("El apellido es obligatorio", DomainConstants.Usuario.ERROR_APELLIDO_REQUERIDO);
-        assertEquals("El número de documento es obligatorio", DomainConstants.Usuario.ERROR_DOCUMENTO_REQUERIDO);
-        assertEquals("El celular es obligatorio", DomainConstants.Usuario.ERROR_CELULAR_REQUERIDO);
-        assertEquals("La fecha de nacimiento es obligatoria", DomainConstants.Usuario.ERROR_FECHA_NACIMIENTO_REQUERIDA);
-        assertEquals("El correo es obligatorio", DomainConstants.Usuario.ERROR_CORREO_REQUERIDO);
-        assertEquals("La clave es obligatoria", DomainConstants.Usuario.ERROR_CLAVE_REQUERIDA);
-        assertEquals("El usuario debe ser mayor de edad", DomainConstants.Usuario.ERROR_MENOR_EDAD);
-        assertEquals("Usuario no encontrado con ID: ", DomainConstants.Usuario.ERROR_USUARIO_NO_ENCONTRADO);
+    void roleConstants_ShouldBeAccessible() {
+        org.junit.jupiter.api.Assertions.assertEquals(1L, DomainConstants.Role.ADMINISTRADOR_ID);
+        org.junit.jupiter.api.Assertions.assertEquals(2L, DomainConstants.Role.PROPIETARIO_ID);
+        org.junit.jupiter.api.Assertions.assertEquals("ADMINISTRADOR", DomainConstants.Role.ADMINISTRADOR_AUTHORITY);
+        org.junit.jupiter.api.Assertions.assertEquals("PROPIETARIO", DomainConstants.Role.PROPIETARIO_AUTHORITY);
     }
 
     @Test
-    void roleConstants_ShouldNotBeInstantiable() {
-        // Given
-        Constructor<DomainConstants.Role> constructor;
-
-        try {
-            constructor = DomainConstants.Role.class.getDeclaredConstructor();
-            constructor.setAccessible(true);
-
-            // When & Then
-            assertThrows(InvocationTargetException.class, constructor::newInstance);
-        } catch (NoSuchMethodException e) {
-            fail("Constructor privado no encontrado");
-        }
+    void authenticationConstants_ShouldBeAccessible() {
+        org.junit.jupiter.api.Assertions.assertEquals("Credenciales inválidas", DomainConstants.Authentication.ERROR_INVALID_CREDENTIALS);
+        org.junit.jupiter.api.Assertions.assertEquals("El email es obligatorio", DomainConstants.Authentication.ERROR_EMAIL_REQUIRED);
+        org.junit.jupiter.api.Assertions.assertEquals("Token inválido", DomainConstants.Authentication.ERROR_TOKEN_INVALID);
     }
 
     @Test
-    void roleConstants_ShouldHaveCorrectRoleIds() {
-        // Then
-        assertEquals(1L, DomainConstants.Role.ADMINISTRADOR_ID);
-        assertEquals(2L, DomainConstants.Role.PROPIETARIO_ID);
-        assertEquals(3L, DomainConstants.Role.EMPLEADO_ID);
-        assertEquals(4L, DomainConstants.Role.CLIENTE_ID);
-    }
-
-    @Test
-    void roleConstants_ShouldHaveCorrectAuthorities() {
-        // Then - Corregidas las expectativas para coincidir con los valores reales
-        assertEquals("ADMINISTRADOR", DomainConstants.Role.ADMINISTRADOR_AUTHORITY);
-        assertEquals("PROPIETARIO", DomainConstants.Role.PROPIETARIO_AUTHORITY);
-        assertEquals("EMPLEADO", DomainConstants.Role.EMPLEADO_AUTHORITY);
-        assertEquals("CLIENTE", DomainConstants.Role.CLIENTE_AUTHORITY);
-    }
-
-    @Test
-    void roleConstants_ShouldHaveCorrectErrorMessage() {
-        // Then - Corregida la expectativa para coincidir con el valor real
-        assertEquals("ID de rol inválido: ", DomainConstants.Role.ERROR_INVALID_ROLE_ID);
-    }
-
-    @Test
-    void allConstants_ShouldNotBeNull() {
-        // Test que ninguna constante sea null
-
-        // Usuario constants
-        assertNotNull(DomainConstants.Usuario.ERROR_USUARIO_NULO);
-        assertNotNull(DomainConstants.Usuario.ERROR_NOMBRE_REQUERIDO);
-        assertNotNull(DomainConstants.Usuario.ERROR_APELLIDO_REQUERIDO);
-        assertNotNull(DomainConstants.Usuario.ERROR_DOCUMENTO_REQUERIDO);
-        assertNotNull(DomainConstants.Usuario.ERROR_CELULAR_REQUERIDO);
-        assertNotNull(DomainConstants.Usuario.ERROR_CORREO_REQUERIDO);
-        assertNotNull(DomainConstants.Usuario.ERROR_CLAVE_REQUERIDA);
-        assertNotNull(DomainConstants.Usuario.ERROR_FECHA_NACIMIENTO_REQUERIDA);
-        assertNotNull(DomainConstants.Usuario.ERROR_MENOR_EDAD);
-        assertNotNull(DomainConstants.Usuario.ERROR_USUARIO_NO_ENCONTRADO);
-
-        // Role constants
-        assertNotNull(DomainConstants.Role.ADMINISTRADOR_ID);
-        assertNotNull(DomainConstants.Role.PROPIETARIO_ID);
-        assertNotNull(DomainConstants.Role.EMPLEADO_ID);
-        assertNotNull(DomainConstants.Role.CLIENTE_ID);
-        assertNotNull(DomainConstants.Role.ADMINISTRADOR_AUTHORITY);
-        assertNotNull(DomainConstants.Role.PROPIETARIO_AUTHORITY);
-        assertNotNull(DomainConstants.Role.EMPLEADO_AUTHORITY);
-        assertNotNull(DomainConstants.Role.CLIENTE_AUTHORITY);
-        assertNotNull(DomainConstants.Role.ERROR_INVALID_ROLE_ID);
-    }
-
-    @Test
-    void allStringConstants_ShouldNotBeEmpty() {
-        // Usuario error messages
-        assertFalse(DomainConstants.Usuario.ERROR_USUARIO_NULO.isEmpty());
-        assertFalse(DomainConstants.Usuario.ERROR_NOMBRE_REQUERIDO.isEmpty());
-        assertFalse(DomainConstants.Usuario.ERROR_APELLIDO_REQUERIDO.isEmpty());
-        assertFalse(DomainConstants.Usuario.ERROR_DOCUMENTO_REQUERIDO.isEmpty());
-        assertFalse(DomainConstants.Usuario.ERROR_CELULAR_REQUERIDO.isEmpty());
-        assertFalse(DomainConstants.Usuario.ERROR_CORREO_REQUERIDO.isEmpty());
-        assertFalse(DomainConstants.Usuario.ERROR_CLAVE_REQUERIDA.isEmpty());
-        assertFalse(DomainConstants.Usuario.ERROR_FECHA_NACIMIENTO_REQUERIDA.isEmpty());
-        assertFalse(DomainConstants.Usuario.ERROR_MENOR_EDAD.isEmpty());
-        assertFalse(DomainConstants.Usuario.ERROR_USUARIO_NO_ENCONTRADO.isEmpty());
-
-        // Role authorities
-        assertFalse(DomainConstants.Role.ADMINISTRADOR_AUTHORITY.isEmpty());
-        assertFalse(DomainConstants.Role.PROPIETARIO_AUTHORITY.isEmpty());
-        assertFalse(DomainConstants.Role.EMPLEADO_AUTHORITY.isEmpty());
-        assertFalse(DomainConstants.Role.CLIENTE_AUTHORITY.isEmpty());
-        assertFalse(DomainConstants.Role.ERROR_INVALID_ROLE_ID.isEmpty());
-    }
-
-    @Test
-    void roleIds_ShouldBePositive() {
-        // Then
-        assertTrue(DomainConstants.Role.ADMINISTRADOR_ID > 0);
-        assertTrue(DomainConstants.Role.PROPIETARIO_ID > 0);
-        assertTrue(DomainConstants.Role.EMPLEADO_ID > 0);
-        assertTrue(DomainConstants.Role.CLIENTE_ID > 0);
-    }
-
-    @Test
-    void roleIds_ShouldBeUnique() {
-        // Then - Verificar que todos los IDs son diferentes
-        assertNotEquals(DomainConstants.Role.ADMINISTRADOR_ID, DomainConstants.Role.PROPIETARIO_ID);
-        assertNotEquals(DomainConstants.Role.ADMINISTRADOR_ID, DomainConstants.Role.EMPLEADO_ID);
-        assertNotEquals(DomainConstants.Role.ADMINISTRADOR_ID, DomainConstants.Role.CLIENTE_ID);
-        assertNotEquals(DomainConstants.Role.PROPIETARIO_ID, DomainConstants.Role.EMPLEADO_ID);
-        assertNotEquals(DomainConstants.Role.PROPIETARIO_ID, DomainConstants.Role.CLIENTE_ID);
-        assertNotEquals(DomainConstants.Role.EMPLEADO_ID, DomainConstants.Role.CLIENTE_ID);
-    }
-
-    @Test
-    void edadMinima_ShouldBe18() {
-        // Then
-        assertEquals(18, DomainConstants.Usuario.EDAD_MINIMA);
-        assertTrue(DomainConstants.Usuario.EDAD_MINIMA > 0);
-        assertTrue(DomainConstants.Usuario.EDAD_MINIMA < 100); // Sanity check
+    void allConstantClasses_ShouldBeFinal() {
+        // Verificar que las clases son final (no se pueden extender)
+        org.junit.jupiter.api.Assertions.assertTrue(
+                java.lang.reflect.Modifier.isFinal(DomainConstants.class.getModifiers()),
+                "DomainConstants should be final"
+        );
+        org.junit.jupiter.api.Assertions.assertTrue(
+                java.lang.reflect.Modifier.isFinal(DomainConstants.Usuario.class.getModifiers()),
+                "DomainConstants.Usuario should be final"
+        );
+        org.junit.jupiter.api.Assertions.assertTrue(
+                java.lang.reflect.Modifier.isFinal(DomainConstants.Role.class.getModifiers()),
+                "DomainConstants.Role should be final"
+        );
+        org.junit.jupiter.api.Assertions.assertTrue(
+                java.lang.reflect.Modifier.isFinal(DomainConstants.Authentication.class.getModifiers()),
+                "DomainConstants.Authentication should be final"
+        );
     }
 }

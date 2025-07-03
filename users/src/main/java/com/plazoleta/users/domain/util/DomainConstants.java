@@ -42,4 +42,17 @@ public final class DomainConstants {
             throw new IllegalStateException("Clase de constantes");
         }
     }
+
+    public static final class Authentication {
+        public static final String ERROR_INVALID_CREDENTIALS = "Credenciales inválidas";
+        public static final String ERROR_EMAIL_REQUIRED = "El email es obligatorio";
+        public static final String ERROR_PASSWORD_REQUIRED = "La contraseña es obligatoria";
+        public static final String ERROR_TOKEN_INVALID = "Token inválido";
+        public static final String ERROR_TOKEN_EXPIRED = "Token expirado";
+        public static final String ERROR_ACCESS_DENIED = "Acceso denegado";
+
+        private Authentication() {
+            throw new IllegalStateException("Clase de constantes");
+        }
+    }
 }

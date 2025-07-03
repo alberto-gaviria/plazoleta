@@ -3,27 +3,21 @@ package com.plazoleta.restaurants.domain.usecase;
 import com.plazoleta.restaurants.domain.api.IRestaurantServicePort;
 import com.plazoleta.restaurants.domain.model.Restaurant;
 import com.plazoleta.restaurants.domain.spi.IRestaurantPersistencePort;
-import com.plazoleta.restaurants.domain.spi.IUserValidationPort;
 import com.plazoleta.restaurants.domain.util.DomainConstants;
 import com.plazoleta.restaurants.domain.util.exceptions.InvalidRestaurantException;
 
 public class RestaurantUseCase implements IRestaurantServicePort {
 
     private final IRestaurantPersistencePort restaurantPersistencePort;
-    private final IUserValidationPort userValidationPort;
 
-    public RestaurantUseCase(IRestaurantPersistencePort restaurantPersistencePort,
-                             IUserValidationPort userValidationPort) {
+    public RestaurantUseCase(IRestaurantPersistencePort restaurantPersistencePort) {
         this.restaurantPersistencePort = restaurantPersistencePort;
-        this.userValidationPort = userValidationPort;
     }
 
     @Override
     public void saveRestaurant(Restaurant restaurant, Long adminId) {
         validateRestaurant(restaurant);
         validateRestaurantBusinessRules(restaurant);
-        validateAdministrador(adminId);
-        validatePropietario(restaurant.getIdPropietario());
 
         restaurantPersistencePort.saveRestaurant(restaurant);
     }
@@ -79,30 +73,6 @@ public class RestaurantUseCase implements IRestaurantServicePort {
     private void validateTelefonoFormat(String telefono) {
         if (!telefono.matches(DomainConstants.Restaurant.TELEFONO_PATTERN)) {
             throw new InvalidRestaurantException(DomainConstants.Restaurant.ERROR_TELEFONO_FORMATO_INVALIDO);
-        }
-    }
-
-    private void validateAdministrador(Long adminId) {
-        if (adminId == null) {
-            throw new InvalidRestaurantException(DomainConstants.Restaurant.ERROR_ADMIN_ID_REQUERIDO);
-        }
-
-        if (!userValidationPort.existsUserById(adminId)) {
-            throw new InvalidRestaurantException(DomainConstants.Restaurant.ERROR_ADMINISTRADOR_NO_ENCONTRADO);
-        }
-
-        if (!userValidationPort.hasRequiredRole(adminId, DomainConstants.Restaurant.ROL_ADMINISTRADOR)) {
-            throw new InvalidRestaurantException(DomainConstants.Restaurant.ERROR_ADMINISTRADOR_NO_VALIDO);
-        }
-    }
-
-    private void validatePropietario(Long idPropietario) {
-        if (!userValidationPort.existsUserById(idPropietario)) {
-            throw new InvalidRestaurantException(DomainConstants.Restaurant.ERROR_PROPIETARIO_NO_ENCONTRADO);
-        }
-
-        if (!userValidationPort.hasRequiredRole(idPropietario, DomainConstants.Restaurant.ROL_PROPIETARIO)) {
-            throw new InvalidRestaurantException(DomainConstants.Restaurant.ERROR_PROPIETARIO_NO_VALIDO);
         }
     }
 }

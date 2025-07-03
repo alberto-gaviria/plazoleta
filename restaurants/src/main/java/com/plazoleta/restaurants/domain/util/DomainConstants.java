@@ -14,7 +14,6 @@ public final class DomainConstants {
         public static final String ROL_PROPIETARIO = "PROPIETARIO";
         public static final String ROL_ADMINISTRADOR = "ADMINISTRADOR";
 
-
         public static final Long ROL_ADMINISTRADOR_ID = 1L;
         public static final Long ROL_PROPIETARIO_ID = 2L;
 

@@ -7,14 +7,14 @@ import com.plazoleta.restaurants.adapters.driving.http.mapper.IRestaurantRespons
 import com.plazoleta.restaurants.domain.api.IRestaurantServicePort;
 import com.plazoleta.restaurants.domain.model.Restaurant;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -39,18 +39,18 @@ public class RestaurantController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Restaurante creado exitosamente"),
             @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autorizado - ID de administrador inválido"),
+            @ApiResponse(responseCode = "401", description = "No autorizado - Token requerido"),
             @ApiResponse(responseCode = "403", description = "Prohibido - Usuario no tiene permisos de administrador"),
             @ApiResponse(responseCode = "409", description = "El restaurante ya existe"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @PostMapping
+    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
     public ResponseEntity<RestaurantResponse> createRestaurant(
-            @Parameter(description = "ID del administrador que crea el restaurante", required = true)
-            @RequestHeader("X-Admin-Id") @NotNull Long adminId,
-            @Parameter(description = "Datos del restaurante a crear", required = true)
-            @Valid @RequestBody AddRestaurantRequest request) {
+            @Valid @RequestBody AddRestaurantRequest request,
+            Authentication authentication) {
 
+        Long adminId = Long.valueOf(authentication.getName());
         Restaurant restaurant = restaurantRequestMapper.addRequestToRestaurant(request);
         restaurantServicePort.saveRestaurant(restaurant, adminId);
 

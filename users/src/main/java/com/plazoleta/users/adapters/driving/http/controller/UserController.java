@@ -1,38 +1,28 @@
 package com.plazoleta.users.adapters.driving.http.controller;
 
-import com.plazoleta.users.adapters.driving.http.dto.request.AddUserRequest;
 import com.plazoleta.users.adapters.driving.http.dto.response.UserResponse;
-import com.plazoleta.users.adapters.driving.http.mapper.IUserRequestMapper;
 import com.plazoleta.users.adapters.driving.http.mapper.IUserResponseMapper;
-import com.plazoleta.users.domain.api.IAdminUserManagementServicePort;
 import com.plazoleta.users.domain.api.IUserQueryServicePort;
 import com.plazoleta.users.domain.model.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/usuarios")
-@Tag(name = "Usuarios", description = "API para gestión de usuarios")
+@Tag(name = "Consulta de Usuarios", description = "API para consulta de información de usuarios")
 public class UserController {
 
-    private final IAdminUserManagementServicePort adminServicePort;
     private final IUserQueryServicePort userQueryServicePort;
-    private final IUserRequestMapper userRequestMapper;
     private final IUserResponseMapper userResponseMapper;
 
-    public UserController(IAdminUserManagementServicePort adminServicePort,
-                          IUserQueryServicePort userQueryServicePort,
-                          IUserRequestMapper userRequestMapper,
+    public UserController(IUserQueryServicePort userQueryServicePort,
                           IUserResponseMapper userResponseMapper) {
-        this.adminServicePort = adminServicePort;
         this.userQueryServicePort = userQueryServicePort;
-        this.userRequestMapper = userRequestMapper;
         this.userResponseMapper = userResponseMapper;
     }
 
@@ -44,6 +34,19 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         User user = userQueryServicePort.getUserById(id);
+        UserResponse userResponse = userResponseMapper.userToDto(user);
+        return ResponseEntity.ok(userResponse);
+    }
+
+    @Operation(summary = "Obtener información del usuario autenticado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
+    })
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getCurrentUser(Authentication authentication) {
+        Long userId = Long.valueOf(authentication.getName());
+        User user = userQueryServicePort.getUserById(userId);
         UserResponse userResponse = userResponseMapper.userToDto(user);
         return ResponseEntity.ok(userResponse);
     }

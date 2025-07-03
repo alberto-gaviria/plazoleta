@@ -1,7 +1,6 @@
 package com.plazoleta.users.domain.usecase;
 
 import com.plazoleta.users.domain.api.IUserQueryServicePort;
-import com.plazoleta.users.domain.model.RoleType;
 import com.plazoleta.users.domain.model.User;
 import com.plazoleta.users.domain.spi.IUserPersistencePort;
 import com.plazoleta.users.domain.util.DomainConstants;

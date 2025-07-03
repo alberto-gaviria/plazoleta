@@ -3,7 +3,6 @@ package com.plazoleta.restaurants.domain.usecase;
 import com.plazoleta.restaurants.domain.api.IDishServicePort;
 import com.plazoleta.restaurants.domain.model.Dish;
 import com.plazoleta.restaurants.domain.spi.IDishPersistencePort;
-import com.plazoleta.restaurants.domain.spi.IUserValidationPort;
 import com.plazoleta.restaurants.domain.util.DomainConstants;
 import com.plazoleta.restaurants.domain.util.exceptions.InvalidDishException;
 
@@ -13,12 +12,9 @@ import java.util.Optional;
 public class DishUseCase implements IDishServicePort {
 
     private final IDishPersistencePort dishPersistencePort;
-    private final IUserValidationPort userValidationPort;
 
-    public DishUseCase(IDishPersistencePort dishPersistencePort,
-                       IUserValidationPort userValidationPort) {
+    public DishUseCase(IDishPersistencePort dishPersistencePort) {
         this.dishPersistencePort = dishPersistencePort;
-        this.userValidationPort = userValidationPort;
     }
 
     @Override
@@ -118,9 +114,6 @@ public class DishUseCase implements IDishServicePort {
     }
 
     private void validateOwnership(Long restaurantId, Long currentUserId) {
-        if (!userValidationPort.hasRequiredRole(currentUserId, DomainConstants.Dish.ROL_PROPIETARIO)) {
-            throw new InvalidDishException(DomainConstants.Dish.ERROR_PROPIETARIO_NO_AUTORIZADO);
-        }
 
         Long restaurantOwnerId = dishPersistencePort.getRestaurantOwnerId(restaurantId);
         if (!currentUserId.equals(restaurantOwnerId)) {

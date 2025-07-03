@@ -6,69 +6,129 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class UpdateDishRequestTest {
+@ExtendWith(MockitoExtension.class)
+class AddDishRequestTest {
 
     private Validator validator;
-    private UpdateDishRequest validRequest;
 
     @BeforeEach
     void setUp() {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
-
-        validRequest = new UpdateDishRequest(
-                BigDecimal.valueOf(25.50),
-                "Descripción válida del plato"
-        );
     }
 
     @Test
-    void constructor_WithValidParameters_ShouldCreateRequest() {
+    void constructor_WithValidParameters_ShouldCreateInstance() {
         // Given
-        BigDecimal precio = BigDecimal.valueOf(30.00);
-        String descripcion = "Nueva descripción";
+        String nombre = "Pizza Margherita";
+        BigDecimal precio = new BigDecimal("15.50");
+        String descripcion = "Deliciosa pizza italiana";
+        String urlImagen = "https://example.com/pizza.jpg";
+        Long idCategoria = 1L;
+        Long idRestaurante = 1L;
 
         // When
-        UpdateDishRequest request = new UpdateDishRequest(precio, descripcion);
+        AddDishRequest request = new AddDishRequest(nombre, precio, descripcion,
+                urlImagen, idCategoria, idRestaurante);
 
         // Then
+        assertEquals(nombre, request.getNombre());
         assertEquals(precio, request.getPrecio());
         assertEquals(descripcion, request.getDescripcion());
+        assertEquals(urlImagen, request.getUrlImagen());
+        assertEquals(idCategoria, request.getIdCategoria());
+        assertEquals(idRestaurante, request.getIdRestaurante());
     }
 
     @Test
-    void defaultConstructor_ShouldCreateRequest() {
+    void defaultConstructor_ShouldCreateInstance() {
         // When
-        UpdateDishRequest request = new UpdateDishRequest();
+        AddDishRequest request = new AddDishRequest();
 
         // Then
         assertNotNull(request);
+        assertNull(request.getNombre());
         assertNull(request.getPrecio());
         assertNull(request.getDescripcion());
+        assertNull(request.getUrlImagen());
+        assertNull(request.getIdCategoria());
+        assertNull(request.getIdRestaurante());
     }
 
     @Test
-    void validRequest_ShouldPassValidation() {
+    void validation_WithValidData_ShouldPassValidation() {
+        // Given
+        AddDishRequest request = createValidRequest();
+
         // When
-        Set<ConstraintViolation<UpdateDishRequest>> violations = validator.validate(validRequest);
+        Set<ConstraintViolation<AddDishRequest>> violations = validator.validate(request);
 
         // Then
         assertTrue(violations.isEmpty());
     }
 
     @Test
-    void precio_WhenNull_ShouldFailValidation() {
+    void validation_WithBlankNombre_ShouldFailValidation() {
         // Given
-        validRequest.setPrecio(null);
+        AddDishRequest request = createValidRequest();
+        request.setNombre("");
 
         // When
-        Set<ConstraintViolation<UpdateDishRequest>> violations = validator.validate(validRequest);
+        Set<ConstraintViolation<AddDishRequest>> violations = validator.validate(request);
+
+        // Then
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream()
+                .anyMatch(v -> v.getMessage().equals("El nombre del plato es obligatorio")));
+    }
+
+    @Test
+    void validation_WithNullNombre_ShouldFailValidation() {
+        // Given
+        AddDishRequest request = createValidRequest();
+        request.setNombre(null);
+
+        // When
+        Set<ConstraintViolation<AddDishRequest>> violations = validator.validate(request);
+
+        // Then
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream()
+                .anyMatch(v -> v.getMessage().equals("El nombre del plato es obligatorio")));
+    }
+
+    @Test
+    void validation_WithNombreTooLong_ShouldFailValidation() {
+        // Given
+        AddDishRequest request = createValidRequest();
+        String longName = "a".repeat(101); // 101 characters
+        request.setNombre(longName);
+
+        // When
+        Set<ConstraintViolation<AddDishRequest>> violations = validator.validate(request);
+
+        // Then
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream()
+                .anyMatch(v -> v.getMessage().equals("El nombre no puede exceder 100 caracteres")));
+    }
+
+    @Test
+    void validation_WithNullPrecio_ShouldFailValidation() {
+        // Given
+        AddDishRequest request = createValidRequest();
+        request.setPrecio(null);
+
+        // When
+        Set<ConstraintViolation<AddDishRequest>> violations = validator.validate(request);
 
         // Then
         assertFalse(violations.isEmpty());
@@ -77,12 +137,13 @@ class UpdateDishRequestTest {
     }
 
     @Test
-    void precio_WhenZero_ShouldFailValidation() {
+    void validation_WithZeroPrecio_ShouldFailValidation() {
         // Given
-        validRequest.setPrecio(BigDecimal.ZERO);
+        AddDishRequest request = createValidRequest();
+        request.setPrecio(BigDecimal.ZERO);
 
         // When
-        Set<ConstraintViolation<UpdateDishRequest>> violations = validator.validate(validRequest);
+        Set<ConstraintViolation<AddDishRequest>> violations = validator.validate(request);
 
         // Then
         assertFalse(violations.isEmpty());
@@ -91,12 +152,13 @@ class UpdateDishRequestTest {
     }
 
     @Test
-    void precio_WhenNegative_ShouldFailValidation() {
+    void validation_WithNegativePrecio_ShouldFailValidation() {
         // Given
-        validRequest.setPrecio(BigDecimal.valueOf(-5.00));
+        AddDishRequest request = createValidRequest();
+        request.setPrecio(new BigDecimal("-5.00"));
 
         // When
-        Set<ConstraintViolation<UpdateDishRequest>> violations = validator.validate(validRequest);
+        Set<ConstraintViolation<AddDishRequest>> violations = validator.validate(request);
 
         // Then
         assertFalse(violations.isEmpty());
@@ -105,64 +167,13 @@ class UpdateDishRequestTest {
     }
 
     @Test
-    void precio_WhenMinimumValid_ShouldPassValidation() {
+    void validation_WithBlankDescripcion_ShouldFailValidation() {
         // Given
-        validRequest.setPrecio(BigDecimal.valueOf(0.01));
+        AddDishRequest request = createValidRequest();
+        request.setDescripcion("");
 
         // When
-        Set<ConstraintViolation<UpdateDishRequest>> violations = validator.validate(validRequest);
-
-        // Then
-        assertTrue(violations.isEmpty());
-    }
-
-    @Test
-    void precio_WhenVeryLarge_ShouldPassValidation() {
-        // Given
-        validRequest.setPrecio(BigDecimal.valueOf(9999999999.99));
-
-        // When
-        Set<ConstraintViolation<UpdateDishRequest>> violations = validator.validate(validRequest);
-
-        // Then
-        assertTrue(violations.isEmpty());
-    }
-
-    @Test
-    void precio_WhenInvalidDigits_ShouldFailValidation() {
-        // Given - Más de 10 dígitos enteros
-        validRequest.setPrecio(new BigDecimal("12345678901.99"));
-
-        // When
-        Set<ConstraintViolation<UpdateDishRequest>> violations = validator.validate(validRequest);
-
-        // Then
-        assertFalse(violations.isEmpty());
-        assertTrue(violations.stream()
-                .anyMatch(v -> v.getMessage().equals("El precio debe ser un número válido")));
-    }
-
-    @Test
-    void precio_WhenTooManyDecimals_ShouldFailValidation() {
-        // Given - Más de 2 decimales
-        validRequest.setPrecio(new BigDecimal("25.123"));
-
-        // When
-        Set<ConstraintViolation<UpdateDishRequest>> violations = validator.validate(validRequest);
-
-        // Then
-        assertFalse(violations.isEmpty());
-        assertTrue(violations.stream()
-                .anyMatch(v -> v.getMessage().equals("El precio debe ser un número válido")));
-    }
-
-    @Test
-    void descripcion_WhenNull_ShouldFailValidation() {
-        // Given
-        validRequest.setDescripcion(null);
-
-        // When
-        Set<ConstraintViolation<UpdateDishRequest>> violations = validator.validate(validRequest);
+        Set<ConstraintViolation<AddDishRequest>> violations = validator.validate(request);
 
         // Then
         assertFalse(violations.isEmpty());
@@ -171,41 +182,14 @@ class UpdateDishRequestTest {
     }
 
     @Test
-    void descripcion_WhenEmpty_ShouldFailValidation() {
+    void validation_WithDescripcionTooLong_ShouldFailValidation() {
         // Given
-        validRequest.setDescripcion("");
+        AddDishRequest request = createValidRequest();
+        String longDescription = "a".repeat(501); // 501 characters
+        request.setDescripcion(longDescription);
 
         // When
-        Set<ConstraintViolation<UpdateDishRequest>> violations = validator.validate(validRequest);
-
-        // Then
-        assertFalse(violations.isEmpty());
-        assertTrue(violations.stream()
-                .anyMatch(v -> v.getMessage().equals("La descripción del plato es obligatoria")));
-    }
-
-    @Test
-    void descripcion_WhenBlank_ShouldFailValidation() {
-        // Given
-        validRequest.setDescripcion("   ");
-
-        // When
-        Set<ConstraintViolation<UpdateDishRequest>> violations = validator.validate(validRequest);
-
-        // Then
-        assertFalse(violations.isEmpty());
-        assertTrue(violations.stream()
-                .anyMatch(v -> v.getMessage().equals("La descripción del plato es obligatoria")));
-    }
-
-    @Test
-    void descripcion_WhenTooLong_ShouldFailValidation() {
-        // Given - Más de 500 caracteres
-        String longDescription = "a".repeat(501);
-        validRequest.setDescripcion(longDescription);
-
-        // When
-        Set<ConstraintViolation<UpdateDishRequest>> violations = validator.validate(validRequest);
+        Set<ConstraintViolation<AddDishRequest>> violations = validator.validate(request);
 
         // Then
         assertFalse(violations.isEmpty());
@@ -214,84 +198,127 @@ class UpdateDishRequestTest {
     }
 
     @Test
-    void descripcion_WhenMaxLength_ShouldPassValidation() {
-        // Given - Exactamente 500 caracteres
-        String maxDescription = "a".repeat(500);
-        validRequest.setDescripcion(maxDescription);
-
-        // When
-        Set<ConstraintViolation<UpdateDishRequest>> violations = validator.validate(validRequest);
-
-        // Then
-        assertTrue(violations.isEmpty());
-    }
-
-    @Test
-    void descripcion_WhenValidLength_ShouldPassValidation() {
+    void validation_WithBlankUrlImagen_ShouldFailValidation() {
         // Given
-        validRequest.setDescripcion("Descripción de longitud normal");
+        AddDishRequest request = createValidRequest();
+        request.setUrlImagen("");
 
         // When
-        Set<ConstraintViolation<UpdateDishRequest>> violations = validator.validate(validRequest);
+        Set<ConstraintViolation<AddDishRequest>> violations = validator.validate(request);
 
         // Then
-        assertTrue(violations.isEmpty());
-    }
-
-    @Test
-    void settersAndGetters_ShouldWorkCorrectly() {
-        // Given
-        UpdateDishRequest request = new UpdateDishRequest();
-        BigDecimal expectedPrecio = BigDecimal.valueOf(15.75);
-        String expectedDescripcion = "Nueva descripción para el test";
-
-        // When
-        request.setPrecio(expectedPrecio);
-        request.setDescripcion(expectedDescripcion);
-
-        // Then
-        assertEquals(expectedPrecio, request.getPrecio());
-        assertEquals(expectedDescripcion, request.getDescripcion());
-    }
-
-    @Test
-    void multipleViolations_ShouldBeReported() {
-        // Given
-        validRequest.setPrecio(null);
-        validRequest.setDescripcion(null);
-
-        // When
-        Set<ConstraintViolation<UpdateDishRequest>> violations = validator.validate(validRequest);
-
-        // Then
-        assertEquals(2, violations.size());
+        assertFalse(violations.isEmpty());
         assertTrue(violations.stream()
-                .anyMatch(v -> v.getMessage().equals("El precio del plato es obligatorio")));
-        assertTrue(violations.stream()
-                .anyMatch(v -> v.getMessage().equals("La descripción del plato es obligatoria")));
+                .anyMatch(v -> v.getMessage().equals("La URL de la imagen es obligatoria")));
     }
 
     @Test
-    void validRequest_WithSpecialCharacters_ShouldPassValidation() {
+    void validation_WithNullIdCategoria_ShouldFailValidation() {
         // Given
-        validRequest.setDescripcion("Descripción con caracteres especiales: ñáéíóú ¡¿@#$%");
+        AddDishRequest request = createValidRequest();
+        request.setIdCategoria(null);
 
         // When
-        Set<ConstraintViolation<UpdateDishRequest>> violations = validator.validate(validRequest);
+        Set<ConstraintViolation<AddDishRequest>> violations = validator.validate(request);
+
+        // Then
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream()
+                .anyMatch(v -> v.getMessage().equals("La categoría es obligatoria")));
+    }
+
+    @Test
+    void validation_WithNullIdRestaurante_ShouldFailValidation() {
+        // Given
+        AddDishRequest request = createValidRequest();
+        request.setIdRestaurante(null);
+
+        // When
+        Set<ConstraintViolation<AddDishRequest>> violations = validator.validate(request);
+
+        // Then
+        assertFalse(violations.isEmpty());
+        assertTrue(violations.stream()
+                .anyMatch(v -> v.getMessage().equals("El restaurante es obligatorio")));
+    }
+
+    @Test
+    void setters_ShouldSetValuesCorrectly() {
+        // Given
+        AddDishRequest request = new AddDishRequest();
+        String nombre = "Test Dish";
+        BigDecimal precio = new BigDecimal("10.99");
+        String descripcion = "Test Description";
+        String urlImagen = "https://test.com/image.jpg";
+        Long idCategoria = 2L;
+        Long idRestaurante = 3L;
+
+        // When
+        request.setNombre(nombre);
+        request.setPrecio(precio);
+        request.setDescripcion(descripcion);
+        request.setUrlImagen(urlImagen);
+        request.setIdCategoria(idCategoria);
+        request.setIdRestaurante(idRestaurante);
+
+        // Then
+        assertEquals(nombre, request.getNombre());
+        assertEquals(precio, request.getPrecio());
+        assertEquals(descripcion, request.getDescripcion());
+        assertEquals(urlImagen, request.getUrlImagen());
+        assertEquals(idCategoria, request.getIdCategoria());
+        assertEquals(idRestaurante, request.getIdRestaurante());
+    }
+
+    @Test
+    void validation_WithMinimumValidPrecio_ShouldPassValidation() {
+        // Given
+        AddDishRequest request = createValidRequest();
+        request.setPrecio(new BigDecimal("0.01"));
+
+        // When
+        Set<ConstraintViolation<AddDishRequest>> violations = validator.validate(request);
 
         // Then
         assertTrue(violations.isEmpty());
     }
 
     @Test
-    void precio_WithExactPrecision_ShouldPassValidation() {
-        // Given - Exactamente 10 dígitos enteros y 2 decimales
-        validRequest.setPrecio(new BigDecimal("1234567890.99"));
+    void validation_WithMaxValidNombre_ShouldPassValidation() {
+        // Given
+        AddDishRequest request = createValidRequest();
+        String maxName = "a".repeat(100); // 100 characters
+        request.setNombre(maxName);
 
         // When
-        Set<ConstraintViolation<UpdateDishRequest>> violations = validator.validate(validRequest);
+        Set<ConstraintViolation<AddDishRequest>> violations = validator.validate(request);
 
         // Then
         assertTrue(violations.isEmpty());
+    }
+
+    @Test
+    void validation_WithMaxValidDescripcion_ShouldPassValidation() {
+        // Given
+        AddDishRequest request = createValidRequest();
+        String maxDescription = "a".repeat(500); // 500 characters
+        request.setDescripcion(maxDescription);
+
+        // When
+        Set<ConstraintViolation<AddDishRequest>> violations = validator.validate(request);
+
+        // Then
+        assertTrue(violations.isEmpty());
+    }
+
+    private AddDishRequest createValidRequest() {
+        return new AddDishRequest(
+                "Pizza Margherita",
+                new BigDecimal("15.50"),
+                "Deliciosa pizza italiana con tomate y mozzarella",
+                "https://example.com/pizza.jpg",
+                1L,
+                1L
+        );
     }
 }

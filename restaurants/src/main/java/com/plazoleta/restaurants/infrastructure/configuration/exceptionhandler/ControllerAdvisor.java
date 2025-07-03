@@ -6,6 +6,7 @@ import com.plazoleta.restaurants.domain.util.exceptions.InvalidDishException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -21,7 +22,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ControllerAdvisor {
 
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ExceptionResponse> handleValidationExceptions(MethodArgumentNotValidException exception) {
         Map<String, String> errors = new HashMap<>();
@@ -34,7 +34,6 @@ public class ControllerAdvisor {
                 HttpStatus.BAD_REQUEST.toString(),
                 LocalDateTime.now()));
     }
-
 
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<ExceptionResponse> handleHandlerMethodValidationException(HandlerMethodValidationException exception) {
@@ -51,7 +50,6 @@ public class ControllerAdvisor {
                 LocalDateTime.now()));
     }
 
-
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ResponseEntity<ExceptionResponse> handleMissingRequestHeaderException(MissingRequestHeaderException exception) {
         String headerName = exception.getHeaderName();
@@ -62,7 +60,6 @@ public class ControllerAdvisor {
                 HttpStatus.BAD_REQUEST.toString(),
                 LocalDateTime.now()));
     }
-
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ExceptionResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
@@ -112,6 +109,14 @@ public class ControllerAdvisor {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ExceptionResponse(
                 ex.getMessage(),
                 HttpStatus.NOT_FOUND.toString(),
+                LocalDateTime.now()));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ExceptionResponse> handleAccessDeniedException(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ExceptionResponse(
+                "Acceso denegado - No tiene permisos para realizar esta acción",
+                HttpStatus.FORBIDDEN.toString(),
                 LocalDateTime.now()));
     }
 
