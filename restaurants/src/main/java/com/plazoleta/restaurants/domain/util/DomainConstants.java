@@ -56,6 +56,9 @@ public final class DomainConstants {
         public static final String ERROR_DISH_NO_ENCONTRADO = "No se encontró el plato especificado";
         public static final String ERROR_DISH_ID_REQUERIDO = "El ID del plato es obligatorio";
         public static final String ERROR_USUARIO_REQUERIDO = "El ID del usuario es obligatorio";
+        public static final String ERROR_ESTADO_REQUERIDO = "El estado del plato (activo/inactivo) es obligatorio";
+        public static final String ERROR_PLATO_OTRO_RESTAURANTE = "No se pueden modificar platos de otros restaurantes";
+
 
         private Dish() {
             throw new IllegalStateException("Clase de constantes");

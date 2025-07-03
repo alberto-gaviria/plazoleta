@@ -45,7 +45,6 @@ class DishUseCaseTest {
         validDish.setActivo(true);
     }
 
-    // ==================== SAVE DISH TESTS - CASOS EXITOSOS ====================
 
     @Test
     void saveDish_WhenValidDishAndAuthorizedUser_ShouldSaveDish() {
@@ -78,7 +77,6 @@ class DishUseCaseTest {
         verifyNoMoreInteractions(dishPersistencePort);
     }
 
-    // ==================== SAVE DISH TESTS - VALIDACIÓN DE DISH NULO ====================
 
     @Test
     void saveDish_WhenDishIsNull_ShouldThrowInvalidDishException() {
@@ -92,8 +90,6 @@ class DishUseCaseTest {
         assertEquals(DomainConstants.Dish.ERROR_DISH_NULO, exception.getMessage());
         verifyNoInteractions(dishPersistencePort);
     }
-
-    // ==================== SAVE DISH TESTS - VALIDACIÓN DE NOMBRE ====================
 
     @Test
     void saveDish_WhenNombreIsNull_ShouldThrowInvalidDishException() {
@@ -133,8 +129,6 @@ class DishUseCaseTest {
         assertEquals(DomainConstants.Dish.ERROR_NOMBRE_REQUERIDO, exception.getMessage());
         verifyNoInteractions(dishPersistencePort);
     }
-
-    // ==================== SAVE DISH TESTS - VALIDACIÓN DE PRECIO ====================
 
     @Test
     void saveDish_WhenPrecioIsNull_ShouldThrowInvalidDishException() {
@@ -190,8 +184,6 @@ class DishUseCaseTest {
         verify(dishPersistencePort).saveDish(validDish);
     }
 
-    // ==================== SAVE DISH TESTS - VALIDACIÓN DE DESCRIPCIÓN ====================
-
     @Test
     void saveDish_WhenDescripcionIsNull_ShouldThrowInvalidDishException() {
         // Given
@@ -231,7 +223,6 @@ class DishUseCaseTest {
         verifyNoInteractions(dishPersistencePort);
     }
 
-    // ==================== SAVE DISH TESTS - VALIDACIÓN DE URL IMAGEN ====================
 
     @Test
     void saveDish_WhenUrlImagenIsNull_ShouldThrowInvalidDishException() {
@@ -272,8 +263,6 @@ class DishUseCaseTest {
         verifyNoInteractions(dishPersistencePort);
     }
 
-    // ==================== SAVE DISH TESTS - VALIDACIÓN DE CATEGORÍA ====================
-
     @Test
     void saveDish_WhenIdCategoriaIsNull_ShouldThrowInvalidDishException() {
         // Given
@@ -287,7 +276,6 @@ class DishUseCaseTest {
         verifyNoInteractions(dishPersistencePort);
     }
 
-    // ==================== SAVE DISH TESTS - VALIDACIÓN DE RESTAURANTE ====================
 
     @Test
     void saveDish_WhenIdRestauranteIsNull_ShouldThrowInvalidDishException() {
@@ -316,7 +304,6 @@ class DishUseCaseTest {
         verifyNoMoreInteractions(dishPersistencePort);
     }
 
-    // ==================== SAVE DISH TESTS - VALIDACIÓN DE OWNERSHIP ====================
 
     @Test
     void saveDish_WhenUserIsNotRestaurantOwner_ShouldThrowInvalidDishException() {
@@ -334,8 +321,6 @@ class DishUseCaseTest {
         verify(dishPersistencePort).getRestaurantOwnerId(validDish.getIdRestaurante());
         verify(dishPersistencePort, never()).saveDish(any());
     }
-
-    // ==================== UPDATE DISH TESTS - CASOS EXITOSOS ====================
 
     @Test
     void updateDish_WhenValidParametersAndAuthorizedUser_ShouldUpdateAndReturnDish() {
@@ -398,8 +383,6 @@ class DishUseCaseTest {
         // Then
         verify(dishPersistencePort, times(1)).updateDish(existingDish);
     }
-
-    // ==================== UPDATE DISH TESTS - VALIDACIÓN DE PARÁMETROS ====================
 
     @Test
     void updateDish_WhenDishIdIsNull_ShouldThrowInvalidDishException() {
@@ -492,8 +475,6 @@ class DishUseCaseTest {
         verifyNoInteractions(dishPersistencePort);
     }
 
-    // ==================== UPDATE DISH TESTS - DISH NO ENCONTRADO ====================
-
     @Test
     void updateDish_WhenDishDoesNotExist_ShouldThrowInvalidDishException() {
         // Given
@@ -511,8 +492,6 @@ class DishUseCaseTest {
         verify(dishPersistencePort).findDishById(dishId);
         verifyNoMoreInteractions(dishPersistencePort);
     }
-
-    // ==================== UPDATE DISH TESTS - VALIDACIÓN DE PRECIO ====================
 
     @Test
     void updateDish_WhenPrecioIsZero_ShouldThrowInvalidDishException() {
@@ -591,8 +570,6 @@ class DishUseCaseTest {
         verify(dishPersistencePort).updateDish(result);
     }
 
-    // ==================== UPDATE DISH TESTS - VALIDACIÓN DE OWNERSHIP ====================
-
     @Test
     void updateDish_WhenUserIsNotRestaurantOwner_ShouldThrowInvalidDishException() {
         // Given
@@ -620,8 +597,6 @@ class DishUseCaseTest {
         verify(dishPersistencePort).getRestaurantOwnerId(restaurantId);
         verify(dishPersistencePort, never()).updateDish(any());
     }
-
-    // ==================== TESTS ADICIONALES DE COBERTURA ====================
 
     @Test
     void saveDish_WhenMultipleValidDishes_ShouldSaveAll() {
@@ -756,12 +731,6 @@ class DishUseCaseTest {
         dishUseCase.saveDish(validDish, currentUserId);
 
         // Then
-        // Verificar que las validaciones se ejecutan en el orden correcto
-        // 1. validateDish (incluye validaciones básicas)
-        // 2. validateDishBusinessRules (precio positivo)
-        // 3. validateRestaurantExists
-        // 4. validateOwnership
-        // 5. saveDish
         verify(dishPersistencePort).existsRestaurantById(validDish.getIdRestaurante());
         verify(dishPersistencePort).getRestaurantOwnerId(validDish.getIdRestaurante());
         verify(dishPersistencePort).saveDish(validDish);
@@ -788,16 +757,432 @@ class DishUseCaseTest {
         dishUseCase.updateDish(dishId, newPrice, newDescription, currentUserId);
 
         // Then
-        // Verificar que las validaciones se ejecutan en el orden correcto
-        // 1. validateUpdateParameters
-        // 2. findDishById
-        // 3. getDishRestaurantId
-        // 4. validateOwnership
-        // 5. validatePrecioPositivo
-        // 6. updateDish
+
         verify(dishPersistencePort).findDishById(dishId);
         verify(dishPersistencePort).getDishRestaurantId(dishId);
         verify(dishPersistencePort).getRestaurantOwnerId(restaurantId);
         verify(dishPersistencePort).updateDish(existingDish);
+    }
+
+    @Test
+    void toggleDishStatus_WhenValidParametersAndAuthorizedUser_ShouldToggleAndReturnDish() {
+        // Given
+        Long dishId = 1L;
+        Boolean newStatus = false;
+        Long restaurantId = 1L;
+
+        Dish existingDish = new Dish();
+        existingDish.setId(dishId);
+        existingDish.setNombre("Pizza Margherita");
+        existingDish.setPrecio(BigDecimal.valueOf(25.50));
+        existingDish.setDescripcion("Pizza deliciosa");
+        existingDish.setUrlImagen("https://example.com/pizza.jpg");
+        existingDish.setIdCategoria(2L);
+        existingDish.setIdRestaurante(restaurantId);
+        existingDish.setActivo(true);
+
+        when(dishPersistencePort.findDishById(dishId)).thenReturn(Optional.of(existingDish));
+        when(dishPersistencePort.getDishRestaurantId(dishId)).thenReturn(restaurantId);
+        when(dishPersistencePort.getRestaurantOwnerId(restaurantId)).thenReturn(restaurantOwnerId);
+        doNothing().when(dishPersistencePort).updateDish(existingDish);
+
+        // When
+        Dish result = dishUseCase.toggleDishStatus(dishId, newStatus, currentUserId);
+
+        // Then
+        assertEquals(newStatus, result.getActivo());
+        assertEquals(dishId, result.getId());
+        assertEquals("Pizza Margherita", result.getNombre()); // No debe cambiar
+
+        verify(dishPersistencePort).findDishById(dishId);
+        verify(dishPersistencePort).getDishRestaurantId(dishId);
+        verify(dishPersistencePort).getRestaurantOwnerId(restaurantId);
+        verify(dishPersistencePort).updateDish(result);
+    }
+
+    @Test
+    void toggleDishStatus_WhenAllValidationsPass_ShouldCallUpdateExactlyOnce() {
+        // Given
+        Long dishId = 1L;
+        Boolean newStatus = true;
+        Long restaurantId = 1L;
+
+        Dish existingDish = new Dish();
+        existingDish.setId(dishId);
+        existingDish.setIdRestaurante(restaurantId);
+        existingDish.setActivo(false);
+
+        when(dishPersistencePort.findDishById(dishId)).thenReturn(Optional.of(existingDish));
+        when(dishPersistencePort.getDishRestaurantId(dishId)).thenReturn(restaurantId);
+        when(dishPersistencePort.getRestaurantOwnerId(restaurantId)).thenReturn(restaurantOwnerId);
+        doNothing().when(dishPersistencePort).updateDish(existingDish);
+
+        // When
+        dishUseCase.toggleDishStatus(dishId, newStatus, currentUserId);
+
+        // Then
+        verify(dishPersistencePort, times(1)).updateDish(existingDish);
+    }
+
+    @Test
+    void toggleDishStatus_WhenDishIdIsNull_ShouldThrowInvalidDishException() {
+        // Given
+        Long dishId = null;
+        Boolean newStatus = true;
+
+        // When & Then
+        InvalidDishException exception = assertThrows(InvalidDishException.class,
+                () -> dishUseCase.toggleDishStatus(dishId, newStatus, currentUserId));
+
+        assertEquals(DomainConstants.Dish.ERROR_DISH_ID_REQUERIDO, exception.getMessage());
+        verifyNoInteractions(dishPersistencePort);
+    }
+
+    @Test
+    void toggleDishStatus_WhenCurrentUserIdIsNull_ShouldThrowInvalidDishException() {
+        // Given
+        Long dishId = 1L;
+        Boolean newStatus = true;
+        Long nullUserId = null;
+
+        // When & Then
+        InvalidDishException exception = assertThrows(InvalidDishException.class,
+                () -> dishUseCase.toggleDishStatus(dishId, newStatus, nullUserId));
+
+        assertEquals(DomainConstants.Dish.ERROR_USUARIO_REQUERIDO, exception.getMessage());
+        verifyNoInteractions(dishPersistencePort);
+    }
+
+    @Test
+    void toggleDishStatus_WhenActivoIsNull_ShouldThrowInvalidDishException() {
+        // Given
+        Long dishId = 1L;
+        Boolean nullStatus = null;
+
+        // When & Then
+        InvalidDishException exception = assertThrows(InvalidDishException.class,
+                () -> dishUseCase.toggleDishStatus(dishId, nullStatus, currentUserId));
+
+        assertEquals(DomainConstants.Dish.ERROR_ESTADO_REQUERIDO, exception.getMessage());
+        verifyNoInteractions(dishPersistencePort);
+    }
+
+    @Test
+    void toggleDishStatus_WhenDishDoesNotExist_ShouldThrowInvalidDishException() {
+        // Given
+        Long dishId = 1L;
+        Boolean newStatus = false;
+
+        when(dishPersistencePort.findDishById(dishId)).thenReturn(Optional.empty());
+
+        // When & Then
+        InvalidDishException exception = assertThrows(InvalidDishException.class,
+                () -> dishUseCase.toggleDishStatus(dishId, newStatus, currentUserId));
+
+        assertEquals(DomainConstants.Dish.ERROR_DISH_NO_ENCONTRADO, exception.getMessage());
+        verify(dishPersistencePort).findDishById(dishId);
+        verifyNoMoreInteractions(dishPersistencePort);
+    }
+
+    @Test
+    void toggleDishStatus_WhenUserIsNotRestaurantOwner_ShouldThrowInvalidDishException() {
+        // Given
+        Long dishId = 1L;
+        Boolean newStatus = false;
+        Long restaurantId = 1L;
+        Long differentOwnerId = 2L;
+
+        Dish existingDish = new Dish();
+        existingDish.setId(dishId);
+        existingDish.setIdRestaurante(restaurantId);
+        existingDish.setActivo(true);
+
+        when(dishPersistencePort.findDishById(dishId)).thenReturn(Optional.of(existingDish));
+        when(dishPersistencePort.getDishRestaurantId(dishId)).thenReturn(restaurantId);
+        when(dishPersistencePort.getRestaurantOwnerId(restaurantId)).thenReturn(differentOwnerId);
+
+        // When & Then
+        InvalidDishException exception = assertThrows(InvalidDishException.class,
+                () -> dishUseCase.toggleDishStatus(dishId, newStatus, currentUserId));
+
+        assertEquals(DomainConstants.Dish.ERROR_PROPIETARIO_NO_AUTORIZADO, exception.getMessage());
+        verify(dishPersistencePort).findDishById(dishId);
+        verify(dishPersistencePort).getDishRestaurantId(dishId);
+        verify(dishPersistencePort).getRestaurantOwnerId(restaurantId);
+        verify(dishPersistencePort, never()).updateDish(any());
+    }
+
+    @Test
+    void toggleDishStatus_WhenStatusIsTrue_ShouldActivateDish() {
+        // Given
+        Long dishId = 1L;
+        Boolean activateStatus = true;
+        Long restaurantId = 1L;
+
+        Dish existingDish = new Dish();
+        existingDish.setId(dishId);
+        existingDish.setNombre("Plato Inactivo");
+        existingDish.setIdRestaurante(restaurantId);
+        existingDish.setActivo(false);
+
+        when(dishPersistencePort.findDishById(dishId)).thenReturn(Optional.of(existingDish));
+        when(dishPersistencePort.getDishRestaurantId(dishId)).thenReturn(restaurantId);
+        when(dishPersistencePort.getRestaurantOwnerId(restaurantId)).thenReturn(restaurantOwnerId);
+        doNothing().when(dishPersistencePort).updateDish(existingDish);
+
+        // When
+        Dish result = dishUseCase.toggleDishStatus(dishId, activateStatus, currentUserId);
+
+        // Then
+        assertTrue(result.getActivo());
+        assertEquals(dishId, result.getId());
+        assertEquals("Plato Inactivo", result.getNombre());
+        verify(dishPersistencePort).updateDish(result);
+    }
+
+    @Test
+    void toggleDishStatus_WhenStatusIsFalse_ShouldDeactivateDish() {
+        // Given
+        Long dishId = 1L;
+        Boolean deactivateStatus = false;
+        Long restaurantId = 1L;
+
+        Dish existingDish = new Dish();
+        existingDish.setId(dishId);
+        existingDish.setNombre("Plato Activo");
+        existingDish.setIdRestaurante(restaurantId);
+        existingDish.setActivo(true);
+
+        when(dishPersistencePort.findDishById(dishId)).thenReturn(Optional.of(existingDish));
+        when(dishPersistencePort.getDishRestaurantId(dishId)).thenReturn(restaurantId);
+        when(dishPersistencePort.getRestaurantOwnerId(restaurantId)).thenReturn(restaurantOwnerId);
+        doNothing().when(dishPersistencePort).updateDish(existingDish);
+
+        // When
+        Dish result = dishUseCase.toggleDishStatus(dishId, deactivateStatus, currentUserId);
+
+        // Then
+        assertFalse(result.getActivo());
+        assertEquals(dishId, result.getId());
+        assertEquals("Plato Activo", result.getNombre());
+        verify(dishPersistencePort).updateDish(result);
+    }
+
+    @Test
+    void toggleDishStatus_WhenDifferentRestaurantId_ShouldProcessCorrectly() {
+        // Given
+        Long dishId = 2L;
+        Boolean newStatus = true;
+        Long customRestaurantId = 5L;
+
+        Dish existingDish = new Dish();
+        existingDish.setId(dishId);
+        existingDish.setNombre("Plato Restaurante 5");
+        existingDish.setIdRestaurante(customRestaurantId);
+        existingDish.setActivo(false);
+
+        when(dishPersistencePort.findDishById(dishId)).thenReturn(Optional.of(existingDish));
+        when(dishPersistencePort.getDishRestaurantId(dishId)).thenReturn(customRestaurantId);
+        when(dishPersistencePort.getRestaurantOwnerId(customRestaurantId)).thenReturn(currentUserId);
+        doNothing().when(dishPersistencePort).updateDish(existingDish);
+
+        // When
+        Dish result = dishUseCase.toggleDishStatus(dishId, newStatus, currentUserId);
+
+        // Then
+        assertEquals(newStatus, result.getActivo());
+        assertEquals(dishId, result.getId());
+        verify(dishPersistencePort).getDishRestaurantId(dishId);
+        verify(dishPersistencePort).getRestaurantOwnerId(customRestaurantId);
+        verify(dishPersistencePort).updateDish(result);
+    }
+
+    @Test
+    void toggleDishStatus_WhenToggleFromActiveToInactive_ShouldMaintainOtherProperties() {
+        // Given
+        Long dishId = 1L;
+        Boolean deactivateStatus = false;
+        Long restaurantId = 1L;
+
+        Dish existingDish = new Dish();
+        existingDish.setId(dishId);
+        existingDish.setNombre("Pizza Especial");
+        existingDish.setPrecio(new BigDecimal("30.00"));
+        existingDish.setDescripcion("Pizza con ingredientes especiales");
+        existingDish.setUrlImagen("https://example.com/pizza-especial.jpg");
+        existingDish.setIdCategoria(3L);
+        existingDish.setIdRestaurante(restaurantId);
+        existingDish.setActivo(true);
+
+        when(dishPersistencePort.findDishById(dishId)).thenReturn(Optional.of(existingDish));
+        when(dishPersistencePort.getDishRestaurantId(dishId)).thenReturn(restaurantId);
+        when(dishPersistencePort.getRestaurantOwnerId(restaurantId)).thenReturn(restaurantOwnerId);
+        doNothing().when(dishPersistencePort).updateDish(existingDish);
+
+        // When
+        Dish result = dishUseCase.toggleDishStatus(dishId, deactivateStatus, currentUserId);
+
+        // Then
+        assertFalse(result.getActivo());
+        assertEquals("Pizza Especial", result.getNombre());
+        assertEquals(new BigDecimal("30.00"), result.getPrecio());
+        assertEquals("Pizza con ingredientes especiales", result.getDescripcion());
+        assertEquals("https://example.com/pizza-especial.jpg", result.getUrlImagen());
+        assertEquals(3L, result.getIdCategoria());
+        assertEquals(restaurantId, result.getIdRestaurante());
+        verify(dishPersistencePort).updateDish(result);
+    }
+
+    @Test
+    void toggleDishStatus_WhenToggleFromInactiveToActive_ShouldMaintainOtherProperties() {
+        // Given
+        Long dishId = 1L;
+        Boolean activateStatus = true;
+        Long restaurantId = 1L;
+
+        Dish existingDish = new Dish();
+        existingDish.setId(dishId);
+        existingDish.setNombre("Hamburguesa Gourmet");
+        existingDish.setPrecio(new BigDecimal("45.00"));
+        existingDish.setDescripcion("Hamburguesa con carne premium");
+        existingDish.setUrlImagen("https://example.com/hamburguesa.jpg");
+        existingDish.setIdCategoria(1L);
+        existingDish.setIdRestaurante(restaurantId);
+        existingDish.setActivo(false);
+
+        when(dishPersistencePort.findDishById(dishId)).thenReturn(Optional.of(existingDish));
+        when(dishPersistencePort.getDishRestaurantId(dishId)).thenReturn(restaurantId);
+        when(dishPersistencePort.getRestaurantOwnerId(restaurantId)).thenReturn(restaurantOwnerId);
+        doNothing().when(dishPersistencePort).updateDish(existingDish);
+
+        // When
+        Dish result = dishUseCase.toggleDishStatus(dishId, activateStatus, currentUserId);
+
+        // Then
+        assertTrue(result.getActivo());
+        assertEquals("Hamburguesa Gourmet", result.getNombre());
+        assertEquals(new BigDecimal("45.00"), result.getPrecio());
+        assertEquals("Hamburguesa con carne premium", result.getDescripcion());
+        assertEquals("https://example.com/hamburguesa.jpg", result.getUrlImagen());
+        assertEquals(1L, result.getIdCategoria());
+        assertEquals(restaurantId, result.getIdRestaurante());
+        verify(dishPersistencePort).updateDish(result);
+    }
+
+    @Test
+    void toggleDishStatus_WhenMultipleDishesFromSameRestaurant_ShouldToggleCorrectly() {
+        // Given
+        Long dishId1 = 1L;
+        Long dishId2 = 2L;
+        Boolean deactivateStatus = false;
+        Long restaurantId = 1L;
+
+        Dish dish1 = new Dish();
+        dish1.setId(dishId1);
+        dish1.setNombre("Plato 1");
+        dish1.setIdRestaurante(restaurantId);
+        dish1.setActivo(true);
+
+        Dish dish2 = new Dish();
+        dish2.setId(dishId2);
+        dish2.setNombre("Plato 2");
+        dish2.setIdRestaurante(restaurantId);
+        dish2.setActivo(true);
+
+        when(dishPersistencePort.findDishById(dishId1)).thenReturn(Optional.of(dish1));
+        when(dishPersistencePort.findDishById(dishId2)).thenReturn(Optional.of(dish2));
+        when(dishPersistencePort.getDishRestaurantId(dishId1)).thenReturn(restaurantId);
+        when(dishPersistencePort.getDishRestaurantId(dishId2)).thenReturn(restaurantId);
+        when(dishPersistencePort.getRestaurantOwnerId(restaurantId)).thenReturn(currentUserId);
+        doNothing().when(dishPersistencePort).updateDish(dish1);
+        doNothing().when(dishPersistencePort).updateDish(dish2);
+
+        // When
+        Dish result1 = dishUseCase.toggleDishStatus(dishId1, deactivateStatus, currentUserId);
+        Dish result2 = dishUseCase.toggleDishStatus(dishId2, deactivateStatus, currentUserId);
+
+        // Then
+        assertFalse(result1.getActivo());
+        assertFalse(result2.getActivo());
+        verify(dishPersistencePort).updateDish(dish1);
+        verify(dishPersistencePort).updateDish(dish2);
+    }
+
+    @Test
+    void toggleDishStatus_WhenExtremeValues_ShouldHandleCorrectly() {
+        // Given
+        Long extremeDishId = Long.MAX_VALUE;
+        Boolean newStatus = true;
+        Long extremeRestaurantId = Long.MAX_VALUE;
+
+        Dish existingDish = new Dish();
+        existingDish.setId(extremeDishId);
+        existingDish.setIdRestaurante(extremeRestaurantId);
+        existingDish.setActivo(false);
+
+        when(dishPersistencePort.findDishById(extremeDishId)).thenReturn(Optional.of(existingDish));
+        when(dishPersistencePort.getDishRestaurantId(extremeDishId)).thenReturn(extremeRestaurantId);
+        when(dishPersistencePort.getRestaurantOwnerId(extremeRestaurantId)).thenReturn(currentUserId);
+        doNothing().when(dishPersistencePort).updateDish(existingDish);
+
+        // When
+        Dish result = dishUseCase.toggleDishStatus(extremeDishId, newStatus, currentUserId);
+
+        // Then
+        assertEquals(newStatus, result.getActivo());
+        assertEquals(extremeDishId, result.getId());
+        verify(dishPersistencePort).updateDish(result);
+    }
+
+    @Test
+    void toggleDishStatus_WhenValidationFlowExecutesCorrectly_ShouldCallMethodsInOrder() {
+        // Given
+        Long dishId = 1L;
+        Boolean newStatus = false;
+        Long restaurantId = 1L;
+
+        Dish existingDish = new Dish();
+        existingDish.setId(dishId);
+        existingDish.setIdRestaurante(restaurantId);
+        existingDish.setActivo(true);
+
+        when(dishPersistencePort.findDishById(dishId)).thenReturn(Optional.of(existingDish));
+        when(dishPersistencePort.getDishRestaurantId(dishId)).thenReturn(restaurantId);
+        when(dishPersistencePort.getRestaurantOwnerId(restaurantId)).thenReturn(restaurantOwnerId);
+        doNothing().when(dishPersistencePort).updateDish(existingDish);
+
+        // When
+        dishUseCase.toggleDishStatus(dishId, newStatus, currentUserId);
+
+        // Then
+        verify(dishPersistencePort).findDishById(dishId);
+        verify(dishPersistencePort).getDishRestaurantId(dishId);
+        verify(dishPersistencePort).getRestaurantOwnerId(restaurantId);
+        verify(dishPersistencePort).updateDish(existingDish);
+    }
+
+    @Test
+    void toggleDishStatus_WhenDifferentOwnerSameRestaurant_ShouldThrowException() {
+        // Given
+        Long dishId = 1L;
+        Boolean newStatus = true;
+        Long restaurantId = 1L;
+        Long differentUserId = 3L;
+
+        Dish existingDish = new Dish();
+        existingDish.setId(dishId);
+        existingDish.setIdRestaurante(restaurantId);
+        existingDish.setActivo(false);
+
+        when(dishPersistencePort.findDishById(dishId)).thenReturn(Optional.of(existingDish));
+        when(dishPersistencePort.getDishRestaurantId(dishId)).thenReturn(restaurantId);
+        when(dishPersistencePort.getRestaurantOwnerId(restaurantId)).thenReturn(differentUserId);
+
+        // When & Then
+        InvalidDishException exception = assertThrows(InvalidDishException.class,
+                () -> dishUseCase.toggleDishStatus(dishId, newStatus, currentUserId));
+
+        assertEquals(DomainConstants.Dish.ERROR_PROPIETARIO_NO_AUTORIZADO, exception.getMessage());
+        verify(dishPersistencePort, never()).updateDish(any());
     }
 }

@@ -1,6 +1,7 @@
 package com.plazoleta.restaurants.adapters.driving.http.controller;
 
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.AddDishRequest;
+import com.plazoleta.restaurants.adapters.driving.http.dto.request.ToggleDishStatusRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.UpdateDishRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.response.DishResponse;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IDishRequestMapper;
@@ -46,13 +47,15 @@ class DishControllerTest {
 
     private AddDishRequest addDishRequest;
     private UpdateDishRequest updateDishRequest;
+    private ToggleDishStatusRequest toggleDishStatusRequest;
     private Dish dish;
     private Dish updatedDish;
+    private Dish toggledDish;
     private DishResponse dishResponse;
 
     @BeforeEach
     void setUp() {
-        // Setup AddDishRequest
+
         addDishRequest = new AddDishRequest();
         addDishRequest.setNombre("Hamburguesa Clásica");
         addDishRequest.setDescripcion("Deliciosa hamburguesa con carne, lechuga y tomate");
@@ -61,12 +64,13 @@ class DishControllerTest {
         addDishRequest.setIdCategoria(1L);
         addDishRequest.setUrlImagen("https://ejemplo.com/hamburguesa.jpg");
 
-        // Setup UpdateDishRequest
         updateDishRequest = new UpdateDishRequest();
         updateDishRequest.setPrecio(new BigDecimal("18000"));
         updateDishRequest.setDescripcion("Hamburguesa premium con ingredientes gourmet");
 
-        // Setup Dish
+        toggleDishStatusRequest = new ToggleDishStatusRequest();
+        toggleDishStatusRequest.setActivo(false);
+
         dish = new Dish();
         dish.setId(1L);
         dish.setNombre("Hamburguesa Clásica");
@@ -77,7 +81,6 @@ class DishControllerTest {
         dish.setUrlImagen("https://ejemplo.com/hamburguesa.jpg");
         dish.setActivo(true);
 
-        // Setup Updated Dish
         updatedDish = new Dish();
         updatedDish.setId(1L);
         updatedDish.setNombre("Hamburguesa Clásica");
@@ -87,6 +90,16 @@ class DishControllerTest {
         updatedDish.setIdCategoria(1L);
         updatedDish.setUrlImagen("https://ejemplo.com/hamburguesa.jpg");
         updatedDish.setActivo(true);
+
+        toggledDish = new Dish();
+        toggledDish.setId(1L);
+        toggledDish.setNombre("Hamburguesa Clásica");
+        toggledDish.setDescripcion("Deliciosa hamburguesa con carne, lechuga y tomate");
+        toggledDish.setPrecio(new BigDecimal("15000"));
+        toggledDish.setIdRestaurante(1L);
+        toggledDish.setIdCategoria(1L);
+        toggledDish.setUrlImagen("https://ejemplo.com/hamburguesa.jpg");
+        toggledDish.setActivo(false); // Estado cambiado
 
         // Setup DishResponse
         dishResponse = new DishResponse();
@@ -100,7 +113,6 @@ class DishControllerTest {
         dishResponse.setActivo(true);
     }
 
-    // ==================== CREATE DISH TESTS ====================
 
     @Test
     void createDish_WhenValidRequest_ShouldReturnCreated() {
@@ -296,24 +308,6 @@ class DishControllerTest {
     }
 
     @Test
-    void createDish_WhenValidExecution_ShouldReturnCorrectResponseEntity() {
-        // Given
-        when(authentication.getName()).thenReturn("1");
-        when(dishRequestMapper.addRequestToDish(any(AddDishRequest.class))).thenReturn(dish);
-        doNothing().when(dishServicePort).saveDish(any(Dish.class), anyLong());
-        when(dishResponseMapper.dishToResponse(any(Dish.class))).thenReturn(dishResponse);
-
-        // When
-        ResponseEntity<DishResponse> response = controller.createDish(addDishRequest, authentication);
-
-        // Then
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(dishResponse, response.getBody());
-        assertEquals(201, response.getStatusCodeValue());
-        assertNotNull(response.getBody());
-    }
-
-    @Test
     void createDish_WhenAuthenticationProvidesDifferentUserId_ShouldUseCorrectUserId() {
         // Given
         when(authentication.getName()).thenReturn("5");
@@ -329,8 +323,6 @@ class DishControllerTest {
         verify(dishServicePort).saveDish(dish, 5L);
         verify(authentication, times(1)).getName();
     }
-
-    // ==================== UPDATE DISH TESTS ====================
 
     @Test
     void updateDish_WhenValidRequest_ShouldReturnOk() {
@@ -517,24 +509,6 @@ class DishControllerTest {
     }
 
     @Test
-    void updateDish_WhenValidExecution_ShouldReturnCorrectResponseEntity() {
-        // Given
-        Long dishId = 1L;
-        when(authentication.getName()).thenReturn("1");
-        when(dishServicePort.updateDish(anyLong(), any(BigDecimal.class), anyString(), anyLong())).thenReturn(updatedDish);
-        when(dishResponseMapper.dishToResponse(any(Dish.class))).thenReturn(dishResponse);
-
-        // When
-        ResponseEntity<DishResponse> response = controller.updateDish(dishId, updateDishRequest, authentication);
-
-        // Then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(dishResponse, response.getBody());
-        assertEquals(200, response.getStatusCodeValue());
-        assertNotNull(response.getBody());
-    }
-
-    @Test
     void updateDish_WhenAuthenticationProvidesDifferentUserId_ShouldUseCorrectUserId() {
         // Given
         Long dishId = 1L;
@@ -565,5 +539,323 @@ class DishControllerTest {
         // Then
         assertEquals(dishResponse, result.getBody());
         verify(dishResponseMapper, times(1)).dishToResponse(updatedDish);
+    }
+
+
+    @Test
+    void toggleDishStatus_WhenValidRequest_ShouldReturnOk() {
+        // Given
+        Long dishId = 1L;
+        when(authentication.getName()).thenReturn("1");
+        when(dishServicePort.toggleDishStatus(eq(dishId), any(Boolean.class), anyLong())).thenReturn(toggledDish);
+        when(dishResponseMapper.dishToResponse(toggledDish)).thenReturn(dishResponse);
+
+        // When
+        ResponseEntity<DishResponse> result = controller.toggleDishStatus(dishId, toggleDishStatusRequest, authentication);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertEquals(dishResponse, result.getBody());
+        verify(dishServicePort).toggleDishStatus(dishId, toggleDishStatusRequest.getActivo(), 1L);
+        verify(dishResponseMapper).dishToResponse(toggledDish);
+    }
+
+    @Test
+    void toggleDishStatus_WhenServiceReturnsToggledDish_ShouldMapAndReturnOk() {
+        // Given
+        Long dishId = 1L;
+        when(authentication.getName()).thenReturn("1");
+        when(dishServicePort.toggleDishStatus(dishId, toggleDishStatusRequest.getActivo(), 1L)).thenReturn(toggledDish);
+        when(dishResponseMapper.dishToResponse(toggledDish)).thenReturn(dishResponse);
+
+        // When
+        ResponseEntity<DishResponse> result = controller.toggleDishStatus(dishId, toggleDishStatusRequest, authentication);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(dishResponse, result.getBody());
+        verify(dishServicePort).toggleDishStatus(dishId, toggleDishStatusRequest.getActivo(), 1L);
+        verify(dishResponseMapper).dishToResponse(toggledDish);
+    }
+
+    @Test
+    void toggleDishStatus_WhenServiceCalled_ShouldDelegateToCorrectService() {
+        // Given
+        Long dishId = 1L;
+        when(authentication.getName()).thenReturn("1");
+        when(dishServicePort.toggleDishStatus(anyLong(), any(Boolean.class), anyLong())).thenReturn(toggledDish);
+        when(dishResponseMapper.dishToResponse(any(Dish.class))).thenReturn(dishResponse);
+
+        // When
+        controller.toggleDishStatus(dishId, toggleDishStatusRequest, authentication);
+
+        // Then
+        verify(dishServicePort, times(1)).toggleDishStatus(dishId, toggleDishStatusRequest.getActivo(), 1L);
+    }
+
+    @Test
+    void toggleDishStatus_WhenCalled_ShouldExtractCorrectParameters() {
+        // Given
+        Long dishId = 2L;
+        ToggleDishStatusRequest customRequest = new ToggleDishStatusRequest();
+        customRequest.setActivo(true);
+
+        when(authentication.getName()).thenReturn("3");
+        when(dishServicePort.toggleDishStatus(anyLong(), any(Boolean.class), anyLong())).thenReturn(toggledDish);
+        when(dishResponseMapper.dishToResponse(any(Dish.class))).thenReturn(dishResponse);
+
+        // When
+        controller.toggleDishStatus(dishId, customRequest, authentication);
+
+        // Then
+        verify(dishServicePort, times(1)).toggleDishStatus(dishId, customRequest.getActivo(), 3L);
+    }
+
+    @Test
+    void toggleDishStatus_WhenServiceExecutesSuccessfully_ShouldReturnOkStatus() {
+        // Given
+        Long dishId = 1L;
+        when(authentication.getName()).thenReturn("1");
+        when(dishServicePort.toggleDishStatus(anyLong(), any(Boolean.class), anyLong())).thenReturn(toggledDish);
+        when(dishResponseMapper.dishToResponse(any(Dish.class))).thenReturn(dishResponse);
+
+        // When
+        ResponseEntity<DishResponse> response = controller.toggleDishStatus(dishId, toggleDishStatusRequest, authentication);
+
+        // Then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(dishResponse, response.getBody());
+    }
+
+    @Test
+    void toggleDishStatus_WhenRequestHasAllFields_ShouldProcessSuccessfully() {
+        // Given
+        Long dishId = 1L;
+        ToggleDishStatusRequest fullRequest = new ToggleDishStatusRequest();
+        fullRequest.setActivo(true);
+
+        Dish fullToggledDish = new Dish();
+        fullToggledDish.setId(dishId);
+        fullToggledDish.setActivo(fullRequest.getActivo());
+
+        DishResponse fullResponse = new DishResponse();
+        fullResponse.setId(dishId);
+        fullResponse.setActivo(fullRequest.getActivo());
+
+        when(authentication.getName()).thenReturn("1");
+        when(dishServicePort.toggleDishStatus(dishId, fullRequest.getActivo(), 1L)).thenReturn(fullToggledDish);
+        when(dishResponseMapper.dishToResponse(fullToggledDish)).thenReturn(fullResponse);
+
+        // When
+        ResponseEntity<DishResponse> result = controller.toggleDishStatus(dishId, fullRequest, authentication);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(fullResponse, result.getBody());
+        verify(dishServicePort).toggleDishStatus(dishId, fullRequest.getActivo(), 1L);
+        verify(dishResponseMapper).dishToResponse(fullToggledDish);
+    }
+
+    @Test
+    void toggleDishStatus_WhenControllerMethodCalled_ShouldFollowExpectedFlow() {
+        // Given
+        Long dishId = 1L;
+        when(authentication.getName()).thenReturn("1");
+        when(dishServicePort.toggleDishStatus(anyLong(), any(Boolean.class), anyLong())).thenReturn(toggledDish);
+        when(dishResponseMapper.dishToResponse(any(Dish.class))).thenReturn(dishResponse);
+
+        // When
+        ResponseEntity<DishResponse> result = controller.toggleDishStatus(dishId, toggleDishStatusRequest, authentication);
+
+        // Then
+        // Verify the complete flow
+        verify(authentication, times(1)).getName();
+        verify(dishServicePort, times(1)).toggleDishStatus(dishId, toggleDishStatusRequest.getActivo(), 1L);
+        verify(dishResponseMapper, times(1)).dishToResponse(toggledDish);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(dishResponse, result.getBody());
+    }
+
+    @Test
+    void toggleDishStatus_WhenDifferentDishId_ShouldToggleCorrectDish() {
+        // Given
+        Long customDishId = 5L;
+        ToggleDishStatusRequest customRequest = new ToggleDishStatusRequest();
+        customRequest.setActivo(true);
+
+        Dish customToggledDish = new Dish();
+        customToggledDish.setId(customDishId);
+        customToggledDish.setActivo(true);
+
+        DishResponse customResponse = new DishResponse();
+        customResponse.setId(customDishId);
+        customResponse.setActivo(true);
+
+        when(authentication.getName()).thenReturn("2");
+        when(dishServicePort.toggleDishStatus(customDishId, customRequest.getActivo(), 2L)).thenReturn(customToggledDish);
+        when(dishResponseMapper.dishToResponse(customToggledDish)).thenReturn(customResponse);
+
+        // When
+        ResponseEntity<DishResponse> result = controller.toggleDishStatus(customDishId, customRequest, authentication);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(customResponse, result.getBody());
+        verify(dishServicePort).toggleDishStatus(customDishId, customRequest.getActivo(), 2L);
+        verify(dishResponseMapper).dishToResponse(customToggledDish);
+    }
+
+    @Test
+    void toggleDishStatus_WhenMockingDependencies_ShouldInteractCorrectly() {
+        // Given
+        Long dishId = 1L;
+        when(authentication.getName()).thenReturn("1");
+        when(dishServicePort.toggleDishStatus(anyLong(), any(Boolean.class), anyLong())).thenReturn(toggledDish);
+        when(dishResponseMapper.dishToResponse(any(Dish.class))).thenReturn(dishResponse);
+
+        // When
+        controller.toggleDishStatus(dishId, toggleDishStatusRequest, authentication);
+
+        // Then
+        verify(authentication).getName();
+        verify(dishServicePort).toggleDishStatus(dishId, toggleDishStatusRequest.getActivo(), 1L);
+        verify(dishResponseMapper).dishToResponse(toggledDish);
+        verifyNoMoreInteractions(dishServicePort, dishResponseMapper);
+    }
+
+    @Test
+    void toggleDishStatus_WhenAuthenticationProvidesDifferentUserId_ShouldUseCorrectUserId() {
+        // Given
+        Long dishId = 1L;
+        when(authentication.getName()).thenReturn("7");
+        when(dishServicePort.toggleDishStatus(anyLong(), any(Boolean.class), eq(7L))).thenReturn(toggledDish);
+        when(dishResponseMapper.dishToResponse(any(Dish.class))).thenReturn(dishResponse);
+
+        // When
+        ResponseEntity<DishResponse> result = controller.toggleDishStatus(dishId, toggleDishStatusRequest, authentication);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        verify(dishServicePort).toggleDishStatus(dishId, toggleDishStatusRequest.getActivo(), 7L);
+        verify(authentication, times(1)).getName();
+    }
+
+    @Test
+    void toggleDishStatus_WhenResponseMapperCalled_ShouldReturnMappedResponse() {
+        // Given
+        Long dishId = 1L;
+        when(authentication.getName()).thenReturn("1");
+        when(dishServicePort.toggleDishStatus(anyLong(), any(Boolean.class), anyLong())).thenReturn(toggledDish);
+        when(dishResponseMapper.dishToResponse(toggledDish)).thenReturn(dishResponse);
+
+        // When
+        ResponseEntity<DishResponse> result = controller.toggleDishStatus(dishId, toggleDishStatusRequest, authentication);
+
+        // Then
+        assertEquals(dishResponse, result.getBody());
+        verify(dishResponseMapper, times(1)).dishToResponse(toggledDish);
+    }
+
+    @Test
+    void toggleDishStatus_WhenActivoIsTrue_ShouldHandleCorrectly() {
+        // Given
+        Long dishId = 1L;
+        ToggleDishStatusRequest enableRequest = new ToggleDishStatusRequest();
+        enableRequest.setActivo(true);
+
+        Dish enabledDish = new Dish();
+        enabledDish.setId(dishId);
+        enabledDish.setActivo(true);
+
+        when(authentication.getName()).thenReturn("1");
+        when(dishServicePort.toggleDishStatus(dishId, true, 1L)).thenReturn(enabledDish);
+        when(dishResponseMapper.dishToResponse(enabledDish)).thenReturn(dishResponse);
+
+        // When
+        ResponseEntity<DishResponse> result = controller.toggleDishStatus(dishId, enableRequest, authentication);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        verify(dishServicePort).toggleDishStatus(dishId, true, 1L);
+        verify(dishResponseMapper).dishToResponse(enabledDish);
+    }
+
+    @Test
+    void toggleDishStatus_WhenActivoIsFalse_ShouldHandleCorrectly() {
+        // Given
+        Long dishId = 1L;
+        ToggleDishStatusRequest disableRequest = new ToggleDishStatusRequest();
+        disableRequest.setActivo(false);
+
+        Dish disabledDish = new Dish();
+        disabledDish.setId(dishId);
+        disabledDish.setActivo(false);
+
+        when(authentication.getName()).thenReturn("1");
+        when(dishServicePort.toggleDishStatus(dishId, false, 1L)).thenReturn(disabledDish);
+        when(dishResponseMapper.dishToResponse(disabledDish)).thenReturn(dishResponse);
+
+        // When
+        ResponseEntity<DishResponse> result = controller.toggleDishStatus(dishId, disableRequest, authentication);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        verify(dishServicePort).toggleDishStatus(dishId, false, 1L);
+        verify(dishResponseMapper).dishToResponse(disabledDish);
+    }
+
+    @Test
+    void createDish_WhenValidExecution_ShouldReturnCorrectResponseEntity() {
+        // Given
+        when(authentication.getName()).thenReturn("1");
+        when(dishRequestMapper.addRequestToDish(any(AddDishRequest.class))).thenReturn(dish);
+        doNothing().when(dishServicePort).saveDish(any(Dish.class), anyLong());
+        when(dishResponseMapper.dishToResponse(any(Dish.class))).thenReturn(dishResponse);
+
+        // When
+        ResponseEntity<DishResponse> response = controller.createDish(addDishRequest, authentication);
+
+        // Then
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(dishResponse, response.getBody());
+        assertEquals(201, response.getStatusCode().value()); // ✅ CORREGIDO
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    void updateDish_WhenValidExecution_ShouldReturnCorrectResponseEntity() {
+        // Given
+        Long dishId = 1L;
+        when(authentication.getName()).thenReturn("1");
+        when(dishServicePort.updateDish(anyLong(), any(BigDecimal.class), anyString(), anyLong())).thenReturn(updatedDish);
+        when(dishResponseMapper.dishToResponse(any(Dish.class))).thenReturn(dishResponse);
+
+        // When
+        ResponseEntity<DishResponse> response = controller.updateDish(dishId, updateDishRequest, authentication);
+
+        // Then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(dishResponse, response.getBody());
+        assertEquals(200, response.getStatusCode().value()); // ✅ CORREGIDO
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    void toggleDishStatus_WhenValidExecution_ShouldReturnCorrectResponseEntity() {
+        // Given
+        Long dishId = 1L;
+        when(authentication.getName()).thenReturn("1");
+        when(dishServicePort.toggleDishStatus(anyLong(), any(Boolean.class), anyLong())).thenReturn(toggledDish);
+        when(dishResponseMapper.dishToResponse(any(Dish.class))).thenReturn(dishResponse);
+
+        // When
+        ResponseEntity<DishResponse> response = controller.toggleDishStatus(dishId, toggleDishStatusRequest, authentication);
+
+        // Then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(dishResponse, response.getBody());
+        assertEquals(200, response.getStatusCode().value()); // ✅ CORREGIDO
+        assertNotNull(response.getBody());
     }
 }

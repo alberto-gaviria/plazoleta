@@ -48,6 +48,38 @@ public class DishUseCase implements IDishServicePort {
         dishPersistencePort.updateDish(dish);
         return dish;
     }
+    @Override
+    public Dish toggleDishStatus(Long dishId, Boolean activo, Long currentUserId) {
+        validateToggleStatusParameters(dishId, activo, currentUserId);
+
+        Optional<Dish> dishOptional = dishPersistencePort.findDishById(dishId);
+        if (dishOptional.isEmpty()) {
+            throw new InvalidDishException(DomainConstants.Dish.ERROR_DISH_NO_ENCONTRADO);
+        }
+
+        Dish dish = dishOptional.get();
+        Long restaurantId = dishPersistencePort.getDishRestaurantId(dishId);
+
+        validateOwnership(restaurantId, currentUserId);
+
+        dish.setActivo(activo);
+        dishPersistencePort.updateDish(dish);
+        return dish;
+    }
+
+    private void validateToggleStatusParameters(Long dishId, Boolean activo, Long currentUserId) {
+        if (dishId == null) {
+            throw new InvalidDishException(DomainConstants.Dish.ERROR_DISH_ID_REQUERIDO);
+        }
+
+        if (currentUserId == null) {
+            throw new InvalidDishException(DomainConstants.Dish.ERROR_USUARIO_REQUERIDO);
+        }
+
+        if (activo == null) {
+            throw new InvalidDishException(DomainConstants.Dish.ERROR_ESTADO_REQUERIDO);
+        }
+    }
 
     private void validateUpdateParameters(Long dishId, BigDecimal precio, String descripcion, Long currentUserId) {
         if (dishId == null) {

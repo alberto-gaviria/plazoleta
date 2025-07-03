@@ -4,6 +4,7 @@ import com.plazoleta.users.adapters.driven.mysql.mapper.IUserEntityMapper;
 import com.plazoleta.users.adapters.driven.mysql.repository.IUserRepository;
 import com.plazoleta.users.domain.api.IAdminUserManagementServicePort;
 import com.plazoleta.users.domain.api.IOwnerUserManagementServicePort;
+import com.plazoleta.users.domain.api.IClientUserManagementServicePort;
 import com.plazoleta.users.domain.api.IUserQueryServicePort;
 import com.plazoleta.users.domain.api.IAuthenticationServicePort;
 import com.plazoleta.users.domain.spi.IPasswordEncoderPort;
@@ -85,6 +86,17 @@ class BeanConfigurationTest {
     }
 
     @Test
+    void clientUserManagementServicePort_ShouldReturnClientUserManagementUseCase() {
+        // When
+        IClientUserManagementServicePort result = beanConfiguration.clientUserManagementServicePort(
+                userPersistencePort, passwordEncoderPort);
+
+        // Then
+        assertNotNull(result);
+        assertInstanceOf(IClientUserManagementServicePort.class, result);
+    }
+
+    @Test
     void userQueryServicePort_ShouldReturnUserQueryUseCase() {
         // When
         IUserQueryServicePort result = beanConfiguration.userQueryServicePort(userPersistencePort);
@@ -151,6 +163,15 @@ class BeanConfigurationTest {
     }
 
     @Test
+    void clientUserManagementServicePort_WithNullDependencies_ShouldHandleGracefully() {
+        // When & Then
+        assertDoesNotThrow(() -> {
+            IClientUserManagementServicePort result = beanConfiguration.clientUserManagementServicePort(null, null);
+            // Nota: Esto podría fallar en runtime dependiendo de la implementación
+        });
+    }
+
+    @Test
     void userQueryServicePort_WithNullPersistencePort_ShouldHandleGracefully() {
         // When & Then
         assertDoesNotThrow(() -> {
@@ -188,6 +209,7 @@ class BeanConfigurationTest {
         IUserPersistencePort userPersistence = beanConfiguration.userPersistencePort(userRepository, userEntityMapper);
         IAdminUserManagementServicePort adminService = beanConfiguration.adminUserManagementServicePort(userPersistencePort, passwordEncoderPort);
         IOwnerUserManagementServicePort ownerService = beanConfiguration.ownerUserManagementServicePort(userPersistencePort, passwordEncoderPort);
+        IClientUserManagementServicePort clientService = beanConfiguration.clientUserManagementServicePort(userPersistencePort, passwordEncoderPort);
         IUserQueryServicePort queryService = beanConfiguration.userQueryServicePort(userPersistencePort);
         IAuthenticationServicePort authService = beanConfiguration.authenticationServicePort(userPersistencePort, passwordEncoderPort, tokenServicePort);
 
@@ -196,6 +218,7 @@ class BeanConfigurationTest {
         assertNotNull(userPersistence);
         assertNotNull(adminService);
         assertNotNull(ownerService);
+        assertNotNull(clientService);
         assertNotNull(queryService);
         assertNotNull(authService);
     }

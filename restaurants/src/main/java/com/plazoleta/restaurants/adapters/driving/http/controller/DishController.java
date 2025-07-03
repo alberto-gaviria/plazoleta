@@ -1,6 +1,7 @@
 package com.plazoleta.restaurants.adapters.driving.http.controller;
 
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.AddDishRequest;
+import com.plazoleta.restaurants.adapters.driving.http.dto.request.ToggleDishStatusRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.UpdateDishRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.response.DishResponse;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IDishRequestMapper;
@@ -80,6 +81,30 @@ public class DishController {
 
         Long currentUserId = Long.valueOf(authentication.getName());
         Dish updatedDish = dishServicePort.updateDish(dishId, request.getPrecio(), request.getDescripcion(), currentUserId);
+        DishResponse response = dishResponseMapper.dishToResponse(updatedDish);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Habilitar/Deshabilitar un plato")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Estado del plato actualizado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autorizado - Token requerido"),
+            @ApiResponse(responseCode = "403", description = "No autorizado para modificar platos de este restaurante"),
+            @ApiResponse(responseCode = "404", description = "Plato no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @PatchMapping("/{dishId}/estado")
+    @PreAuthorize("hasAuthority('PROPIETARIO')")
+    public ResponseEntity<DishResponse> toggleDishStatus(
+            @Parameter(description = "ID del plato a habilitar/deshabilitar", required = true)
+            @PathVariable Long dishId,
+            @Parameter(description = "Nuevo estado del plato", required = true)
+            @Valid @RequestBody ToggleDishStatusRequest request,
+            Authentication authentication) {
+
+        Long currentUserId = Long.valueOf(authentication.getName());
+        Dish updatedDish = dishServicePort.toggleDishStatus(dishId, request.getActivo(), currentUserId);
         DishResponse response = dishResponseMapper.dishToResponse(updatedDish);
         return ResponseEntity.ok(response);
     }

@@ -92,6 +92,8 @@ class DomainConstantsTest {
         assertEquals("No se encontró el plato especificado", DomainConstants.Dish.ERROR_DISH_NO_ENCONTRADO);
         assertEquals("El ID del plato es obligatorio", DomainConstants.Dish.ERROR_DISH_ID_REQUERIDO);
         assertEquals("El ID del usuario es obligatorio", DomainConstants.Dish.ERROR_USUARIO_REQUERIDO);
+        assertEquals("El estado del plato (activo/inactivo) es obligatorio", DomainConstants.Dish.ERROR_ESTADO_REQUERIDO);
+        assertEquals("No se pueden modificar platos de otros restaurantes", DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE);
     }
 
     @Test
@@ -134,6 +136,8 @@ class DomainConstantsTest {
         assertNotNull(DomainConstants.Dish.ERROR_DISH_NO_ENCONTRADO);
         assertNotNull(DomainConstants.Dish.ERROR_DISH_ID_REQUERIDO);
         assertNotNull(DomainConstants.Dish.ERROR_USUARIO_REQUERIDO);
+        assertNotNull(DomainConstants.Dish.ERROR_ESTADO_REQUERIDO);
+        assertNotNull(DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE);
     }
 
     @Test
@@ -174,5 +178,90 @@ class DomainConstantsTest {
         assertFalse(DomainConstants.Dish.ERROR_DISH_NO_ENCONTRADO.isEmpty());
         assertFalse(DomainConstants.Dish.ERROR_DISH_ID_REQUERIDO.isEmpty());
         assertFalse(DomainConstants.Dish.ERROR_USUARIO_REQUERIDO.isEmpty());
+        assertFalse(DomainConstants.Dish.ERROR_ESTADO_REQUERIDO.isEmpty());
+        assertFalse(DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE.isEmpty());
+    }
+
+    @Test
+    void newDishConstants_ShouldHaveCorrectValues() {
+        // Then - Tests específicos para las nuevas constantes
+        assertEquals("El estado del plato (activo/inactivo) es obligatorio", DomainConstants.Dish.ERROR_ESTADO_REQUERIDO);
+        assertEquals("No se pueden modificar platos de otros restaurantes", DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE);
+    }
+
+    @Test
+    void newDishConstants_ShouldNotBeNull() {
+        // Then - Verificación de null para las nuevas constantes
+        assertNotNull(DomainConstants.Dish.ERROR_ESTADO_REQUERIDO);
+        assertNotNull(DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE);
+    }
+
+    @Test
+    void newDishConstants_ShouldNotBeEmpty() {
+        // Then - Verificación de empty para las nuevas constantes
+        assertFalse(DomainConstants.Dish.ERROR_ESTADO_REQUERIDO.isEmpty());
+        assertFalse(DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE.isEmpty());
+    }
+
+    @Test
+    void newDishConstants_ShouldNotBeBlank() {
+        // Then - Verificación de blank para las nuevas constantes
+        assertFalse(DomainConstants.Dish.ERROR_ESTADO_REQUERIDO.isBlank());
+        assertFalse(DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE.isBlank());
+    }
+
+    @Test
+    void newDishConstants_ShouldHaveCorrectLength() {
+        // Then - Verificación de longitud para las nuevas constantes
+        assertTrue(DomainConstants.Dish.ERROR_ESTADO_REQUERIDO.length() > 0);
+        assertTrue(DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE.length() > 0);
+        assertTrue(DomainConstants.Dish.ERROR_ESTADO_REQUERIDO.length() < 200); // Longitud razonable
+        assertTrue(DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE.length() < 200); // Longitud razonable
+    }
+
+    @Test
+    void dishConstants_AllErrorMessages_ShouldBeConsistent() {
+        // Then - Verificación de consistencia en los mensajes de error
+        assertTrue(DomainConstants.Dish.ERROR_ESTADO_REQUERIDO.contains("estado"));
+        assertTrue(DomainConstants.Dish.ERROR_ESTADO_REQUERIDO.contains("obligatorio"));
+        assertTrue(DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE.contains("platos"));
+        assertTrue(DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE.contains("restaurantes"));
+    }
+
+    @Test
+    void dishConstants_NewErrorMessages_ShouldStartWithAppropriateCase() {
+        // Then - Verificación de formato de los mensajes
+        assertTrue(Character.isUpperCase(DomainConstants.Dish.ERROR_ESTADO_REQUERIDO.charAt(0)));
+        assertTrue(Character.isUpperCase(DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE.charAt(0)));
+    }
+
+    @Test
+    void dishConstants_NewErrorMessages_ShouldNotContainSpecialCharacters() {
+        // Then - Verificación de caracteres especiales en las nuevas constantes
+        assertFalse(DomainConstants.Dish.ERROR_ESTADO_REQUERIDO.contains("@"));
+        assertFalse(DomainConstants.Dish.ERROR_ESTADO_REQUERIDO.contains("#"));
+        assertFalse(DomainConstants.Dish.ERROR_ESTADO_REQUERIDO.contains("$"));
+        assertFalse(DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE.contains("@"));
+        assertFalse(DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE.contains("#"));
+        assertFalse(DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE.contains("$"));
+    }
+
+    @Test
+    void dishConstants_NewErrorMessages_ShouldBeInSpanish() {
+        // Then - Verificación de idioma español en las nuevas constantes
+        assertTrue(DomainConstants.Dish.ERROR_ESTADO_REQUERIDO.contains("estado") ||
+                DomainConstants.Dish.ERROR_ESTADO_REQUERIDO.contains("obligatorio"));
+        assertTrue(DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE.contains("pueden") ||
+                DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE.contains("modificar"));
+    }
+
+    @Test
+    void allDishErrorConstants_ShouldBeUnique() {
+        // Then - Verificación de unicidad de las constantes de error
+        assertNotEquals(DomainConstants.Dish.ERROR_ESTADO_REQUERIDO, DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE);
+        assertNotEquals(DomainConstants.Dish.ERROR_ESTADO_REQUERIDO, DomainConstants.Dish.ERROR_USUARIO_REQUERIDO);
+        assertNotEquals(DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE, DomainConstants.Dish.ERROR_PROPIETARIO_NO_AUTORIZADO);
+        assertNotEquals(DomainConstants.Dish.ERROR_ESTADO_REQUERIDO, DomainConstants.Dish.ERROR_DISH_ID_REQUERIDO);
+        assertNotEquals(DomainConstants.Dish.ERROR_PLATO_OTRO_RESTAURANTE, DomainConstants.Dish.ERROR_RESTAURANTE_REQUERIDO);
     }
 }
