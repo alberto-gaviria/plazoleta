@@ -11,40 +11,44 @@ class AdapterConstantsTest {
 
     @Test
     void shouldNotInstantiateAdapterConstants() throws NoSuchMethodException {
-        // Given
-        Constructor<AdapterConstants> constructor = AdapterConstants.class.getDeclaredConstructor();
-        constructor.setAccessible(true);
-
-        // When & Then
-        InvocationTargetException exception = assertThrows(
+        Constructor<AdapterConstants> ctor = AdapterConstants.class.getDeclaredConstructor();
+        ctor.setAccessible(true);
+        InvocationTargetException ex = assertThrows(
                 InvocationTargetException.class,
-                constructor::newInstance
+                ctor::newInstance
         );
-
-        assertTrue(exception.getCause() instanceof IllegalStateException);
-        assertEquals("Clase de constantes", exception.getCause().getMessage());
+        assertTrue(ex.getCause() instanceof IllegalStateException);
+        assertEquals("Clase de constantes", ex.getCause().getMessage());
     }
 
     @Test
     void shouldNotInstantiateErrorMessages() throws NoSuchMethodException {
-        // Given
-        Constructor<AdapterConstants.ErrorMessages> constructor =
+        Constructor<AdapterConstants.ErrorMessages> ctor =
                 AdapterConstants.ErrorMessages.class.getDeclaredConstructor();
-        constructor.setAccessible(true);
-
-        // When & Then
-        InvocationTargetException exception = assertThrows(
+        ctor.setAccessible(true);
+        InvocationTargetException ex = assertThrows(
                 InvocationTargetException.class,
-                constructor::newInstance
+                ctor::newInstance
         );
+        assertTrue(ex.getCause() instanceof IllegalStateException);
+        assertEquals("Clase de constantes", ex.getCause().getMessage());
+    }
 
-        assertTrue(exception.getCause() instanceof IllegalStateException);
-        assertEquals("Clase de constantes", exception.getCause().getMessage());
+    @Test
+    void shouldNotInstantiateDatabaseColumns() throws NoSuchMethodException {
+        Constructor<AdapterConstants.DatabaseColumns> ctor =
+                AdapterConstants.DatabaseColumns.class.getDeclaredConstructor();
+        ctor.setAccessible(true);
+        InvocationTargetException ex = assertThrows(
+                InvocationTargetException.class,
+                ctor::newInstance
+        );
+        assertTrue(ex.getCause() instanceof IllegalStateException);
+        assertEquals("Clase de constantes", ex.getCause().getMessage());
     }
 
     @Test
     void shouldHaveCorrectErrorMessages() {
-        // Then
         assertEquals("Ya existe un restaurante con ese NIT",
                 AdapterConstants.ErrorMessages.RESTAURANT_NIT_DUPLICADO);
         assertEquals("Ya existe un restaurante con ese nombre",
@@ -55,5 +59,12 @@ class AdapterConstantsTest {
                 AdapterConstants.ErrorMessages.PROPIETARIO_NO_ENCONTRADO);
         assertEquals("No se encontró el plato solicitado",
                 AdapterConstants.ErrorMessages.DISH_NO_ENCONTRADO);
+    }
+
+    @Test
+    void shouldHaveCorrectDatabaseColumns() {
+        assertEquals("nombre", AdapterConstants.DatabaseColumns.NOMBRE_COLUMN);
+        assertEquals("nit",    AdapterConstants.DatabaseColumns.NIT_COLUMN);
+        assertEquals("id",     AdapterConstants.DatabaseColumns.ID_COLUMN);
     }
 }

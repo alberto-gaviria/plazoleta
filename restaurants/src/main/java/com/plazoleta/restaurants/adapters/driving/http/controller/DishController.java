@@ -6,6 +6,7 @@ import com.plazoleta.restaurants.adapters.driving.http.dto.request.UpdateDishReq
 import com.plazoleta.restaurants.adapters.driving.http.dto.response.DishResponse;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IDishRequestMapper;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IDishResponseMapper;
+import com.plazoleta.restaurants.adapters.driving.http.util.HttpConstants;
 import com.plazoleta.restaurants.domain.api.IDishServicePort;
 import com.plazoleta.restaurants.domain.model.Dish;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,7 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/platos")
+@RequestMapping(HttpConstants.Paths.PLATOS)
 @Tag(name = "Platos", description = "API para gestión de platos")
 public class DishController {
 
@@ -37,17 +38,18 @@ public class DishController {
         this.dishResponseMapper = dishResponseMapper;
     }
 
-    @Operation(summary = "Crear un nuevo plato")
+    @Operation(summary = "Crear un nuevo plato",
+            description = "Permite a un propietario crear un nuevo plato en su restaurante")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Plato creado exitosamente"),
             @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
             @ApiResponse(responseCode = "401", description = "No autorizado - Token requerido"),
-            @ApiResponse(responseCode = "403", description = "No autorizado para crear platos en este restaurante"),
+            @ApiResponse(responseCode = "403", description = "Prohibido - Solo propietarios pueden crear platos"),
             @ApiResponse(responseCode = "404", description = "Restaurante no encontrado"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @PostMapping
-    @PreAuthorize("hasAuthority('PROPIETARIO')")
+    @PreAuthorize("hasAuthority(T(com.plazoleta.restaurants.adapters.driving.http.util.HttpConstants$Roles).PROPIETARIO)")
     public ResponseEntity<DishResponse> createDish(
             @Parameter(description = "Datos del plato a crear", required = true)
             @Valid @RequestBody AddDishRequest request,
@@ -61,17 +63,18 @@ public class DishController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Modificar un plato existente")
+    @Operation(summary = "Modificar un plato existente",
+            description = "Permite a un propietario modificar el precio y descripción de un plato de su restaurante")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Plato modificado exitosamente"),
+            @ApiResponse(responseCode = "200", description = "Plato actualizado exitosamente"),
             @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
             @ApiResponse(responseCode = "401", description = "No autorizado - Token requerido"),
-            @ApiResponse(responseCode = "403", description = "No autorizado para modificar este plato"),
+            @ApiResponse(responseCode = "403", description = "Prohibido - Solo el propietario del restaurante puede modificar platos"),
             @ApiResponse(responseCode = "404", description = "Plato no encontrado"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    @PutMapping("/{dishId}")
-    @PreAuthorize("hasAuthority('PROPIETARIO')")
+    @PutMapping(HttpConstants.Paths.DISH_BY_ID)
+    @PreAuthorize("hasAuthority(T(com.plazoleta.restaurants.adapters.driving.http.util.HttpConstants$Roles).PROPIETARIO)")
     public ResponseEntity<DishResponse> updateDish(
             @Parameter(description = "ID del plato a modificar", required = true)
             @PathVariable Long dishId,
@@ -80,22 +83,24 @@ public class DishController {
             Authentication authentication) {
 
         Long currentUserId = Long.valueOf(authentication.getName());
-        Dish updatedDish = dishServicePort.updateDish(dishId, request.getPrecio(), request.getDescripcion(), currentUserId);
-        DishResponse response = dishResponseMapper.dishToResponse(updatedDish);
+        Dish updated = dishServicePort.updateDish(dishId, request.getPrecio(), request.getDescripcion(), currentUserId);
+
+        DishResponse response = dishResponseMapper.dishToResponse(updated);
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Habilitar/Deshabilitar un plato")
+    @Operation(summary = "Habilitar/Deshabilitar un plato",
+            description = "Permite a un propietario cambiar el estado activo/inactivo de un plato de su restaurante")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Estado del plato actualizado exitosamente"),
             @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
             @ApiResponse(responseCode = "401", description = "No autorizado - Token requerido"),
-            @ApiResponse(responseCode = "403", description = "No autorizado para modificar platos de este restaurante"),
+            @ApiResponse(responseCode = "403", description = "Prohibido - Solo el propietario del restaurante puede cambiar el estado de platos"),
             @ApiResponse(responseCode = "404", description = "Plato no encontrado"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    @PatchMapping("/{dishId}/estado")
-    @PreAuthorize("hasAuthority('PROPIETARIO')")
+    @PatchMapping(HttpConstants.Paths.DISH_STATUS)
+    @PreAuthorize("hasAuthority(T(com.plazoleta.restaurants.adapters.driving.http.util.HttpConstants$Roles).PROPIETARIO)")
     public ResponseEntity<DishResponse> toggleDishStatus(
             @Parameter(description = "ID del plato a habilitar/deshabilitar", required = true)
             @PathVariable Long dishId,
@@ -104,8 +109,9 @@ public class DishController {
             Authentication authentication) {
 
         Long currentUserId = Long.valueOf(authentication.getName());
-        Dish updatedDish = dishServicePort.toggleDishStatus(dishId, request.getActivo(), currentUserId);
-        DishResponse response = dishResponseMapper.dishToResponse(updatedDish);
+        Dish toggled = dishServicePort.toggleDishStatus(dishId, request.getActivo(), currentUserId);
+
+        DishResponse response = dishResponseMapper.dishToResponse(toggled);
         return ResponseEntity.ok(response);
     }
 }

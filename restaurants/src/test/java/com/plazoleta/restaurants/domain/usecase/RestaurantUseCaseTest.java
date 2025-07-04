@@ -486,4 +486,65 @@ class RestaurantUseCaseTest {
         // Then
         verify(restaurantPersistencePort).saveRestaurant(validRestaurant);
     }
+
+    @Test
+    void getAllRestaurants_WhenParametersAreValid_ShouldCallPersistencePort() {
+        // Given
+        int validPageNumber = DomainConstants.Restaurant.MIN_PAGE_NUMBER;
+        int validPageSize = DomainConstants.Restaurant.MIN_PAGE_SIZE;
+
+        // When
+        restaurantUseCase.getAllRestaurants(validPageNumber, validPageSize);
+
+        // Then
+        verify(restaurantPersistencePort).findAllRestaurantsSorted(validPageNumber, validPageSize);
+    }
+
+    @Test
+    void getAllRestaurants_WhenPageNumberIsTooSmall_ShouldThrowException() {
+        // Given
+        int invalidPageNumber = DomainConstants.Restaurant.MIN_PAGE_NUMBER - 1;
+        int validPageSize = DomainConstants.Restaurant.MIN_PAGE_SIZE;
+
+        // When & Then
+        InvalidRestaurantException exception = assertThrows(
+                InvalidRestaurantException.class,
+                () -> restaurantUseCase.getAllRestaurants(invalidPageNumber, validPageSize)
+        );
+
+        assertEquals(DomainConstants.Restaurant.ERROR_PAGE_NUMBER_INVALID, exception.getMessage());
+        verifyNoInteractions(restaurantPersistencePort);
+    }
+
+    @Test
+    void getAllRestaurants_WhenPageSizeIsTooSmall_ShouldThrowException() {
+        // Given
+        int validPageNumber = DomainConstants.Restaurant.MIN_PAGE_NUMBER;
+        int invalidPageSize = DomainConstants.Restaurant.MIN_PAGE_SIZE - 1;
+
+        // When & Then
+        InvalidRestaurantException exception = assertThrows(
+                InvalidRestaurantException.class,
+                () -> restaurantUseCase.getAllRestaurants(validPageNumber, invalidPageSize)
+        );
+
+        assertEquals(DomainConstants.Restaurant.ERROR_PAGE_SIZE_INVALID, exception.getMessage());
+        verifyNoInteractions(restaurantPersistencePort);
+    }
+
+    @Test
+    void getAllRestaurants_WhenPageSizeIsTooLarge_ShouldThrowException() {
+        // Given
+        int validPageNumber = DomainConstants.Restaurant.MIN_PAGE_NUMBER;
+        int invalidPageSize = DomainConstants.Restaurant.MAX_PAGE_SIZE + 1;
+
+        // When & Then
+        InvalidRestaurantException exception = assertThrows(
+                InvalidRestaurantException.class,
+                () -> restaurantUseCase.getAllRestaurants(validPageNumber, invalidPageSize)
+        );
+
+        assertEquals(DomainConstants.Restaurant.ERROR_PAGE_SIZE_TOO_LARGE, exception.getMessage());
+        verifyNoInteractions(restaurantPersistencePort);
+    }
 }

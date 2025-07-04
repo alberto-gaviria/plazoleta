@@ -2,6 +2,8 @@ package com.plazoleta.restaurants.domain.usecase;
 
 import com.plazoleta.restaurants.domain.api.IRestaurantServicePort;
 import com.plazoleta.restaurants.domain.model.Restaurant;
+import com.plazoleta.restaurants.domain.model.RestaurantSummary;
+import com.plazoleta.restaurants.domain.util.paged.Page;
 import com.plazoleta.restaurants.domain.spi.IRestaurantPersistencePort;
 import com.plazoleta.restaurants.domain.util.DomainConstants;
 import com.plazoleta.restaurants.domain.util.exceptions.InvalidRestaurantException;
@@ -20,6 +22,26 @@ public class RestaurantUseCase implements IRestaurantServicePort {
         validateRestaurantBusinessRules(restaurant);
 
         restaurantPersistencePort.saveRestaurant(restaurant);
+    }
+
+    @Override
+    public Page<RestaurantSummary> getAllRestaurants(int pageNumber, int pageSize) {
+        validatePaginationParameters(pageNumber, pageSize);
+        return restaurantPersistencePort.findAllRestaurantsSorted(pageNumber, pageSize);
+    }
+
+    private void validatePaginationParameters(int pageNumber, int pageSize) {
+        if (pageNumber < DomainConstants.Restaurant.MIN_PAGE_NUMBER) {
+            throw new InvalidRestaurantException(DomainConstants.Restaurant.ERROR_PAGE_NUMBER_INVALID);
+        }
+
+        if (pageSize < DomainConstants.Restaurant.MIN_PAGE_SIZE) {
+            throw new InvalidRestaurantException(DomainConstants.Restaurant.ERROR_PAGE_SIZE_INVALID);
+        }
+
+        if (pageSize > DomainConstants.Restaurant.MAX_PAGE_SIZE) {
+            throw new InvalidRestaurantException(DomainConstants.Restaurant.ERROR_PAGE_SIZE_TOO_LARGE);
+        }
     }
 
     private void validateRestaurant(Restaurant restaurant) {

@@ -6,6 +6,7 @@ import com.plazoleta.users.adapters.driving.http.mapper.IUserRequestMapper;
 import com.plazoleta.users.adapters.driving.http.mapper.IUserResponseMapper;
 import com.plazoleta.users.domain.api.IOwnerUserManagementServicePort;
 import com.plazoleta.users.domain.model.User;
+import com.plazoleta.users.adapters.driving.http.util.HttpConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -18,7 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/usuarios")
+@RequestMapping(HttpConstants.Paths.USUARIOS)
 @Tag(name = "Gestión de Usuarios por Propietario", description = "API para gestión de empleados por parte del propietario")
 public class OwnerUserManagementRestControllerAdapter {
 
@@ -34,15 +35,16 @@ public class OwnerUserManagementRestControllerAdapter {
         this.userResponseMapper = userResponseMapper;
     }
 
-    @Operation(summary = "Crear un nuevo empleado")
+    @Operation(summary = "Crear un nuevo empleado",
+            description = "Permite a un propietario crear un nuevo empleado en el sistema")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Empleado creado exitosamente"),
             @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
-            @ApiResponse(responseCode = "403", description = "No autorizado - Solo propietarios pueden crear empleados"),
+            @ApiResponse(responseCode = "403", description = "Solo propietarios pueden crear empleados"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    @PostMapping("/empleado")
-    @PreAuthorize("hasAuthority('PROPIETARIO')")
+    @PostMapping(HttpConstants.Paths.SUB_EMPLEADO)
+    @PreAuthorize("hasAuthority(T(com.plazoleta.users.adapters.driving.http.util.HttpConstants$Roles).PROPIETARIO)")
     public ResponseEntity<UserResponse> createEmpleado(@Valid @RequestBody AddUserRequest request,
                                                        Authentication authentication) {
         Long propietarioId = Long.valueOf(authentication.getName());

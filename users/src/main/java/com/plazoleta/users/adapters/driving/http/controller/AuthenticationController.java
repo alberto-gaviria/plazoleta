@@ -5,6 +5,7 @@ import com.plazoleta.users.adapters.driving.http.dto.response.AuthResponse;
 import com.plazoleta.users.adapters.driving.http.mapper.IAuthResponseMapper;
 import com.plazoleta.users.domain.api.IAuthenticationServicePort;
 import com.plazoleta.users.domain.model.Authentication;
+import com.plazoleta.users.adapters.driving.http.util.HttpConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -14,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping(HttpConstants.Paths.AUTH)
 @Tag(name = "Autenticación", description = "API para autenticación de usuarios")
 public class AuthenticationController {
 
@@ -27,14 +28,15 @@ public class AuthenticationController {
         this.authResponseMapper = authResponseMapper;
     }
 
-    @Operation(summary = "Iniciar sesión")
+    @Operation(summary = "Iniciar sesión",
+            description = "Permite a un usuario autenticarse en el sistema")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Autenticación exitosa"),
             @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
             @ApiResponse(responseCode = "401", description = "Credenciales inválidas"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    @PostMapping("/login")
+    @PostMapping(HttpConstants.Paths.LOGIN)
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationServicePort.authenticate(
                 loginRequest.getEmail(),

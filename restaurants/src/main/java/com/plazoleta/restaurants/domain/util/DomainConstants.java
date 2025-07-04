@@ -13,9 +13,16 @@ public final class DomainConstants {
 
         public static final String ROL_PROPIETARIO = "PROPIETARIO";
         public static final String ROL_ADMINISTRADOR = "ADMINISTRADOR";
+        public static final String ROL_CLIENTE = "CLIENTE";
 
         public static final Long ROL_ADMINISTRADOR_ID = 1L;
         public static final Long ROL_PROPIETARIO_ID = 2L;
+        public static final Long ROL_CLIENTE_ID = 4L;
+
+        public static final int MAX_PAGE_SIZE = 100;
+        public static final int DEFAULT_PAGE_SIZE = 10;
+        public static final int MIN_PAGE_NUMBER = 0;
+        public static final int MIN_PAGE_SIZE = 1;
 
         public static final String ERROR_RESTAURANT_NULO = "El restaurante no puede ser nulo";
         public static final String ERROR_NOMBRE_REQUERIDO = "El nombre es obligatorio";
@@ -34,6 +41,10 @@ public final class DomainConstants {
         public static final String ERROR_ADMINISTRADOR_NO_ENCONTRADO = "No se encontró el usuario administrador especificado";
         public static final String ERROR_ADMINISTRADOR_NO_VALIDO = "El ID del administrador no corresponde a un usuario con rol administrador";
 
+        public static final String ERROR_PAGE_NUMBER_INVALID = "El número de página debe ser mayor o igual a " + MIN_PAGE_NUMBER;
+        public static final String ERROR_PAGE_SIZE_INVALID = "El tamaño de página debe ser mayor o igual a " + MIN_PAGE_SIZE;
+        public static final String ERROR_PAGE_SIZE_TOO_LARGE = "El tamaño de página no puede ser mayor a " + MAX_PAGE_SIZE;
+
         private Restaurant() {
             throw new IllegalStateException("Clase de constantes");
         }
@@ -43,22 +54,25 @@ public final class DomainConstants {
 
         public static final String ROL_PROPIETARIO = "PROPIETARIO";
 
+        public static final int MIN_PRICE_VALUE = 0;
+
         public static final String ERROR_DISH_NULO = "El plato no puede ser nulo";
         public static final String ERROR_NOMBRE_REQUERIDO = "El nombre del plato es obligatorio";
         public static final String ERROR_PRECIO_REQUERIDO = "El precio del plato es obligatorio";
-        public static final String ERROR_PRECIO_POSITIVO = "El precio del plato debe ser un número entero positivo y mayor a 0";
+        public static final String ERROR_PRECIO_POSITIVO = "El precio del plato debe ser un número entero positivo " +
+                "y mayor a " + MIN_PRICE_VALUE;
         public static final String ERROR_DESCRIPCION_REQUERIDA = "La descripción del plato es obligatoria";
         public static final String ERROR_URL_IMAGEN_REQUERIDA = "La URL de la imagen es obligatoria";
         public static final String ERROR_CATEGORIA_REQUERIDA = "La categoría es obligatoria";
         public static final String ERROR_RESTAURANTE_REQUERIDO = "El restaurante es obligatorio";
         public static final String ERROR_RESTAURANTE_NO_ENCONTRADO = "No se encontró el restaurante especificado";
-        public static final String ERROR_PROPIETARIO_NO_AUTORIZADO = "Solo el propietario del restaurante puede crear o modificar platos";
+        public static final String ERROR_PROPIETARIO_NO_AUTORIZADO = "Solo el propietario del restaurante puede crear " +
+                "o modificar platos";
         public static final String ERROR_DISH_NO_ENCONTRADO = "No se encontró el plato especificado";
         public static final String ERROR_DISH_ID_REQUERIDO = "El ID del plato es obligatorio";
         public static final String ERROR_USUARIO_REQUERIDO = "El ID del usuario es obligatorio";
         public static final String ERROR_ESTADO_REQUERIDO = "El estado del plato (activo/inactivo) es obligatorio";
         public static final String ERROR_PLATO_OTRO_RESTAURANTE = "No se pueden modificar platos de otros restaurantes";
-
 
         private Dish() {
             throw new IllegalStateException("Clase de constantes");

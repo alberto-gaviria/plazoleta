@@ -6,6 +6,16 @@ public final class AdapterConstants {
         throw new IllegalStateException("Clase de constantes");
     }
 
+    public static final class DatabaseColumns {
+        public static final String NOMBRE_COLUMN = "nombre";
+        public static final String NIT_COLUMN = "nit";
+        public static final String ID_COLUMN = "id";
+
+        private DatabaseColumns() {
+            throw new IllegalStateException("Clase de constantes");
+        }
+    }
+
     public static final class ErrorMessages {
         public static final String RESTAURANT_NIT_DUPLICADO = "Ya existe un restaurante con ese NIT";
         public static final String RESTAURANT_NOMBRE_DUPLICADO = "Ya existe un restaurante con ese nombre";

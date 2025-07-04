@@ -6,6 +6,7 @@ import com.plazoleta.users.adapters.driving.http.mapper.IUserRequestMapper;
 import com.plazoleta.users.adapters.driving.http.mapper.IUserResponseMapper;
 import com.plazoleta.users.domain.api.IClientUserManagementServicePort;
 import com.plazoleta.users.domain.model.User;
+import com.plazoleta.users.adapters.driving.http.util.HttpConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -16,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/usuarios")
+@RequestMapping(HttpConstants.Paths.USUARIOS)
 @Tag(name = "Autoregistro de Clientes", description = "API para que los clientes se registren en el sistema")
 public class ClientUserManagementRestControllerAdapter {
 
@@ -32,13 +33,14 @@ public class ClientUserManagementRestControllerAdapter {
         this.userResponseMapper = userResponseMapper;
     }
 
-    @Operation(summary = "Crear cuenta de cliente (autoregistro)")
+    @Operation(summary = "Crear cuenta de cliente (autoregistro)",
+            description = "Permite a un usuario registrarse como cliente en el sistema")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Cliente registrado exitosamente"),
             @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    @PostMapping("/cliente")
+    @PostMapping(HttpConstants.Paths.SUB_CLIENTE)
     public ResponseEntity<UserResponse> createCliente(@Valid @RequestBody AddUserRequest request) {
         User user = userRequestMapper.addRequestToUsuario(request);
         User clienteCreado = clientUserManagementServicePort.saveCliente(user);

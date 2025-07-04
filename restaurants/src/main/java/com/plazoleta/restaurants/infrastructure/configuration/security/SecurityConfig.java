@@ -35,6 +35,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/restaurantes").hasAuthority("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.GET, "/restaurantes").hasAuthority("CLIENTE")
                         .requestMatchers(HttpMethod.POST, "/platos").hasAuthority("PROPIETARIO")
                         .requestMatchers(HttpMethod.PUT, "/platos/{dishId}").hasAuthority("PROPIETARIO")
                         .anyRequest().authenticated()

@@ -2,10 +2,15 @@ package com.plazoleta.restaurants.adapters.driving.http.controller;
 
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.AddRestaurantRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.response.RestaurantResponse;
+import com.plazoleta.restaurants.adapters.driving.http.dto.response.RestaurantSummaryResponse;
+import com.plazoleta.restaurants.adapters.driving.http.dto.response.PageResponse;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IRestaurantRequestMapper;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IRestaurantResponseMapper;
+import com.plazoleta.restaurants.adapters.driving.http.mapper.IRestaurantSummaryMapper;
 import com.plazoleta.restaurants.domain.api.IRestaurantServicePort;
 import com.plazoleta.restaurants.domain.model.Restaurant;
+import com.plazoleta.restaurants.domain.model.RestaurantSummary;
+import com.plazoleta.restaurants.domain.util.paged.Page;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,10 +21,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,6 +46,9 @@ class RestaurantControllerTest {
 
     @Mock
     private IRestaurantResponseMapper restaurantResponseMapper;
+
+    @Mock
+    private IRestaurantSummaryMapper restaurantSummaryMapper;
 
     @Mock
     private Authentication authentication;
@@ -279,7 +292,7 @@ class RestaurantControllerTest {
         // Then
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(restaurantResponse, response.getBody());
-        assertEquals(201, response.getStatusCodeValue());
+        assertEquals(201, response.getStatusCode().value());
         assertNotNull(response.getBody());
     }
 
@@ -314,5 +327,205 @@ class RestaurantControllerTest {
         // Then
         assertEquals(restaurantResponse, result.getBody());
         verify(restaurantResponseMapper, times(1)).restaurantToResponse(restaurant);
+    }
+
+    // =============== NUEVOS TESTS PARA getAllRestaurants ===============
+
+    @Test
+    void getAllRestaurants_WhenValidPagination_ShouldReturnOkWithPageResponse() {
+        // Given
+        int page = 0;
+        int size = 10;
+
+        RestaurantSummary summary1 = new RestaurantSummary("Restaurant A", "https://example.com/logoA.png");
+        RestaurantSummary summary2 = new RestaurantSummary("Restaurant B", "https://example.com/logoB.png");
+        List<RestaurantSummary> summaries = Arrays.asList(summary1, summary2);
+
+        Page<RestaurantSummary> restaurantsPage = new Page<>(summaries, page, size, 25L);
+
+        RestaurantSummaryResponse response1 = new RestaurantSummaryResponse("Restaurant A", "https://example.com/logoA.png");
+        RestaurantSummaryResponse response2 = new RestaurantSummaryResponse("Restaurant B", "https://example.com/logoB.png");
+        List<RestaurantSummaryResponse> responses = Arrays.asList(response1, response2);
+
+        PageResponse<RestaurantSummaryResponse> pageResponse = new PageResponse<>(
+                responses, page, size, 25L, 3, true, false
+        );
+
+        when(restaurantServicePort.getAllRestaurants(page, size)).thenReturn(restaurantsPage);
+        when(restaurantSummaryMapper.toPageResponse(restaurantsPage)).thenReturn(pageResponse);
+
+        // When
+        ResponseEntity<PageResponse<RestaurantSummaryResponse>> result = controller.getAllRestaurants(page, size);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertEquals(pageResponse, result.getBody());
+        assertEquals(2, result.getBody().getContent().size());
+        assertEquals("Restaurant A", result.getBody().getContent().get(0).getNombre());
+        assertEquals("Restaurant B", result.getBody().getContent().get(1).getNombre());
+
+        verify(restaurantServicePort).getAllRestaurants(page, size);
+        verify(restaurantSummaryMapper).toPageResponse(restaurantsPage);
+    }
+
+    @Test
+    void getAllRestaurants_WhenEmptyPage_ShouldReturnOkWithEmptyContent() {
+        // Given
+        int page = 0;
+        int size = 10;
+
+        List<RestaurantSummary> emptySummaries = Collections.emptyList();
+        Page<RestaurantSummary> emptyPage = new Page<>(emptySummaries, page, size, 0L);
+
+        List<RestaurantSummaryResponse> emptyResponses = Collections.emptyList();
+        PageResponse<RestaurantSummaryResponse> emptyPageResponse = new PageResponse<>(
+                emptyResponses, page, size, 0L, 0, false, false
+        );
+
+        when(restaurantServicePort.getAllRestaurants(page, size)).thenReturn(emptyPage);
+        when(restaurantSummaryMapper.toPageResponse(emptyPage)).thenReturn(emptyPageResponse);
+
+        // When
+        ResponseEntity<PageResponse<RestaurantSummaryResponse>> result = controller.getAllRestaurants(page, size);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertEquals(emptyPageResponse, result.getBody());
+        assertEquals(0, result.getBody().getContent().size());
+        assertEquals(0L, result.getBody().getTotalElements());
+
+        verify(restaurantServicePort).getAllRestaurants(page, size);
+        verify(restaurantSummaryMapper).toPageResponse(emptyPage);
+    }
+
+    @Test
+    void getAllRestaurants_WhenDifferentPageSize_ShouldCallServiceWithCorrectParameters() {
+        // Given
+        int page = 2;
+        int size = 20;
+
+        RestaurantSummary summary = new RestaurantSummary("Restaurant C", "https://example.com/logoC.png");
+        List<RestaurantSummary> summaries = Collections.singletonList(summary);
+        Page<RestaurantSummary> restaurantsPage = new Page<>(summaries, page, size, 100L);
+
+        RestaurantSummaryResponse response = new RestaurantSummaryResponse("Restaurant C", "https://example.com/logoC.png");
+        List<RestaurantSummaryResponse> responses = Collections.singletonList(response);
+        PageResponse<RestaurantSummaryResponse> pageResponse = new PageResponse<>(
+                responses, page, size, 100L, 5, true, true
+        );
+
+        when(restaurantServicePort.getAllRestaurants(page, size)).thenReturn(restaurantsPage);
+        when(restaurantSummaryMapper.toPageResponse(restaurantsPage)).thenReturn(pageResponse);
+
+        // When
+        ResponseEntity<PageResponse<RestaurantSummaryResponse>> result = controller.getAllRestaurants(page, size);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(page, result.getBody().getPageNumber());
+        assertEquals(size, result.getBody().getPageSize());
+        assertEquals(100L, result.getBody().getTotalElements());
+
+        verify(restaurantServicePort).getAllRestaurants(page, size);
+        verify(restaurantSummaryMapper).toPageResponse(restaurantsPage);
+    }
+
+    @Test
+    void getAllRestaurants_WhenServiceReturnsPage_ShouldMapToPageResponse() {
+        // Given
+        int page = 1;
+        int size = 5;
+
+        RestaurantSummary summary1 = new RestaurantSummary("Pizza Palace", "https://example.com/pizza.png");
+        RestaurantSummary summary2 = new RestaurantSummary("Burger World", "https://example.com/burger.png");
+        RestaurantSummary summary3 = new RestaurantSummary("Sushi Bar", "https://example.com/sushi.png");
+        List<RestaurantSummary> summaries = Arrays.asList(summary1, summary2, summary3);
+        Page<RestaurantSummary> restaurantsPage = new Page<>(summaries, page, size, 15L);
+
+        RestaurantSummaryResponse response1 = new RestaurantSummaryResponse("Pizza Palace", "https://example.com/pizza.png");
+        RestaurantSummaryResponse response2 = new RestaurantSummaryResponse("Burger World", "https://example.com/burger.png");
+        RestaurantSummaryResponse response3 = new RestaurantSummaryResponse("Sushi Bar", "https://example.com/sushi.png");
+        List<RestaurantSummaryResponse> responses = Arrays.asList(response1, response2, response3);
+        PageResponse<RestaurantSummaryResponse> pageResponse = new PageResponse<>(
+                responses, page, size, 15L, 3, true, true
+        );
+
+        when(restaurantServicePort.getAllRestaurants(page, size)).thenReturn(restaurantsPage);
+        when(restaurantSummaryMapper.toPageResponse(restaurantsPage)).thenReturn(pageResponse);
+
+        // When
+        ResponseEntity<PageResponse<RestaurantSummaryResponse>> result = controller.getAllRestaurants(page, size);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(3, result.getBody().getContent().size());
+        assertEquals("Pizza Palace", result.getBody().getContent().get(0).getNombre());
+        assertEquals("Burger World", result.getBody().getContent().get(1).getNombre());
+        assertEquals("Sushi Bar", result.getBody().getContent().get(2).getNombre());
+
+        verify(restaurantServicePort, times(1)).getAllRestaurants(page, size);
+        verify(restaurantSummaryMapper, times(1)).toPageResponse(restaurantsPage);
+    }
+
+    @Test
+    void getAllRestaurants_WhenCalled_ShouldFollowCompleteFlow() {
+        // Given
+        int page = 0;
+        int size = 10;
+
+        RestaurantSummary summary = new RestaurantSummary("Test Restaurant", "https://test.com/logo.png");
+        List<RestaurantSummary> summaries = Collections.singletonList(summary);
+        Page<RestaurantSummary> restaurantsPage = new Page<>(summaries, page, size, 1L);
+
+        RestaurantSummaryResponse response = new RestaurantSummaryResponse("Test Restaurant", "https://test.com/logo.png");
+        List<RestaurantSummaryResponse> responses = Collections.singletonList(response);
+        PageResponse<RestaurantSummaryResponse> pageResponse = new PageResponse<>(
+                responses, page, size, 1L, 1, false, false
+        );
+
+        when(restaurantServicePort.getAllRestaurants(page, size)).thenReturn(restaurantsPage);
+        when(restaurantSummaryMapper.toPageResponse(restaurantsPage)).thenReturn(pageResponse);
+
+        // When
+        ResponseEntity<PageResponse<RestaurantSummaryResponse>> result = controller.getAllRestaurants(page, size);
+
+        // Then
+        // Verify complete flow
+        verify(restaurantServicePort, times(1)).getAllRestaurants(page, size);
+        verify(restaurantSummaryMapper, times(1)).toPageResponse(restaurantsPage);
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(pageResponse, result.getBody());
+        verifyNoMoreInteractions(restaurantServicePort, restaurantSummaryMapper);
+    }
+
+    @Test
+    void getAllRestaurants_WhenExtremePageValues_ShouldHandleCorrectly() {
+        // Given
+        int page = Integer.MAX_VALUE;
+        int size = 1;
+
+        List<RestaurantSummary> emptySummaries = Collections.emptyList();
+        Page<RestaurantSummary> emptyPage = new Page<>(emptySummaries, page, size, 0L);
+
+        List<RestaurantSummaryResponse> emptyResponses = Collections.emptyList();
+        PageResponse<RestaurantSummaryResponse> emptyPageResponse = new PageResponse<>(
+                emptyResponses, page, size, 0L, 0, false, false
+        );
+
+        when(restaurantServicePort.getAllRestaurants(page, size)).thenReturn(emptyPage);
+        when(restaurantSummaryMapper.toPageResponse(emptyPage)).thenReturn(emptyPageResponse);
+
+        // When
+        ResponseEntity<PageResponse<RestaurantSummaryResponse>> result = controller.getAllRestaurants(page, size);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(Integer.MAX_VALUE, result.getBody().getPageNumber());
+        assertEquals(1, result.getBody().getPageSize());
+
+        verify(restaurantServicePort).getAllRestaurants(page, size);
+        verify(restaurantSummaryMapper).toPageResponse(emptyPage);
     }
 }
