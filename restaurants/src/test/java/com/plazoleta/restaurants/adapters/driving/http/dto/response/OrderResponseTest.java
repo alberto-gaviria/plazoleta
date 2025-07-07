@@ -20,7 +20,7 @@ class OrderResponseTest {
         assertNull(response.getIdCliente());
         assertNull(response.getFecha());
         assertNull(response.getEstado());
-        assertNull(response.getIdChef());
+        assertNull(response.getIdEmpleado());
         assertNull(response.getIdRestaurante());
         assertNull(response.getPinSeguridad());
         assertNull(response.getPlatos());
@@ -46,7 +46,7 @@ class OrderResponseTest {
         assertEquals(idCliente, response.getIdCliente());
         assertEquals(fecha, response.getFecha());
         assertEquals(estado, response.getEstado());
-        assertEquals(idChef, response.getIdChef());
+        assertEquals(idChef, response.getIdEmpleado());
         assertEquals(idRestaurante, response.getIdRestaurante());
         assertEquals(pinSeguridad, response.getPinSeguridad());
         assertEquals(platos, response.getPlatos());
@@ -70,7 +70,7 @@ class OrderResponseTest {
         response.setIdCliente(idCliente);
         response.setFecha(fecha);
         response.setEstado(estado);
-        response.setIdChef(idChef);
+        response.setIdEmpleado(idChef);
         response.setIdRestaurante(idRestaurante);
         response.setPinSeguridad(pinSeguridad);
         response.setPlatos(platos);
@@ -80,7 +80,7 @@ class OrderResponseTest {
         assertEquals(idCliente, response.getIdCliente());
         assertEquals(fecha, response.getFecha());
         assertEquals(estado, response.getEstado());
-        assertEquals(idChef, response.getIdChef());
+        assertEquals(idChef, response.getIdEmpleado());
         assertEquals(idRestaurante, response.getIdRestaurante());
         assertEquals(pinSeguridad, response.getPinSeguridad());
         assertEquals(platos, response.getPlatos());

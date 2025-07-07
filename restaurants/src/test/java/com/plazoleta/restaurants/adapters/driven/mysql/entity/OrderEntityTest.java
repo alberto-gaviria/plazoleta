@@ -18,7 +18,7 @@ class OrderEntityTest {
         assertNull(entity.getIdCliente());
         assertNull(entity.getFecha());
         assertNull(entity.getEstado());
-        assertNull(entity.getIdChef());
+        assertNull(entity.getIdEmpleado());
         assertNull(entity.getIdRestaurante());
         assertNull(entity.getPinSeguridad());
     }
@@ -42,7 +42,7 @@ class OrderEntityTest {
         assertEquals(idCliente, entity.getIdCliente());
         assertEquals(fecha, entity.getFecha());
         assertEquals(estado, entity.getEstado());
-        assertEquals(idChef, entity.getIdChef());
+        assertEquals(idChef, entity.getIdEmpleado());
         assertEquals(idRestaurante, entity.getIdRestaurante());
         assertEquals(pinSeguridad, entity.getPinSeguridad());
     }
@@ -105,7 +105,7 @@ class OrderEntityTest {
         entity.setIdCliente(idCliente);
         entity.setFecha(fecha);
         entity.setEstado(estado);
-        entity.setIdChef(idChef);
+        entity.setIdEmpleado(idChef);
         entity.setIdRestaurante(idRestaurante);
         entity.setPinSeguridad(pinSeguridad);
 
@@ -114,7 +114,7 @@ class OrderEntityTest {
         assertEquals(idCliente, entity.getIdCliente());
         assertEquals(fecha, entity.getFecha());
         assertEquals(estado, entity.getEstado());
-        assertEquals(idChef, entity.getIdChef());
+        assertEquals(idChef, entity.getIdEmpleado());
         assertEquals(idRestaurante, entity.getIdRestaurante());
         assertEquals(pinSeguridad, entity.getPinSeguridad());
     }

@@ -53,7 +53,7 @@ public class RestaurantMysqlAdapter implements IRestaurantPersistencePort {
         List<RestaurantSummary> content = springPage.getContent()
                 .stream()
                 .map(entity -> new RestaurantSummary(entity.getNombre(), entity.getUrlLogo()))
-                .collect(Collectors.toList());
+                .toList();
 
         return new Page<>(
                 content,

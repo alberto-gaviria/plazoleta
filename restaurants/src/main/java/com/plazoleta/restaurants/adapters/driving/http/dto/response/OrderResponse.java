@@ -8,36 +8,88 @@ public class OrderResponse {
     private Long idCliente;
     private LocalDateTime fecha;
     private String estado;
+    private Long idEmpleado;
     private Long idRestaurante;
+    private String pinSeguridad;
     private List<OrderDishResponse> platos;
 
-    public OrderResponse() {}
+    public OrderResponse() {
+    }
 
     public OrderResponse(Long id, Long idCliente, LocalDateTime fecha, String estado,
-                         Long idRestaurante, List<OrderDishResponse> platos) {
+                         Long idEmpleado, Long idRestaurante, String pinSeguridad,
+                         List<OrderDishResponse> platos) {
         this.id = id;
         this.idCliente = idCliente;
         this.fecha = fecha;
         this.estado = estado;
+        this.idEmpleado = idEmpleado;
         this.idRestaurante = idRestaurante;
+        this.pinSeguridad = pinSeguridad;
         this.platos = platos;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public Long getIdCliente() { return idCliente; }
-    public void setIdCliente(Long idCliente) { this.idCliente = idCliente; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public LocalDateTime getFecha() { return fecha; }
-    public void setFecha(LocalDateTime fecha) { this.fecha = fecha; }
+    public Long getIdCliente() {
+        return idCliente;
+    }
 
-    public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
+    public void setIdCliente(Long idCliente) {
+        this.idCliente = idCliente;
+    }
 
-    public Long getIdRestaurante() { return idRestaurante; }
-    public void setIdRestaurante(Long idRestaurante) { this.idRestaurante = idRestaurante; }
+    public LocalDateTime getFecha() {
+        return fecha;
+    }
 
-    public List<OrderDishResponse> getPlatos() { return platos; }
-    public void setPlatos(List<OrderDishResponse> platos) { this.platos = platos; }
+    public void setFecha(LocalDateTime fecha) {
+        this.fecha = fecha;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
+    public Long getIdEmpleado() {
+        return idEmpleado;
+    }
+
+    public void setIdEmpleado(Long idEmpleado) {
+        this.idEmpleado = idEmpleado;
+    }
+
+    public Long getIdRestaurante() {
+        return idRestaurante;
+    }
+
+    public void setIdRestaurante(Long idRestaurante) {
+        this.idRestaurante = idRestaurante;
+    }
+
+    public String getPinSeguridad() {
+        return pinSeguridad;
+    }
+
+    public void setPinSeguridad(String pinSeguridad) {
+        this.pinSeguridad = pinSeguridad;
+    }
+
+    public List<OrderDishResponse> getPlatos() {
+        return platos;
+    }
+
+    public void setPlatos(List<OrderDishResponse> platos) {
+        this.platos = platos;
+    }
 }

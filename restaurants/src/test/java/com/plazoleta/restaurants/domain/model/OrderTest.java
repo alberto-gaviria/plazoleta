@@ -40,7 +40,7 @@ class OrderTest {
         assertEquals(idCliente, order.getIdCliente());
         assertEquals(fecha, order.getFecha());
         assertEquals(estado, order.getEstado());
-        assertEquals(idChef, order.getIdChef());
+        assertEquals(idChef, order.getIdEmpleado());
         assertEquals(idRestaurante, order.getIdRestaurante());
         assertEquals(pinSeguridad, order.getPinSeguridad());
         assertEquals(platos, order.getPlatos());
@@ -82,7 +82,7 @@ class OrderTest {
         order.setIdCliente(idCliente);
         order.setFecha(fecha);
         order.setEstado(estado);
-        order.setIdChef(idChef);
+        order.setIdEmpleado(idChef);
         order.setIdRestaurante(idRestaurante);
         order.setPinSeguridad(pinSeguridad);
         order.setPlatos(platos);
@@ -92,7 +92,7 @@ class OrderTest {
         assertEquals(idCliente, order.getIdCliente());
         assertEquals(fecha, order.getFecha());
         assertEquals(estado, order.getEstado());
-        assertEquals(idChef, order.getIdChef());
+        assertEquals(idChef, order.getIdEmpleado());
         assertEquals(idRestaurante, order.getIdRestaurante());
         assertEquals(pinSeguridad, order.getPinSeguridad());
         assertEquals(platos, order.getPlatos());

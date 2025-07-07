@@ -32,8 +32,6 @@ public class OrderUseCase implements IOrderServicePort {
         order.setIdCliente(clientId);
         order.setFecha(LocalDateTime.now());
         order.setEstado(OrderStatus.PENDIENTE);
-        order.setIdChef(null);
-        order.setPinSeguridad(null);
 
         return orderPersistencePort.saveOrder(order);
     }

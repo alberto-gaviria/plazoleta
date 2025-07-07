@@ -8,7 +8,7 @@ public class Order {
     private Long idCliente;
     private LocalDateTime fecha;
     private OrderStatus estado;
-    private Long idChef;
+    private Long idEmpleado;
     private Long idRestaurante;
     private String pinSeguridad;
     private List<OrderDish> platos;
@@ -19,12 +19,12 @@ public class Order {
     }
 
     public Order(Long id, Long idCliente, LocalDateTime fecha, OrderStatus estado,
-                 Long idChef, Long idRestaurante, String pinSeguridad, List<OrderDish> platos) {
+                 Long idEmpleado, Long idRestaurante, String pinSeguridad, List<OrderDish> platos) {
         this.id = id;
         this.idCliente = idCliente;
         this.fecha = fecha != null ? fecha : LocalDateTime.now();
         this.estado = estado != null ? estado : OrderStatus.PENDIENTE;
-        this.idChef = idChef;
+        this.idEmpleado = idEmpleado;
         this.idRestaurante = idRestaurante;
         this.pinSeguridad = pinSeguridad;
         this.platos = platos;
@@ -42,8 +42,8 @@ public class Order {
     public OrderStatus getEstado() { return estado; }
     public void setEstado(OrderStatus estado) { this.estado = estado; }
 
-    public Long getIdChef() { return idChef; }
-    public void setIdChef(Long idChef) { this.idChef = idChef; }
+    public Long getIdEmpleado() { return idEmpleado; }
+    public void setIdEmpleado(Long idEmpleado) { this.idEmpleado = idEmpleado; }
 
     public Long getIdRestaurante() { return idRestaurante; }
     public void setIdRestaurante(Long idRestaurante) { this.idRestaurante = idRestaurante; }

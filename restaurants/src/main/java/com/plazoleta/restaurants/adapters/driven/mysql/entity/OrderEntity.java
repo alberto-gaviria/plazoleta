@@ -30,8 +30,8 @@ public class OrderEntity {
     @Enumerated(EnumType.STRING)
     private OrderStatus estado;
 
-    @Column(name = "id_chef")
-    private Long idChef;
+    @Column(name = "id_empleado")
+    private Long idEmpleado;
 
     @Column(name = "id_restaurante", nullable = false)
     private Long idRestaurante;

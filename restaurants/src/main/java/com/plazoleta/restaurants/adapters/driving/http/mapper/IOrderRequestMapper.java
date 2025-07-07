@@ -14,7 +14,7 @@ public interface IOrderRequestMapper {
     @Mapping(target = "idCliente", ignore = true)
     @Mapping(target = "fecha", ignore = true)
     @Mapping(target = "estado", ignore = true)
-    @Mapping(target = "idChef", ignore = true)
+    @Mapping(target = "idEmpleado", ignore = true)
     @Mapping(target = "pinSeguridad", ignore = true)
     Order createRequestToOrder(CreateOrderRequest request);
 

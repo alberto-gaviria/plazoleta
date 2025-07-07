@@ -98,7 +98,7 @@ public class DishMysqlAdapter implements IDishPersistencePort {
         List<DishWithCategory> content = springPage.getContent()
                 .stream()
                 .map(this::convertToDishWithCategory)
-                .collect(Collectors.toList());
+                .toList();
 
         return new Page<>(
                 content,
