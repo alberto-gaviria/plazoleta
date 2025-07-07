@@ -2,6 +2,8 @@ package com.plazoleta.restaurants.domain.usecase;
 
 import com.plazoleta.restaurants.domain.api.IDishServicePort;
 import com.plazoleta.restaurants.domain.model.Dish;
+import com.plazoleta.restaurants.domain.model.DishWithCategory;
+import com.plazoleta.restaurants.domain.util.paged.Page;
 import com.plazoleta.restaurants.domain.spi.IDishPersistencePort;
 import com.plazoleta.restaurants.domain.util.DomainConstants;
 import com.plazoleta.restaurants.domain.util.exceptions.InvalidDishException;
@@ -18,13 +20,13 @@ public class DishUseCase implements IDishServicePort {
     }
 
     @Override
-    public void saveDish(Dish dish, Long currentUserId) {
+    public Dish saveDish(Dish dish, Long currentUserId) {
         validateDish(dish);
         validateDishBusinessRules(dish);
         validateRestaurantExists(dish.getIdRestaurante());
         validateOwnership(dish.getIdRestaurante(), currentUserId);
 
-        dishPersistencePort.saveDish(dish);
+        return dishPersistencePort.saveDish(dish);
     }
 
     @Override
@@ -45,9 +47,9 @@ public class DishUseCase implements IDishServicePort {
         dish.setPrecio(precio);
         dish.setDescripcion(descripcion);
 
-        dishPersistencePort.updateDish(dish);
-        return dish;
+        return dishPersistencePort.updateDish(dish);
     }
+
     @Override
     public Dish toggleDishStatus(Long dishId, Boolean activo, Long currentUserId) {
         validateToggleStatusParameters(dishId, activo, currentUserId);
@@ -63,8 +65,34 @@ public class DishUseCase implements IDishServicePort {
         validateOwnership(restaurantId, currentUserId);
 
         dish.setActivo(activo);
-        dishPersistencePort.updateDish(dish);
-        return dish;
+
+        return dishPersistencePort.updateDish(dish);
+    }
+
+    @Override
+    public Page<DishWithCategory> getDishesByRestaurant(Long restaurantId, Long categoryId, int pageNumber, int pageSize) {
+        validateRestaurantListingParameters(restaurantId, pageNumber, pageSize);
+        validateRestaurantExists(restaurantId);
+
+        return dishPersistencePort.findDishesByRestaurant(restaurantId, categoryId, pageNumber, pageSize);
+    }
+
+    private void validateRestaurantListingParameters(Long restaurantId, int pageNumber, int pageSize) {
+        if (restaurantId == null) {
+            throw new InvalidDishException(DomainConstants.Dish.ERROR_RESTAURANTE_REQUERIDO);
+        }
+
+        if (pageNumber < DomainConstants.Dish.MIN_PAGE_NUMBER) {
+            throw new InvalidDishException(DomainConstants.Dish.ERROR_PAGE_NUMBER_INVALID);
+        }
+
+        if (pageSize < DomainConstants.Dish.MIN_PAGE_SIZE) {
+            throw new InvalidDishException(DomainConstants.Dish.ERROR_PAGE_SIZE_INVALID);
+        }
+
+        if (pageSize > DomainConstants.Dish.MAX_PAGE_SIZE) {
+            throw new InvalidDishException(DomainConstants.Dish.ERROR_PAGE_SIZE_TOO_LARGE);
+        }
     }
 
     private void validateToggleStatusParameters(Long dishId, Boolean activo, Long currentUserId) {
@@ -146,7 +174,6 @@ public class DishUseCase implements IDishServicePort {
     }
 
     private void validateOwnership(Long restaurantId, Long currentUserId) {
-
         Long restaurantOwnerId = dishPersistencePort.getRestaurantOwnerId(restaurantId);
         if (!currentUserId.equals(restaurantOwnerId)) {
             throw new InvalidDishException(DomainConstants.Dish.ERROR_PROPIETARIO_NO_AUTORIZADO);

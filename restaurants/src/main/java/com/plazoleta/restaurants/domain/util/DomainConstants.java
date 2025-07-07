@@ -56,6 +56,10 @@ public final class DomainConstants {
 
         public static final int MIN_PRICE_VALUE = 0;
 
+        public static final int MAX_PAGE_SIZE = 100;
+        public static final int MIN_PAGE_NUMBER = 0;
+        public static final int MIN_PAGE_SIZE = 1;
+
         public static final String ERROR_DISH_NULO = "El plato no puede ser nulo";
         public static final String ERROR_NOMBRE_REQUERIDO = "El nombre del plato es obligatorio";
         public static final String ERROR_PRECIO_REQUERIDO = "El precio del plato es obligatorio";
@@ -73,6 +77,13 @@ public final class DomainConstants {
         public static final String ERROR_USUARIO_REQUERIDO = "El ID del usuario es obligatorio";
         public static final String ERROR_ESTADO_REQUERIDO = "El estado del plato (activo/inactivo) es obligatorio";
         public static final String ERROR_PLATO_OTRO_RESTAURANTE = "No se pueden modificar platos de otros restaurantes";
+
+        public static final String ERROR_PAGE_NUMBER_INVALID = "El número de página debe ser mayor o igual a "
+                + MIN_PAGE_NUMBER;
+        public static final String ERROR_PAGE_SIZE_INVALID = "El tamaño de página debe ser mayor o igual a "
+                + MIN_PAGE_SIZE;
+        public static final String ERROR_PAGE_SIZE_TOO_LARGE = "El tamaño de página no puede ser mayor a "
+                + MAX_PAGE_SIZE;
 
         private Dish() {
             throw new IllegalStateException("Clase de constantes");

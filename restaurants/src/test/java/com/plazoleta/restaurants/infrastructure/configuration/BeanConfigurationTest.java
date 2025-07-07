@@ -2,8 +2,11 @@ package com.plazoleta.restaurants.infrastructure.configuration;
 
 import com.plazoleta.restaurants.adapters.driven.mysql.adapter.DishMysqlAdapter;
 import com.plazoleta.restaurants.adapters.driven.mysql.adapter.RestaurantMysqlAdapter;
+import com.plazoleta.restaurants.adapters.driven.mysql.mapper.ICategoryEntityMapper;
 import com.plazoleta.restaurants.adapters.driven.mysql.mapper.IDishEntityMapper;
+import com.plazoleta.restaurants.adapters.driven.mysql.mapper.IDishWithCategoryMapper;
 import com.plazoleta.restaurants.adapters.driven.mysql.mapper.IRestaurantEntityMapper;
+import com.plazoleta.restaurants.adapters.driven.mysql.repository.ICategoryRepository;
 import com.plazoleta.restaurants.adapters.driven.mysql.repository.IDishRepository;
 import com.plazoleta.restaurants.adapters.driven.mysql.repository.IRestaurantRepository;
 import com.plazoleta.restaurants.domain.api.IDishServicePort;
@@ -36,7 +39,16 @@ class BeanConfigurationTest {
     private IDishRepository dishRepository;
 
     @Mock
+    private ICategoryRepository categoryRepository;
+
+    @Mock
     private IDishEntityMapper dishEntityMapper;
+
+    @Mock
+    private ICategoryEntityMapper categoryEntityMapper;
+
+    @Mock
+    private IDishWithCategoryMapper dishWithCategoryMapper;
 
     @Mock
     private IRestaurantPersistencePort restaurantPersistencePort;
@@ -156,7 +168,7 @@ class BeanConfigurationTest {
         assertInstanceOf(RestaurantUseCase.class, result);
     }
 
-    // ==================== DISH PERSISTENCE PORT TESTS ====================
+    // ==================== DISH PERSISTENCE PORT TESTS (UPDATED FOR HU10) ====================
 
     @Test
     void dishPersistencePort_WhenValidDependencies_ShouldReturnDishMysqlAdapter() {
@@ -164,7 +176,10 @@ class BeanConfigurationTest {
         IDishPersistencePort result = beanConfiguration.dishPersistencePort(
                 dishRepository,
                 restaurantRepository,
-                dishEntityMapper);
+                categoryRepository,
+                dishEntityMapper,
+                categoryEntityMapper,
+                dishWithCategoryMapper);
 
         // Then
         assertNotNull(result);
@@ -177,11 +192,17 @@ class BeanConfigurationTest {
         IDishPersistencePort result1 = beanConfiguration.dishPersistencePort(
                 dishRepository,
                 restaurantRepository,
-                dishEntityMapper);
+                categoryRepository,
+                dishEntityMapper,
+                categoryEntityMapper,
+                dishWithCategoryMapper);
         IDishPersistencePort result2 = beanConfiguration.dishPersistencePort(
                 dishRepository,
                 restaurantRepository,
-                dishEntityMapper);
+                categoryRepository,
+                dishEntityMapper,
+                categoryEntityMapper,
+                dishWithCategoryMapper);
 
         // Then
         assertNotNull(result1);
@@ -197,24 +218,33 @@ class BeanConfigurationTest {
         IDishPersistencePort result = beanConfiguration.dishPersistencePort(
                 dishRepository,
                 restaurantRepository,
-                dishEntityMapper);
+                categoryRepository,
+                dishEntityMapper,
+                categoryEntityMapper,
+                dishWithCategoryMapper);
 
         // Then
         assertNotNull(result);
     }
 
     @Test
-    void dishPersistencePort_WhenDifferentRepositoriesAndMapper_ShouldCreateAdapter() {
+    void dishPersistencePort_WhenDifferentRepositoriesAndMappers_ShouldCreateAdapter() {
         // Given
         IDishRepository differentDishRepository = mock(IDishRepository.class);
         IRestaurantRepository differentRestaurantRepository = mock(IRestaurantRepository.class);
-        IDishEntityMapper differentMapper = mock(IDishEntityMapper.class);
+        ICategoryRepository differentCategoryRepository = mock(ICategoryRepository.class);
+        IDishEntityMapper differentDishMapper = mock(IDishEntityMapper.class);
+        ICategoryEntityMapper differentCategoryMapper = mock(ICategoryEntityMapper.class);
+        IDishWithCategoryMapper differentDishWithCategoryMapper = mock(IDishWithCategoryMapper.class);
 
         // When
         IDishPersistencePort result = beanConfiguration.dishPersistencePort(
                 differentDishRepository,
                 differentRestaurantRepository,
-                differentMapper);
+                differentCategoryRepository,
+                differentDishMapper,
+                differentCategoryMapper,
+                differentDishWithCategoryMapper);
 
         // Then
         assertNotNull(result);
@@ -269,7 +299,7 @@ class BeanConfigurationTest {
         assertInstanceOf(DishUseCase.class, result);
     }
 
-    // ==================== INTEGRATION TESTS ====================
+    // ==================== INTEGRATION TESTS (UPDATED FOR HU10) ====================
 
     @Test
     void allBeans_WhenConfiguredTogether_ShouldWorkCorrectly() {
@@ -283,7 +313,10 @@ class BeanConfigurationTest {
         IDishPersistencePort dishPersistence = beanConfiguration.dishPersistencePort(
                 dishRepository,
                 restaurantRepository,
-                dishEntityMapper);
+                categoryRepository,
+                dishEntityMapper,
+                categoryEntityMapper,
+                dishWithCategoryMapper);
 
         IDishServicePort dishService = beanConfiguration.dishServicePort(dishPersistence);
 
@@ -323,9 +356,11 @@ class BeanConfigurationTest {
     void dishPersistencePort_WithSameParameters_ShouldCreateDifferentInstances() {
         // When
         IDishPersistencePort adapter1 = beanConfiguration.dishPersistencePort(
-                dishRepository, restaurantRepository, dishEntityMapper);
+                dishRepository, restaurantRepository, categoryRepository,
+                dishEntityMapper, categoryEntityMapper, dishWithCategoryMapper);
         IDishPersistencePort adapter2 = beanConfiguration.dishPersistencePort(
-                dishRepository, restaurantRepository, dishEntityMapper);
+                dishRepository, restaurantRepository, categoryRepository,
+                dishEntityMapper, categoryEntityMapper, dishWithCategoryMapper);
 
         // Then
         assertNotSame(adapter1, adapter2);
@@ -381,7 +416,8 @@ class BeanConfigurationTest {
     void dishPersistencePort_ShouldReturnCorrectImplementation() {
         // When
         IDishPersistencePort result = beanConfiguration.dishPersistencePort(
-                dishRepository, restaurantRepository, dishEntityMapper);
+                dishRepository, restaurantRepository, categoryRepository,
+                dishEntityMapper, categoryEntityMapper, dishWithCategoryMapper);
 
         // Then
         assertTrue(result instanceof DishMysqlAdapter);
@@ -408,7 +444,8 @@ class BeanConfigurationTest {
         assertDoesNotThrow(() -> {
             beanConfiguration.restaurantPersistencePort(restaurantRepository, restaurantEntityMapper);
             beanConfiguration.restaurantServicePort(restaurantPersistencePort);
-            beanConfiguration.dishPersistencePort(dishRepository, restaurantRepository, dishEntityMapper);
+            beanConfiguration.dishPersistencePort(dishRepository, restaurantRepository, categoryRepository,
+                                                  dishEntityMapper, categoryEntityMapper, dishWithCategoryMapper);
             beanConfiguration.dishServicePort(dishPersistencePort);
         });
     }
@@ -430,7 +467,8 @@ class BeanConfigurationTest {
         IRestaurantServicePort restaurantService = config.restaurantServicePort(restaurantPersistence);
 
         IDishPersistencePort dishPersistence = config.dishPersistencePort(
-                dishRepository, restaurantRepository, dishEntityMapper);
+                dishRepository, restaurantRepository, categoryRepository,
+                dishEntityMapper, categoryEntityMapper, dishWithCategoryMapper);
         IDishServicePort dishService = config.dishServicePort(dishPersistence);
 
         // Then

@@ -28,7 +28,7 @@ public class RestaurantMysqlAdapter implements IRestaurantPersistencePort {
     }
 
     @Override
-    public void saveRestaurant(Restaurant restaurant) {
+    public Restaurant saveRestaurant(Restaurant restaurant) {
         Optional<RestaurantEntity> existingByNit = restaurantRepository.findByNit(restaurant.getNit());
         if (existingByNit.isPresent()) {
             throw new RestaurantAlreadyExistsException(AdapterConstants.ErrorMessages.RESTAURANT_NIT_DUPLICADO);
@@ -40,13 +40,14 @@ public class RestaurantMysqlAdapter implements IRestaurantPersistencePort {
         }
 
         RestaurantEntity restaurantEntity = restaurantEntityMapper.toEntity(restaurant);
-        restaurantRepository.save(restaurantEntity);
+        RestaurantEntity savedEntity = restaurantRepository.save(restaurantEntity);
+        return restaurantEntityMapper.toModel(savedEntity);
     }
 
     @Override
     public Page<RestaurantSummary> findAllRestaurantsSorted(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize,
-                Sort.by(AdapterConstants.DatabaseColumns.NOMBRE_COLUMN).ascending());
+                                           Sort.by(AdapterConstants.DatabaseColumns.NOMBRE_COLUMN).ascending());
         org.springframework.data.domain.Page<RestaurantEntity> springPage = restaurantRepository.findAll(pageable);
 
         List<RestaurantSummary> content = springPage.getContent()

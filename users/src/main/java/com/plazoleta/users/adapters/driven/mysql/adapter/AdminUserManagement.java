@@ -21,7 +21,7 @@ public class AdminUserManagement implements IUserPersistencePort {
     }
 
     @Override
-    public void saveUsuario(User user) {
+    public User saveUsuario(User user) {
         Optional<UserEntity> existingByEmail = usuarioRepository.findByCorreo(user.getCorreo());
         if (existingByEmail.isPresent()) {
             throw new UserAlreadyExistsException(AdapterConstants.ErrorMessages.USUARIO_CORREO_DUPLICADO);
@@ -33,7 +33,9 @@ public class AdminUserManagement implements IUserPersistencePort {
         }
 
         UserEntity userEntity = usuarioEntityMapper.toEntity(user);
-        usuarioRepository.save(userEntity);
+        UserEntity savedEntity = usuarioRepository.save(userEntity);
+
+        return usuarioEntityMapper.toModel(savedEntity);
     }
 
     @Override

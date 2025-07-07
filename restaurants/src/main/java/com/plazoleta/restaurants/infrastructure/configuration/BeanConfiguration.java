@@ -2,8 +2,11 @@ package com.plazoleta.restaurants.infrastructure.configuration;
 
 import com.plazoleta.restaurants.adapters.driven.mysql.adapter.DishMysqlAdapter;
 import com.plazoleta.restaurants.adapters.driven.mysql.adapter.RestaurantMysqlAdapter;
+import com.plazoleta.restaurants.adapters.driven.mysql.mapper.ICategoryEntityMapper;
 import com.plazoleta.restaurants.adapters.driven.mysql.mapper.IDishEntityMapper;
+import com.plazoleta.restaurants.adapters.driven.mysql.mapper.IDishWithCategoryMapper;
 import com.plazoleta.restaurants.adapters.driven.mysql.mapper.IRestaurantEntityMapper;
+import com.plazoleta.restaurants.adapters.driven.mysql.repository.ICategoryRepository;
 import com.plazoleta.restaurants.adapters.driven.mysql.repository.IDishRepository;
 import com.plazoleta.restaurants.adapters.driven.mysql.repository.IRestaurantRepository;
 import com.plazoleta.restaurants.domain.api.IDishServicePort;
@@ -35,8 +38,12 @@ public class BeanConfiguration {
     public IDishPersistencePort dishPersistencePort(
             IDishRepository dishRepository,
             IRestaurantRepository restaurantRepository,
-            IDishEntityMapper dishEntityMapper) {
-        return new DishMysqlAdapter(dishRepository, restaurantRepository, dishEntityMapper);
+            ICategoryRepository categoryRepository,
+            IDishEntityMapper dishEntityMapper,
+            ICategoryEntityMapper categoryEntityMapper,
+            IDishWithCategoryMapper dishWithCategoryMapper) {
+        return new DishMysqlAdapter(dishRepository, restaurantRepository, categoryRepository,
+                dishEntityMapper, categoryEntityMapper, dishWithCategoryMapper);
     }
 
     @Bean

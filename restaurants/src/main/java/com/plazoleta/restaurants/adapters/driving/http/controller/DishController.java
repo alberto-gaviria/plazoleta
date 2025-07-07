@@ -4,38 +4,50 @@ import com.plazoleta.restaurants.adapters.driving.http.dto.request.AddDishReques
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.ToggleDishStatusRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.UpdateDishRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.response.DishResponse;
+import com.plazoleta.restaurants.adapters.driving.http.dto.response.DishWithCategoryResponse;
+import com.plazoleta.restaurants.adapters.driving.http.dto.response.PageResponse;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IDishRequestMapper;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IDishResponseMapper;
+import com.plazoleta.restaurants.adapters.driving.http.mapper.IDishWithCategoryResponseMapper;
 import com.plazoleta.restaurants.adapters.driving.http.util.HttpConstants;
 import com.plazoleta.restaurants.domain.api.IDishServicePort;
 import com.plazoleta.restaurants.domain.model.Dish;
+import com.plazoleta.restaurants.domain.model.DishWithCategory;
+import com.plazoleta.restaurants.domain.util.paged.Page;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(HttpConstants.Paths.PLATOS)
 @Tag(name = "Platos", description = "API para gestión de platos")
+@Validated
 public class DishController {
 
     private final IDishServicePort dishServicePort;
     private final IDishRequestMapper dishRequestMapper;
     private final IDishResponseMapper dishResponseMapper;
+    private final IDishWithCategoryResponseMapper dishWithCategoryResponseMapper;
 
     public DishController(IDishServicePort dishServicePort,
                           IDishRequestMapper dishRequestMapper,
-                          IDishResponseMapper dishResponseMapper) {
+                          IDishResponseMapper dishResponseMapper,
+                          IDishWithCategoryResponseMapper dishWithCategoryResponseMapper) {
         this.dishServicePort = dishServicePort;
         this.dishRequestMapper = dishRequestMapper;
         this.dishResponseMapper = dishResponseMapper;
+        this.dishWithCategoryResponseMapper = dishWithCategoryResponseMapper;
     }
 
     @Operation(summary = "Crear un nuevo plato",
@@ -57,9 +69,9 @@ public class DishController {
 
         Long currentUserId = Long.valueOf(authentication.getName());
         Dish dish = dishRequestMapper.addRequestToDish(request);
-        dishServicePort.saveDish(dish, currentUserId);
+        Dish savedDish = dishServicePort.saveDish(dish, currentUserId);
 
-        DishResponse response = dishResponseMapper.dishToResponse(dish);
+        DishResponse response = dishResponseMapper.dishToResponse(savedDish);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -112,6 +124,41 @@ public class DishController {
         Dish toggled = dishServicePort.toggleDishStatus(dishId, request.getActivo(), currentUserId);
 
         DishResponse response = dishResponseMapper.dishToResponse(toggled);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Listar platos de un restaurante",
+            description = "Permite a un cliente listar todos los platos de un restaurante con opción de filtrar por categoría")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de platos obtenida exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Parámetros de paginación inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autorizado - Token requerido"),
+            @ApiResponse(responseCode = "404", description = "Restaurante no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @GetMapping("/restaurante/{restaurantId}")
+    @PreAuthorize("hasAuthority(T(com.plazoleta.restaurants.adapters.driving.http.util.HttpConstants$Roles).CLIENTE)")
+    public ResponseEntity<PageResponse<DishWithCategoryResponse>> getDishesByRestaurant(
+            @Parameter(description = "ID del restaurante", required = true, example = "1")
+            @PathVariable Long restaurantId,
+
+            @Parameter(description = "ID de la categoría para filtrar (opcional)", example = "2")
+            @RequestParam(required = false) Long categoryId,
+
+            @Parameter(description = "Número de página (inicia en 0)", example = "0")
+            @RequestParam(defaultValue = HttpConstants.Pagination.DEFAULT_PAGE_VALUE)
+            @Min(value = HttpConstants.Pagination.MIN_PAGE, message = "El número de página debe ser mayor o igual a " + HttpConstants.Pagination.MIN_PAGE)
+            int page,
+
+            @Parameter(description = "Cantidad de elementos por página", example = "10")
+            @RequestParam(defaultValue = HttpConstants.Pagination.DEFAULT_SIZE_VALUE)
+            @Min(value = HttpConstants.Pagination.MIN_SIZE, message = "El tamaño de página debe ser mayor a " + HttpConstants.Pagination.MIN_SIZE)
+            @Max(value = HttpConstants.Pagination.MAX_SIZE, message = "El tamaño de página no puede ser mayor a " + HttpConstants.Pagination.MAX_SIZE)
+            int size) {
+
+        Page<DishWithCategory> dishesPage = dishServicePort.getDishesByRestaurant(restaurantId, categoryId, page, size);
+        PageResponse<DishWithCategoryResponse> response = dishWithCategoryResponseMapper.toPageResponse(dishesPage);
+
         return ResponseEntity.ok(response);
     }
 }

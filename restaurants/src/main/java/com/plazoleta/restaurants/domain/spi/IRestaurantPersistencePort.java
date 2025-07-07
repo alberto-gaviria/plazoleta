@@ -5,6 +5,6 @@ import com.plazoleta.restaurants.domain.model.RestaurantSummary;
 import com.plazoleta.restaurants.domain.util.paged.Page;
 
 public interface IRestaurantPersistencePort {
-    void saveRestaurant(Restaurant restaurant);
+    Restaurant saveRestaurant(Restaurant restaurant);
     Page<RestaurantSummary> findAllRestaurantsSorted(int pageNumber, int pageSize);
 }

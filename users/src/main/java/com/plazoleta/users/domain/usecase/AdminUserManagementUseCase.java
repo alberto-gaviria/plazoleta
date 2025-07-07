@@ -30,8 +30,7 @@ public class AdminUserManagementUseCase implements IAdminUserManagementServicePo
         user.setRoleType(RoleType.PROPIETARIO);
         user.setClave(passwordEncoderPort.encode(user.getClave()));
 
-        usuarioPersistencePort.saveUsuario(user);
-        return user;
+        return usuarioPersistencePort.saveUsuario(user);
     }
 
     private void validateUsuario(User user) {

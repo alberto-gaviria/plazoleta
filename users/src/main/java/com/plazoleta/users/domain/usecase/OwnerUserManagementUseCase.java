@@ -32,8 +32,7 @@ public class OwnerUserManagementUseCase implements IOwnerUserManagementServicePo
         user.setRoleType(RoleType.EMPLEADO);
         user.setClave(passwordEncoderPort.encode(user.getClave()));
 
-        userPersistencePort.saveUsuario(user);
-        return user;
+        return userPersistencePort.saveUsuario(user);
     }
 
     private void validatePropietario(Long propietarioId) {

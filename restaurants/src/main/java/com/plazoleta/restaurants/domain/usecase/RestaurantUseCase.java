@@ -17,11 +17,10 @@ public class RestaurantUseCase implements IRestaurantServicePort {
     }
 
     @Override
-    public void saveRestaurant(Restaurant restaurant, Long adminId) {
+    public Restaurant saveRestaurant(Restaurant restaurant, Long adminId) {
         validateRestaurant(restaurant);
         validateRestaurantBusinessRules(restaurant);
-
-        restaurantPersistencePort.saveRestaurant(restaurant);
+        return restaurantPersistencePort.saveRestaurant(restaurant);
     }
 
     @Override

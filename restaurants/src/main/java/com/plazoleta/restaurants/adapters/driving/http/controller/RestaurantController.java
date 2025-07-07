@@ -66,9 +66,9 @@ public class RestaurantController {
 
         Long adminId = Long.valueOf(authentication.getName());
         Restaurant restaurant = restaurantRequestMapper.addRequestToRestaurant(request);
-        restaurantServicePort.saveRestaurant(restaurant, adminId);
+        Restaurant savedRestaurant = restaurantServicePort.saveRestaurant(restaurant, adminId);
 
-        RestaurantResponse response = restaurantResponseMapper.restaurantToResponse(restaurant);
+        RestaurantResponse response = restaurantResponseMapper.restaurantToResponse(savedRestaurant);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

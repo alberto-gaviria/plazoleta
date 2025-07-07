@@ -33,6 +33,8 @@ class AdminUserManagementTest {
 
     private User user;
     private UserEntity userEntity;
+    private UserEntity savedUserEntity; // CAMBIO: Agregado para el mock del save
+    private User savedUser; // CAMBIO: Agregado para el resultado esperado
 
     @BeforeEach
     void setUp() {
@@ -47,7 +49,6 @@ class AdminUserManagementTest {
         // Removido setIdRol() ya que no existe en User
 
         userEntity = new UserEntity();
-        userEntity.setId(1L);
         userEntity.setNombre("Juan");
         userEntity.setApellido("Pérez");
         userEntity.setNumeroDocumento("12345678");
@@ -56,6 +57,29 @@ class AdminUserManagementTest {
         userEntity.setCorreo("juan@email.com");
         userEntity.setClave("password123");
         userEntity.setIdRol(2L);
+
+        // CAMBIO: Agregado savedUserEntity con ID generado
+        savedUserEntity = new UserEntity();
+        savedUserEntity.setId(1L);
+        savedUserEntity.setNombre("Juan");
+        savedUserEntity.setApellido("Pérez");
+        savedUserEntity.setNumeroDocumento("12345678");
+        savedUserEntity.setCelular("+573001234567");
+        savedUserEntity.setFechaNacimiento(LocalDate.of(1990, 1, 1));
+        savedUserEntity.setCorreo("juan@email.com");
+        savedUserEntity.setClave("password123");
+        savedUserEntity.setIdRol(2L);
+
+        // CAMBIO: Agregado savedUser con ID generado
+        savedUser = new User();
+        savedUser.setId(1L);
+        savedUser.setNombre("Juan");
+        savedUser.setApellido("Pérez");
+        savedUser.setNumeroDocumento("12345678");
+        savedUser.setCelular("+573001234567");
+        savedUser.setFechaNacimiento(LocalDate.of(1990, 1, 1));
+        savedUser.setCorreo("juan@email.com");
+        savedUser.setClave("password123");
     }
 
     @Test
@@ -65,14 +89,27 @@ class AdminUserManagementTest {
         when(usuarioRepository.findByNumeroDocumento(user.getNumeroDocumento())).thenReturn(Optional.empty());
         when(usuarioEntityMapper.toEntity(user)).thenReturn(userEntity);
 
+        // CAMBIO: Mock del repository.save() ahora retorna savedUserEntity
+        when(usuarioRepository.save(userEntity)).thenReturn(savedUserEntity);
+        // CAMBIO: Mock del mapper para convertir la entidad guardada a modelo
+        when(usuarioEntityMapper.toModel(savedUserEntity)).thenReturn(savedUser);
+
         // When
-        adminUserManagement.saveUsuario(user);
+        // CAMBIO: Ahora captura el resultado del método
+        User result = adminUserManagement.saveUsuario(user);
 
         // Then
+        // CAMBIO: Verifica que retorna el user guardado con ID
+        assertNotNull(result);
+        assertEquals(savedUser, result);
+        assertEquals(1L, result.getId());
+
         verify(usuarioRepository).findByCorreo(user.getCorreo());
         verify(usuarioRepository).findByNumeroDocumento(user.getNumeroDocumento());
         verify(usuarioEntityMapper).toEntity(user);
         verify(usuarioRepository).save(userEntity);
+        // CAMBIO: Verifica que se llama al mapper para convertir la entidad guardada
+        verify(usuarioEntityMapper).toModel(savedUserEntity);
     }
 
     @Test
@@ -104,17 +141,17 @@ class AdminUserManagementTest {
     void findById_WhenUserExists_ShouldReturnUser() {
         // Given
         Long userId = 1L;
-        when(usuarioRepository.findById(userId)).thenReturn(Optional.of(userEntity));
-        when(usuarioEntityMapper.toModel(userEntity)).thenReturn(user);
+        when(usuarioRepository.findById(userId)).thenReturn(Optional.of(savedUserEntity));
+        when(usuarioEntityMapper.toModel(savedUserEntity)).thenReturn(savedUser);
 
         // When
         Optional<User> result = adminUserManagement.findById(userId);
 
         // Then
         assertTrue(result.isPresent());
-        assertEquals(user, result.get());
+        assertEquals(savedUser, result.get());
         verify(usuarioRepository).findById(userId);
-        verify(usuarioEntityMapper).toModel(userEntity);
+        verify(usuarioEntityMapper).toModel(savedUserEntity);
     }
 
     @Test
@@ -136,17 +173,17 @@ class AdminUserManagementTest {
     void findByCorreo_WhenUserExists_ShouldReturnUser() {
         // Given
         String correo = "juan@email.com";
-        when(usuarioRepository.findByCorreo(correo)).thenReturn(Optional.of(userEntity));
-        when(usuarioEntityMapper.toModel(userEntity)).thenReturn(user);
+        when(usuarioRepository.findByCorreo(correo)).thenReturn(Optional.of(savedUserEntity));
+        when(usuarioEntityMapper.toModel(savedUserEntity)).thenReturn(savedUser);
 
         // When
         Optional<User> result = adminUserManagement.findByCorreo(correo);
 
         // Then
         assertTrue(result.isPresent());
-        assertEquals(user, result.get());
+        assertEquals(savedUser, result.get());
         verify(usuarioRepository).findByCorreo(correo);
-        verify(usuarioEntityMapper).toModel(userEntity);
+        verify(usuarioEntityMapper).toModel(savedUserEntity);
     }
 
     @Test

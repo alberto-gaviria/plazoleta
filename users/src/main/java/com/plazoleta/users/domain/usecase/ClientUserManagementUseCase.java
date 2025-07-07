@@ -30,8 +30,7 @@ public class ClientUserManagementUseCase implements IClientUserManagementService
         user.setRoleType(RoleType.CLIENTE);
         user.setClave(passwordEncoderPort.encode(user.getClave()));
 
-        userPersistencePort.saveUsuario(user);
-        return user;
+        return userPersistencePort.saveUsuario(user);
     }
 
     private void validateUsuario(User user) {

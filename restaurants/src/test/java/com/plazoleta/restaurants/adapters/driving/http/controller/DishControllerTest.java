@@ -3,11 +3,18 @@ package com.plazoleta.restaurants.adapters.driving.http.controller;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.AddDishRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.ToggleDishStatusRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.UpdateDishRequest;
+import com.plazoleta.restaurants.adapters.driving.http.dto.response.CategoryResponse;
 import com.plazoleta.restaurants.adapters.driving.http.dto.response.DishResponse;
+import com.plazoleta.restaurants.adapters.driving.http.dto.response.DishWithCategoryResponse;
+import com.plazoleta.restaurants.adapters.driving.http.dto.response.PageResponse;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IDishRequestMapper;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IDishResponseMapper;
+import com.plazoleta.restaurants.adapters.driving.http.mapper.IDishWithCategoryResponseMapper;
 import com.plazoleta.restaurants.domain.api.IDishServicePort;
+import com.plazoleta.restaurants.domain.model.Category;
 import com.plazoleta.restaurants.domain.model.Dish;
+import com.plazoleta.restaurants.domain.model.DishWithCategory;
+import com.plazoleta.restaurants.domain.util.paged.Page;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +26,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -26,7 +35,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class DishControllerTest {
 
@@ -49,6 +57,7 @@ class DishControllerTest {
     private UpdateDishRequest updateDishRequest;
     private ToggleDishStatusRequest toggleDishStatusRequest;
     private Dish dish;
+    private Dish savedDish; // CAMBIO: Agregado para el objeto guardado
     private Dish updatedDish;
     private Dish toggledDish;
     private DishResponse dishResponse;
@@ -72,7 +81,6 @@ class DishControllerTest {
         toggleDishStatusRequest.setActivo(false);
 
         dish = new Dish();
-        dish.setId(1L);
         dish.setNombre("Hamburguesa Clásica");
         dish.setDescripcion("Deliciosa hamburguesa con carne, lechuga y tomate");
         dish.setPrecio(new BigDecimal("15000"));
@@ -80,6 +88,17 @@ class DishControllerTest {
         dish.setIdCategoria(1L);
         dish.setUrlImagen("https://ejemplo.com/hamburguesa.jpg");
         dish.setActivo(true);
+
+        // CAMBIO: Agregado savedDish con ID generado
+        savedDish = new Dish();
+        savedDish.setId(1L);
+        savedDish.setNombre("Hamburguesa Clásica");
+        savedDish.setDescripcion("Deliciosa hamburguesa con carne, lechuga y tomate");
+        savedDish.setPrecio(new BigDecimal("15000"));
+        savedDish.setIdRestaurante(1L);
+        savedDish.setIdCategoria(1L);
+        savedDish.setUrlImagen("https://ejemplo.com/hamburguesa.jpg");
+        savedDish.setActivo(true);
 
         updatedDish = new Dish();
         updatedDish.setId(1L);
@@ -119,8 +138,10 @@ class DishControllerTest {
         // Given
         when(authentication.getName()).thenReturn("1");
         when(dishRequestMapper.addRequestToDish(any(AddDishRequest.class))).thenReturn(dish);
-        doNothing().when(dishServicePort).saveDish(any(Dish.class), anyLong());
-        when(dishResponseMapper.dishToResponse(any(Dish.class))).thenReturn(dishResponse);
+        // CAMBIO: Ahora mockea el retorno del savedDish
+        when(dishServicePort.saveDish(any(Dish.class), anyLong())).thenReturn(savedDish);
+        // CAMBIO: Usa savedDish para crear la respuesta
+        when(dishResponseMapper.dishToResponse(savedDish)).thenReturn(dishResponse);
 
         // When
         ResponseEntity<DishResponse> result = controller.createDish(addDishRequest, authentication);
@@ -131,7 +152,8 @@ class DishControllerTest {
         assertEquals(dishResponse, result.getBody());
         verify(dishRequestMapper).addRequestToDish(any(AddDishRequest.class));
         verify(dishServicePort).saveDish(any(Dish.class), anyLong());
-        verify(dishResponseMapper).dishToResponse(any(Dish.class));
+        // CAMBIO: Verifica que se usa savedDish
+        verify(dishResponseMapper).dishToResponse(savedDish);
     }
 
     @Test
@@ -139,8 +161,10 @@ class DishControllerTest {
         // Given
         when(authentication.getName()).thenReturn("1");
         when(dishRequestMapper.addRequestToDish(addDishRequest)).thenReturn(dish);
-        doNothing().when(dishServicePort).saveDish(dish, 1L);
-        when(dishResponseMapper.dishToResponse(dish)).thenReturn(dishResponse);
+        // CAMBIO: Ahora mockea el retorno del savedDish
+        when(dishServicePort.saveDish(dish, 1L)).thenReturn(savedDish);
+        // CAMBIO: Usa savedDish para crear la respuesta
+        when(dishResponseMapper.dishToResponse(savedDish)).thenReturn(dishResponse);
 
         // When
         ResponseEntity<DishResponse> result = controller.createDish(addDishRequest, authentication);
@@ -150,7 +174,8 @@ class DishControllerTest {
         assertEquals(dishResponse, result.getBody());
         verify(dishRequestMapper).addRequestToDish(addDishRequest);
         verify(dishServicePort).saveDish(dish, 1L);
-        verify(dishResponseMapper).dishToResponse(dish);
+        // CAMBIO: Verifica que se usa savedDish
+        verify(dishResponseMapper).dishToResponse(savedDish);
     }
 
     @Test
@@ -158,6 +183,8 @@ class DishControllerTest {
         // Given
         when(authentication.getName()).thenReturn("1");
         when(dishRequestMapper.addRequestToDish(any(AddDishRequest.class))).thenReturn(dish);
+        // CAMBIO: Ahora mockea el retorno
+        when(dishServicePort.saveDish(any(Dish.class), anyLong())).thenReturn(savedDish);
         when(dishResponseMapper.dishToResponse(any(Dish.class))).thenReturn(dishResponse);
 
         // When
@@ -172,7 +199,8 @@ class DishControllerTest {
         // Given
         when(authentication.getName()).thenReturn("1");
         when(dishRequestMapper.addRequestToDish(addDishRequest)).thenReturn(dish);
-        doNothing().when(dishServicePort).saveDish(any(Dish.class), anyLong());
+        // CAMBIO: Ahora mockea el retorno
+        when(dishServicePort.saveDish(any(Dish.class), anyLong())).thenReturn(savedDish);
         when(dishResponseMapper.dishToResponse(any(Dish.class))).thenReturn(dishResponse);
 
         // When
@@ -187,7 +215,8 @@ class DishControllerTest {
         // Given
         when(authentication.getName()).thenReturn("1");
         when(dishRequestMapper.addRequestToDish(any(AddDishRequest.class))).thenReturn(dish);
-        doNothing().when(dishServicePort).saveDish(any(Dish.class), anyLong());
+        // CAMBIO: Ahora mockea el retorno
+        when(dishServicePort.saveDish(any(Dish.class), anyLong())).thenReturn(savedDish);
         when(dishResponseMapper.dishToResponse(any(Dish.class))).thenReturn(dishResponse);
 
         // When
@@ -210,8 +239,12 @@ class DishControllerTest {
         fullRequest.setUrlImagen("https://ejemplo.com/pizza.jpg");
 
         Dish mappedDish = new Dish();
-        mappedDish.setId(2L);
         mappedDish.setNombre("Pizza Margherita");
+
+        // CAMBIO: Agregado savedMappedDish con ID
+        Dish savedMappedDish = new Dish();
+        savedMappedDish.setId(2L);
+        savedMappedDish.setNombre("Pizza Margherita");
 
         DishResponse fullResponse = new DishResponse();
         fullResponse.setId(2L);
@@ -219,8 +252,10 @@ class DishControllerTest {
 
         when(authentication.getName()).thenReturn("1");
         when(dishRequestMapper.addRequestToDish(fullRequest)).thenReturn(mappedDish);
-        doNothing().when(dishServicePort).saveDish(mappedDish, 1L);
-        when(dishResponseMapper.dishToResponse(mappedDish)).thenReturn(fullResponse);
+        // CAMBIO: Ahora mockea el retorno del savedMappedDish
+        when(dishServicePort.saveDish(mappedDish, 1L)).thenReturn(savedMappedDish);
+        // CAMBIO: Usa savedMappedDish para crear la respuesta
+        when(dishResponseMapper.dishToResponse(savedMappedDish)).thenReturn(fullResponse);
 
         // When
         ResponseEntity<DishResponse> result = controller.createDish(fullRequest, authentication);
@@ -230,7 +265,8 @@ class DishControllerTest {
         assertEquals(fullResponse, result.getBody());
         verify(dishRequestMapper).addRequestToDish(fullRequest);
         verify(dishServicePort).saveDish(mappedDish, 1L);
-        verify(dishResponseMapper).dishToResponse(mappedDish);
+        // CAMBIO: Verifica que se usa savedMappedDish
+        verify(dishResponseMapper).dishToResponse(savedMappedDish);
     }
 
     @Test
@@ -238,8 +274,10 @@ class DishControllerTest {
         // Given
         when(authentication.getName()).thenReturn("1");
         when(dishRequestMapper.addRequestToDish(any(AddDishRequest.class))).thenReturn(dish);
-        doNothing().when(dishServicePort).saveDish(any(Dish.class), anyLong());
-        when(dishResponseMapper.dishToResponse(any(Dish.class))).thenReturn(dishResponse);
+        // CAMBIO: Ahora mockea el retorno
+        when(dishServicePort.saveDish(any(Dish.class), anyLong())).thenReturn(savedDish);
+        // CAMBIO: Usa savedDish para crear la respuesta
+        when(dishResponseMapper.dishToResponse(savedDish)).thenReturn(dishResponse);
 
         // When
         ResponseEntity<DishResponse> result = controller.createDish(addDishRequest, authentication);
@@ -249,7 +287,8 @@ class DishControllerTest {
         verify(authentication, times(1)).getName();
         verify(dishRequestMapper, times(1)).addRequestToDish(addDishRequest);
         verify(dishServicePort, times(1)).saveDish(dish, 1L);
-        verify(dishResponseMapper, times(1)).dishToResponse(dish);
+        // CAMBIO: Verifica que se usa savedDish
+        verify(dishResponseMapper, times(1)).dishToResponse(savedDish);
         assertEquals(HttpStatus.CREATED, result.getStatusCode());
         assertEquals(dishResponse, result.getBody());
     }
@@ -266,8 +305,12 @@ class DishControllerTest {
         customRequest.setUrlImagen("https://ejemplo.com/ensalada.jpg");
 
         Dish customDish = new Dish();
-        customDish.setId(3L);
         customDish.setNombre("Ensalada César");
+
+        // CAMBIO: Agregado savedCustomDish con ID
+        Dish savedCustomDish = new Dish();
+        savedCustomDish.setId(3L);
+        savedCustomDish.setNombre("Ensalada César");
 
         DishResponse customResponse = new DishResponse();
         customResponse.setId(3L);
@@ -275,8 +318,10 @@ class DishControllerTest {
 
         when(authentication.getName()).thenReturn("2");
         when(dishRequestMapper.addRequestToDish(customRequest)).thenReturn(customDish);
-        doNothing().when(dishServicePort).saveDish(customDish, 2L);
-        when(dishResponseMapper.dishToResponse(customDish)).thenReturn(customResponse);
+        // CAMBIO: Ahora mockea el retorno del savedCustomDish
+        when(dishServicePort.saveDish(customDish, 2L)).thenReturn(savedCustomDish);
+        // CAMBIO: Usa savedCustomDish para crear la respuesta
+        when(dishResponseMapper.dishToResponse(savedCustomDish)).thenReturn(customResponse);
 
         // When
         ResponseEntity<DishResponse> result = controller.createDish(customRequest, authentication);
@@ -286,7 +331,8 @@ class DishControllerTest {
         assertEquals(customResponse, result.getBody());
         verify(dishRequestMapper).addRequestToDish(customRequest);
         verify(dishServicePort).saveDish(customDish, 2L);
-        verify(dishResponseMapper).dishToResponse(customDish);
+        // CAMBIO: Verifica que se usa savedCustomDish
+        verify(dishResponseMapper).dishToResponse(savedCustomDish);
     }
 
     @Test
@@ -294,7 +340,10 @@ class DishControllerTest {
         // Given
         when(authentication.getName()).thenReturn("1");
         when(dishRequestMapper.addRequestToDish(any(AddDishRequest.class))).thenReturn(dish);
-        when(dishResponseMapper.dishToResponse(any(Dish.class))).thenReturn(dishResponse);
+        // CAMBIO: Ahora mockea el retorno
+        when(dishServicePort.saveDish(any(Dish.class), anyLong())).thenReturn(savedDish);
+        // CAMBIO: Usa savedDish para crear la respuesta
+        when(dishResponseMapper.dishToResponse(savedDish)).thenReturn(dishResponse);
 
         // When
         controller.createDish(addDishRequest, authentication);
@@ -303,7 +352,8 @@ class DishControllerTest {
         verify(authentication).getName();
         verify(dishRequestMapper).addRequestToDish(addDishRequest);
         verify(dishServicePort).saveDish(dish, 1L);
-        verify(dishResponseMapper).dishToResponse(dish);
+        // CAMBIO: Verifica que se usa savedDish
+        verify(dishResponseMapper).dishToResponse(savedDish);
         verifyNoMoreInteractions(dishRequestMapper, dishServicePort, dishResponseMapper);
     }
 
@@ -312,7 +362,8 @@ class DishControllerTest {
         // Given
         when(authentication.getName()).thenReturn("5");
         when(dishRequestMapper.addRequestToDish(any(AddDishRequest.class))).thenReturn(dish);
-        doNothing().when(dishServicePort).saveDish(any(Dish.class), eq(5L));
+        // CAMBIO: Ahora mockea el retorno
+        when(dishServicePort.saveDish(any(Dish.class), eq(5L))).thenReturn(savedDish);
         when(dishResponseMapper.dishToResponse(any(Dish.class))).thenReturn(dishResponse);
 
         // When
@@ -810,7 +861,8 @@ class DishControllerTest {
         // Given
         when(authentication.getName()).thenReturn("1");
         when(dishRequestMapper.addRequestToDish(any(AddDishRequest.class))).thenReturn(dish);
-        doNothing().when(dishServicePort).saveDish(any(Dish.class), anyLong());
+        // CAMBIO: Ahora mockea el retorno
+        when(dishServicePort.saveDish(any(Dish.class), anyLong())).thenReturn(savedDish);
         when(dishResponseMapper.dishToResponse(any(Dish.class))).thenReturn(dishResponse);
 
         // When
@@ -819,7 +871,7 @@ class DishControllerTest {
         // Then
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(dishResponse, response.getBody());
-        assertEquals(201, response.getStatusCode().value()); // ✅ CORREGIDO
+        assertEquals(201, response.getStatusCode().value());
         assertNotNull(response.getBody());
     }
 
@@ -837,7 +889,7 @@ class DishControllerTest {
         // Then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(dishResponse, response.getBody());
-        assertEquals(200, response.getStatusCode().value()); // ✅ CORREGIDO
+        assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
     }
 
@@ -855,7 +907,62 @@ class DishControllerTest {
         // Then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(dishResponse, response.getBody());
-        assertEquals(200, response.getStatusCode().value()); // ✅ CORREGIDO
+        assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
+    }
+
+    // ==================== NUEVO TEST PARA getDishesByRestaurant ====================
+
+    @Mock
+    private IDishWithCategoryResponseMapper dishWithCategoryResponseMapper;
+
+    @Test
+    void getDishesByRestaurant_WhenValidRequest_ShouldReturnPageOfDishes() {
+        // Given
+        Long restaurantId = 1L;
+        Long categoryId = 1L;
+        int page = 0;
+        int size = 10;
+
+        // Setup domain objects
+        Category category = new Category(1L, "Pizzas", "Pizzas artesanales");
+        DishWithCategory dishWithCategory = new DishWithCategory(
+                1L, "Pizza Hawaiana", new BigDecimal("25500.00"),
+                "Pizza con jamón, piña, queso mozzarella y salsa de tomate",
+                "https://example.com/pizza-hawaiana.jpg", category, 1L, true
+        );
+
+        List<DishWithCategory> dishList = Arrays.asList(dishWithCategory);
+        Page<DishWithCategory> dishesPage = new Page<>(dishList, 0, 10, 1L);
+
+        // Setup response objects
+        CategoryResponse categoryResponse = new CategoryResponse(1L, "Pizzas", "Pizzas artesanales");
+        DishWithCategoryResponse dishResponse = new DishWithCategoryResponse(
+                1L, "Pizza Hawaiana", new BigDecimal("25500.00"),
+                "Pizza con jamón, piña, queso mozzarella y salsa de tomate",
+                "https://example.com/pizza-hawaiana.jpg", categoryResponse, true
+        );
+
+        List<DishWithCategoryResponse> responseList = Arrays.asList(dishResponse);
+        PageResponse<DishWithCategoryResponse> pageResponse = new PageResponse<>(
+                responseList, 0, 10, 1L, 1, false, false
+        );
+
+        when(dishServicePort.getDishesByRestaurant(restaurantId, categoryId, page, size)).thenReturn(dishesPage);
+        when(dishWithCategoryResponseMapper.toPageResponse(dishesPage)).thenReturn(pageResponse);
+
+        // When
+        ResponseEntity<PageResponse<DishWithCategoryResponse>> result =
+                controller.getDishesByRestaurant(restaurantId, categoryId, page, size);
+
+        // Then
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertEquals(pageResponse, result.getBody());
+        assertEquals(1, result.getBody().getContent().size());
+        assertEquals("Pizza Hawaiana", result.getBody().getContent().get(0).getNombre());
+
+        verify(dishServicePort).getDishesByRestaurant(restaurantId, categoryId, page, size);
+        verify(dishWithCategoryResponseMapper).toPageResponse(dishesPage);
     }
 }

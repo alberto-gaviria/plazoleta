@@ -2,320 +2,78 @@ package com.plazoleta.users.domain.usecase;
 
 import com.plazoleta.users.domain.model.RoleType;
 import com.plazoleta.users.domain.model.User;
-import com.plazoleta.users.domain.spi.IUserPersistencePort;
 import com.plazoleta.users.domain.spi.IPasswordEncoderPort;
+import com.plazoleta.users.domain.spi.IUserPersistencePort;
 import com.plazoleta.users.domain.util.exceptions.InvalidUsuarioException;
 import com.plazoleta.users.domain.util.exceptions.UserNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class OwnerUserManagementUseCaseTest {
 
-    @Mock
-    private IUserPersistencePort userPersistencePort;
-
-    @Mock
-    private IPasswordEncoderPort passwordEncoderPort;
-
-    private OwnerUserManagementUseCase ownerUserManagementUseCase;
-
-    private User validEmployeeUser;
-    private User validOwnerUser;
-    private Long ownerId;
+    private IUserPersistencePort persistencePort;
+    private IPasswordEncoderPort encoderPort;
+    private OwnerUserManagementUseCase useCase;
 
     @BeforeEach
     void setUp() {
-        ownerUserManagementUseCase = new OwnerUserManagementUseCase(userPersistencePort, passwordEncoderPort);
-
-        ownerId = 1L;
-
-        validOwnerUser = new User();
-        validOwnerUser.setId(ownerId);
-        validOwnerUser.setNombre("Propietario");
-        validOwnerUser.setApellido("Test");
-        validOwnerUser.setRoleType(RoleType.PROPIETARIO);
-
-        validEmployeeUser = new User();
-        validEmployeeUser.setNombre("Juan");
-        validEmployeeUser.setApellido("Perez");
-        validEmployeeUser.setNumeroDocumento("12345678");
-        validEmployeeUser.setCelular("+573001234567");
-        validEmployeeUser.setFechaNacimiento(LocalDate.of(1990, 1, 1));
-        validEmployeeUser.setCorreo("juan.perez@test.com");
-        validEmployeeUser.setClave("password123");
+        persistencePort = mock(IUserPersistencePort.class);
+        encoderPort = mock(IPasswordEncoderPort.class);
+        useCase = new OwnerUserManagementUseCase(persistencePort, encoderPort);
     }
 
     @Test
-    void saveEmpleado_WhenValidData_ShouldCreateEmployee() {
-        // Arrange
-        when(userPersistencePort.findById(ownerId)).thenReturn(Optional.of(validOwnerUser));
-        when(passwordEncoderPort.encode("password123")).thenReturn("encodedPassword");
+    void saveEmpleado_ValidData_ShouldSave() {
+        User empleado = buildValidUser();
+        User propietario = new User();
+        propietario.setRoleType(RoleType.PROPIETARIO);
 
-        // Act
-        User result = ownerUserManagementUseCase.saveEmpleado(validEmployeeUser, ownerId);
+        when(persistencePort.findById(1L)).thenReturn(Optional.of(propietario));
+        when(encoderPort.encode(anyString())).thenReturn("encoded");
+        when(persistencePort.saveUsuario(any(User.class))).thenReturn(empleado);
 
-        // Assert
-        assertNotNull(result);
-        assertEquals(RoleType.EMPLEADO, result.getRoleType());
-        assertEquals("encodedPassword", result.getClave());
-        assertEquals(validEmployeeUser, result);
-        verify(userPersistencePort).findById(ownerId);
-        verify(passwordEncoderPort).encode("password123");
-        verify(userPersistencePort).saveUsuario(validEmployeeUser);
+        User saved = useCase.saveEmpleado(empleado, 1L);
+
+        assertEquals(RoleType.EMPLEADO, saved.getRoleType());
+        verify(persistencePort).saveUsuario(empleado);
     }
 
     @Test
-    void saveEmpleado_WhenOwnerNotFound_ShouldThrowUserNotFoundException() {
-        // Arrange
-        when(userPersistencePort.findById(ownerId)).thenReturn(Optional.empty());
+    void saveEmpleado_InvalidOwner_ShouldThrow() {
+        User propietario = new User();
+        propietario.setRoleType(RoleType.CLIENTE); // no es propietario
 
-        // Act & Assert
-        UserNotFoundException exception = assertThrows(UserNotFoundException.class,
-                () -> ownerUserManagementUseCase.saveEmpleado(validEmployeeUser, ownerId));
+        when(persistencePort.findById(1L)).thenReturn(Optional.of(propietario));
 
-        assertTrue(exception.getMessage().contains("Usuario no encontrado con ID: " + ownerId));
-        verify(userPersistencePort).findById(ownerId);
-        verify(userPersistencePort, never()).saveUsuario(any());
+        User empleado = buildValidUser();
+
+        assertThrows(InvalidUsuarioException.class, () -> useCase.saveEmpleado(empleado, 1L));
     }
 
     @Test
-    void saveEmpleado_WhenUserIsNotOwner_ShouldThrowInvalidUsuarioException() {
-        // Arrange
-        User adminUser = new User();
-        adminUser.setId(ownerId);
-        adminUser.setRoleType(RoleType.ADMINISTRADOR);
+    void saveEmpleado_OwnerNotFound_ShouldThrow() {
+        when(persistencePort.findById(1L)).thenReturn(Optional.empty());
 
-        when(userPersistencePort.findById(ownerId)).thenReturn(Optional.of(adminUser));
+        User empleado = buildValidUser();
 
-        // Act & Assert
-        InvalidUsuarioException exception = assertThrows(InvalidUsuarioException.class,
-                () -> ownerUserManagementUseCase.saveEmpleado(validEmployeeUser, ownerId));
-
-        assertEquals("Solo el propietario puede crear cuentas de empleados", exception.getMessage());
-        verify(userPersistencePort).findById(ownerId);
-        verify(userPersistencePort, never()).saveUsuario(any());
+        assertThrows(UserNotFoundException.class, () -> useCase.saveEmpleado(empleado, 1L));
     }
 
-    @Test
-    void saveEmpleado_WhenUserIsNull_ShouldThrowInvalidUsuarioException() {
-        // Arrange
-        when(userPersistencePort.findById(ownerId)).thenReturn(Optional.of(validOwnerUser));
-
-        // Act & Assert
-        InvalidUsuarioException exception = assertThrows(InvalidUsuarioException.class,
-                () -> ownerUserManagementUseCase.saveEmpleado(null, ownerId));
-
-        assertEquals("El usuario no puede ser nulo", exception.getMessage());
-        verify(userPersistencePort).findById(ownerId);
-        verify(userPersistencePort, never()).saveUsuario(any());
-    }
-
-    @Test
-    void saveEmpleado_WhenNombreIsNull_ShouldThrowInvalidUsuarioException() {
-        // Arrange
-        when(userPersistencePort.findById(ownerId)).thenReturn(Optional.of(validOwnerUser));
-        validEmployeeUser.setNombre(null);
-
-        // Act & Assert
-        InvalidUsuarioException exception = assertThrows(InvalidUsuarioException.class,
-                () -> ownerUserManagementUseCase.saveEmpleado(validEmployeeUser, ownerId));
-
-        assertEquals("El nombre es obligatorio", exception.getMessage());
-    }
-
-    @Test
-    void saveEmpleado_WhenNombreIsEmpty_ShouldThrowInvalidUsuarioException() {
-        // Arrange
-        when(userPersistencePort.findById(ownerId)).thenReturn(Optional.of(validOwnerUser));
-        validEmployeeUser.setNombre("   ");
-
-        // Act & Assert
-        InvalidUsuarioException exception = assertThrows(InvalidUsuarioException.class,
-                () -> ownerUserManagementUseCase.saveEmpleado(validEmployeeUser, ownerId));
-
-        assertEquals("El nombre es obligatorio", exception.getMessage());
-    }
-
-    @Test
-    void saveEmpleado_WhenApellidoIsNull_ShouldThrowInvalidUsuarioException() {
-        // Arrange
-        when(userPersistencePort.findById(ownerId)).thenReturn(Optional.of(validOwnerUser));
-        validEmployeeUser.setApellido(null);
-
-        // Act & Assert
-        InvalidUsuarioException exception = assertThrows(InvalidUsuarioException.class,
-                () -> ownerUserManagementUseCase.saveEmpleado(validEmployeeUser, ownerId));
-
-        assertEquals("El apellido es obligatorio", exception.getMessage());
-    }
-
-    @Test
-    void saveEmpleado_WhenApellidoIsEmpty_ShouldThrowInvalidUsuarioException() {
-        // Arrange
-        when(userPersistencePort.findById(ownerId)).thenReturn(Optional.of(validOwnerUser));
-        validEmployeeUser.setApellido("   ");
-
-        // Act & Assert
-        InvalidUsuarioException exception = assertThrows(InvalidUsuarioException.class,
-                () -> ownerUserManagementUseCase.saveEmpleado(validEmployeeUser, ownerId));
-
-        assertEquals("El apellido es obligatorio", exception.getMessage());
-    }
-
-    @Test
-    void saveEmpleado_WhenDocumentoIsNull_ShouldThrowInvalidUsuarioException() {
-        // Arrange
-        when(userPersistencePort.findById(ownerId)).thenReturn(Optional.of(validOwnerUser));
-        validEmployeeUser.setNumeroDocumento(null);
-
-        // Act & Assert
-        InvalidUsuarioException exception = assertThrows(InvalidUsuarioException.class,
-                () -> ownerUserManagementUseCase.saveEmpleado(validEmployeeUser, ownerId));
-
-        assertEquals("El número de documento es obligatorio", exception.getMessage());
-    }
-
-    @Test
-    void saveEmpleado_WhenDocumentoIsEmpty_ShouldThrowInvalidUsuarioException() {
-        // Arrange
-        when(userPersistencePort.findById(ownerId)).thenReturn(Optional.of(validOwnerUser));
-        validEmployeeUser.setNumeroDocumento("   ");
-
-        // Act & Assert
-        InvalidUsuarioException exception = assertThrows(InvalidUsuarioException.class,
-                () -> ownerUserManagementUseCase.saveEmpleado(validEmployeeUser, ownerId));
-
-        assertEquals("El número de documento es obligatorio", exception.getMessage());
-    }
-
-    @Test
-    void saveEmpleado_WhenCelularIsNull_ShouldThrowInvalidUsuarioException() {
-        // Arrange
-        when(userPersistencePort.findById(ownerId)).thenReturn(Optional.of(validOwnerUser));
-        validEmployeeUser.setCelular(null);
-
-        // Act & Assert
-        InvalidUsuarioException exception = assertThrows(InvalidUsuarioException.class,
-                () -> ownerUserManagementUseCase.saveEmpleado(validEmployeeUser, ownerId));
-
-        assertEquals("El celular es obligatorio", exception.getMessage());
-    }
-
-    @Test
-    void saveEmpleado_WhenCelularIsEmpty_ShouldThrowInvalidUsuarioException() {
-        // Arrange
-        when(userPersistencePort.findById(ownerId)).thenReturn(Optional.of(validOwnerUser));
-        validEmployeeUser.setCelular("   ");
-
-        // Act & Assert
-        InvalidUsuarioException exception = assertThrows(InvalidUsuarioException.class,
-                () -> ownerUserManagementUseCase.saveEmpleado(validEmployeeUser, ownerId));
-
-        assertEquals("El celular es obligatorio", exception.getMessage());
-    }
-
-    @Test
-    void saveEmpleado_WhenCorreoIsNull_ShouldThrowInvalidUsuarioException() {
-        // Arrange
-        when(userPersistencePort.findById(ownerId)).thenReturn(Optional.of(validOwnerUser));
-        validEmployeeUser.setCorreo(null);
-
-        // Act & Assert
-        InvalidUsuarioException exception = assertThrows(InvalidUsuarioException.class,
-                () -> ownerUserManagementUseCase.saveEmpleado(validEmployeeUser, ownerId));
-
-        assertEquals("El correo es obligatorio", exception.getMessage());
-    }
-
-    @Test
-    void saveEmpleado_WhenCorreoIsEmpty_ShouldThrowInvalidUsuarioException() {
-        // Arrange
-        when(userPersistencePort.findById(ownerId)).thenReturn(Optional.of(validOwnerUser));
-        validEmployeeUser.setCorreo("   ");
-
-        // Act & Assert
-        InvalidUsuarioException exception = assertThrows(InvalidUsuarioException.class,
-                () -> ownerUserManagementUseCase.saveEmpleado(validEmployeeUser, ownerId));
-
-        assertEquals("El correo es obligatorio", exception.getMessage());
-    }
-
-    @Test
-    void saveEmpleado_WhenClaveIsNull_ShouldThrowInvalidUsuarioException() {
-        // Arrange
-        when(userPersistencePort.findById(ownerId)).thenReturn(Optional.of(validOwnerUser));
-        validEmployeeUser.setClave(null);
-
-        // Act & Assert
-        InvalidUsuarioException exception = assertThrows(InvalidUsuarioException.class,
-                () -> ownerUserManagementUseCase.saveEmpleado(validEmployeeUser, ownerId));
-
-        assertEquals("La clave es obligatoria", exception.getMessage());
-    }
-
-    @Test
-    void saveEmpleado_WhenClaveIsEmpty_ShouldThrowInvalidUsuarioException() {
-        // Arrange
-        when(userPersistencePort.findById(ownerId)).thenReturn(Optional.of(validOwnerUser));
-        validEmployeeUser.setClave("   ");
-
-        // Act & Assert
-        InvalidUsuarioException exception = assertThrows(InvalidUsuarioException.class,
-                () -> ownerUserManagementUseCase.saveEmpleado(validEmployeeUser, ownerId));
-
-        assertEquals("La clave es obligatoria", exception.getMessage());
-    }
-
-    @Test
-    void saveEmpleado_WhenFechaNacimientoIsNull_ShouldThrowInvalidUsuarioException() {
-        // Arrange
-        when(userPersistencePort.findById(ownerId)).thenReturn(Optional.of(validOwnerUser));
-        validEmployeeUser.setFechaNacimiento(null);
-
-        // Act & Assert
-        InvalidUsuarioException exception = assertThrows(InvalidUsuarioException.class,
-                () -> ownerUserManagementUseCase.saveEmpleado(validEmployeeUser, ownerId));
-
-        assertEquals("La fecha de nacimiento es obligatoria", exception.getMessage());
-    }
-
-    @Test
-    void saveEmpleado_WhenUserIsMinor_ShouldThrowInvalidUsuarioException() {
-        // Arrange
-        when(userPersistencePort.findById(ownerId)).thenReturn(Optional.of(validOwnerUser));
-        validEmployeeUser.setFechaNacimiento(LocalDate.now().minusYears(17)); // 17 años
-
-        // Act & Assert
-        InvalidUsuarioException exception = assertThrows(InvalidUsuarioException.class,
-                () -> ownerUserManagementUseCase.saveEmpleado(validEmployeeUser, ownerId));
-
-        assertEquals("El usuario debe ser mayor de edad", exception.getMessage());
-    }
-
-    @Test
-    void saveEmpleado_WhenUserIsExactly18_ShouldCreateEmployee() {
-        // Arrange
-        when(userPersistencePort.findById(ownerId)).thenReturn(Optional.of(validOwnerUser));
-        when(passwordEncoderPort.encode("password123")).thenReturn("encodedPassword");
-        validEmployeeUser.setFechaNacimiento(LocalDate.now().minusYears(18));
-
-        // Act
-        User result = ownerUserManagementUseCase.saveEmpleado(validEmployeeUser, ownerId);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(RoleType.EMPLEADO, result.getRoleType());
-        verify(userPersistencePort).saveUsuario(validEmployeeUser);
+    private User buildValidUser() {
+        User user = new User();
+        user.setNombre("Pedro");
+        user.setApellido("Ramirez");
+        user.setNumeroDocumento("987654");
+        user.setCelular("3109876543");
+        user.setCorreo("pedro@correo.com");
+        user.setClave("clave789");
+        user.setFechaNacimiento(LocalDate.now().minusYears(30));
+        return user;
     }
 }

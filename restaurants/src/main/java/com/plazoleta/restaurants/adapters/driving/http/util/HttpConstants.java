@@ -18,6 +18,7 @@ public final class HttpConstants {
         public static final String PLATOS = "/platos";
         public static final String DISH_BY_ID = "/{dishId}";
         public static final String DISH_STATUS = "/{dishId}/estado";
+        public static final String DISH_BY_RESTAURANT = "/restaurante/{restaurantId}";
 
         private Paths() { throw new IllegalStateException("Constants class"); }
     }
@@ -27,14 +28,20 @@ public final class HttpConstants {
         public static final String CREATE_DISH_SUCCESS = "Plato creado exitosamente";
         public static final String UPDATE_DISH_SUCCESS = "Plato actualizado exitosamente";
         public static final String UPDATE_STATUS_SUCCESS = "Estado del plato actualizado exitosamente";
+        public static final String CREATE_RESTAURANT_SUCCESS = "Restaurante creado exitosamente";
+        public static final String GET_RESTAURANTS_SUCCESS = "Lista de restaurantes obtenida exitosamente";
+        public static final String GET_DISHES_SUCCESS = "Lista de platos obtenida exitosamente";
 
         public static final String INVALID_INPUT = "Datos de entrada inválidos";
+        public static final String INVALID_PAGINATION = "Parámetros de paginación inválidos";
         public static final String UNAUTHORIZED = "No autorizado - Token requerido";
         public static final String FORBIDDEN_CREATE_DISH = "Prohibido - Solo propietarios pueden crear platos";
-        public static final String FORBIDDEN_UPDATE_DISH = "Prohibido - Solo el propietario del restaurante puede modificar platos";
-        public static final String FORBIDDEN_TOGGLE_DISH = "Prohibido - Solo el propietario del restaurante puede cambiar el estado de platos";
+        public static final String FORBIDDEN_UPDATE_DISH = "Prohibido - Solo el propietario del restaurante " + "puede modificar platos";
+        public static final String FORBIDDEN_TOGGLE_DISH = "Prohibido - Solo el propietario del restaurante " + "puede cambiar el estado de platos";
+        public static final String FORBIDDEN_ADMIN = "Prohibido - Usuario no tiene permisos de administrador";
         public static final String DISH_NOT_FOUND = "Plato no encontrado";
         public static final String RESTAURANT_NOT_FOUND = "Restaurante no encontrado";
+        public static final String RESTAURANT_ALREADY_EXISTS = "El restaurante ya existe";
         public static final String INTERNAL_ERROR = "Error interno del servidor";
 
         private Messages() { throw new IllegalStateException("Constants class"); }
