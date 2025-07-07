@@ -12,7 +12,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class UpdateDishRequestFullTest {
+class UpdateDishRequestTest {
 
     private final Validator validator;
 

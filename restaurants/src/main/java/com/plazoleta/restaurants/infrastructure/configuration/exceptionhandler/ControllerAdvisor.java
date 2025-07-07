@@ -1,6 +1,7 @@
 package com.plazoleta.restaurants.infrastructure.configuration.exceptionhandler;
 
 import com.plazoleta.restaurants.adapters.driven.mysql.exception.*;
+import com.plazoleta.restaurants.domain.util.exceptions.InvalidOrderException;
 import com.plazoleta.restaurants.domain.util.exceptions.InvalidRestaurantException;
 import com.plazoleta.restaurants.domain.util.exceptions.InvalidDishException;
 import lombok.RequiredArgsConstructor;
@@ -135,4 +136,12 @@ public class ControllerAdvisor {
                 HttpStatus.INTERNAL_SERVER_ERROR.toString(),
                 LocalDateTime.now()));
     }
+    @ExceptionHandler(InvalidOrderException.class)
+    public ResponseEntity<ExceptionResponse> handleInvalidOrderException(InvalidOrderException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ExceptionResponse(
+                ex.getMessage(),
+                HttpStatus.CONFLICT.toString(),
+                LocalDateTime.now()));
+    }
+
 }
