@@ -93,18 +93,35 @@ public final class DomainConstants {
     public static final class Order {
 
         public static final String ROL_CLIENTE = "CLIENTE";
+        public static final String ROL_EMPLEADO = "EMPLEADO";
+
+        public static final int MAX_PAGE_SIZE = 100;
+        public static final int MIN_PAGE_NUMBER = 0;
+        public static final int MIN_PAGE_SIZE = 1;
+
+        public static final String ESTADO_PENDIENTE = "PENDIENTE";
+        public static final String ESTADO_EN_PREPARACION = "EN_PREPARACION";
+        public static final String ESTADO_LISTO = "LISTO";
+        public static final String ESTADO_ENTREGADO = "ENTREGADO";
+        public static final String ESTADO_CANCELADO = "CANCELADO";
 
         public static final String ERROR_ORDER_NULO = "El pedido no puede ser nulo";
         public static final String ERROR_CLIENTE_REQUERIDO = "El ID del cliente es obligatorio";
+        public static final String ERROR_EMPLEADO_REQUERIDO = "El ID del empleado es obligatorio";
         public static final String ERROR_RESTAURANTE_REQUERIDO = "El restaurante es obligatorio";
         public static final String ERROR_PLATOS_REQUERIDOS = "Los platos son obligatorios";
         public static final String ERROR_PLATO_ID_REQUERIDO = "El ID del plato es obligatorio";
         public static final String ERROR_CANTIDAD_POSITIVA = "La cantidad debe ser mayor a 0";
+
         public static final String ERROR_PLATOS_MISMO_RESTAURANTE = "Todos los platos deben ser del mismo restaurante";
         public static final String ERROR_RESTAURANTE_NO_COINCIDE = "El restaurante del pedido no coincide con el de los platos";
         public static final String ERROR_PLATO_NO_ENCONTRADO = "No se encontró el plato especificado";
         public static final String ERROR_PLATO_NO_ACTIVO = "El plato no está disponible";
         public static final String ERROR_CLIENTE_TIENE_PEDIDO_ACTIVO = "El cliente ya tiene un pedido en proceso (pendiente, en preparación o listo)";
+
+        public static final String ERROR_PAGE_NUMBER_INVALID = "El número de página debe ser mayor o igual a " + MIN_PAGE_NUMBER;
+        public static final String ERROR_PAGE_SIZE_INVALID = "El tamaño de página debe ser mayor o igual a " + MIN_PAGE_SIZE;
+        public static final String ERROR_PAGE_SIZE_TOO_LARGE = "El tamaño de página no puede ser mayor a " + MAX_PAGE_SIZE;
 
         private Order() {
             throw new IllegalStateException("Clase de constantes");

@@ -7,6 +7,7 @@ import com.plazoleta.restaurants.domain.model.OrderStatus;
 import com.plazoleta.restaurants.domain.spi.IOrderPersistencePort;
 import com.plazoleta.restaurants.domain.util.DomainConstants;
 import com.plazoleta.restaurants.domain.util.exceptions.InvalidOrderException;
+import com.plazoleta.restaurants.domain.util.paged.Page;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -32,8 +33,37 @@ public class OrderUseCase implements IOrderServicePort {
         order.setIdCliente(clientId);
         order.setFecha(LocalDateTime.now());
         order.setEstado(OrderStatus.PENDIENTE);
+        order.setIdEmpleado(null);
+        order.setPinSeguridad(null);
 
         return orderPersistencePort.saveOrder(order);
+    }
+
+    @Override
+    public Page<Order> getOrdersByEmployeeAndStatus(Long employeeId, OrderStatus estado, int pageNumber, int pageSize) {
+        validateEmployeeOrderListParameters(employeeId, pageNumber, pageSize);
+
+        Long restaurantId = orderPersistencePort.getEmployeeRestaurantId(employeeId);
+
+        return orderPersistencePort.findOrdersByRestaurantAndStatus(restaurantId, estado, pageNumber, pageSize);
+    }
+
+    private void validateEmployeeOrderListParameters(Long employeeId, int pageNumber, int pageSize) {
+        if (employeeId == null) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_EMPLEADO_REQUERIDO);
+        }
+
+        if (pageNumber < DomainConstants.Order.MIN_PAGE_NUMBER) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_PAGE_NUMBER_INVALID);
+        }
+
+        if (pageSize < DomainConstants.Order.MIN_PAGE_SIZE) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_PAGE_SIZE_INVALID);
+        }
+
+        if (pageSize > DomainConstants.Order.MAX_PAGE_SIZE) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_PAGE_SIZE_TOO_LARGE);
+        }
     }
 
     private void validateOrder(Order order) {

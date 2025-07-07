@@ -1,15 +1,16 @@
-// OrderControllerTest.java (Simplificado y Funcional)
 package com.plazoleta.restaurants.adapters.driving.http.controller;
 
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.CreateOrderRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.OrderDishRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.response.OrderResponse;
+import com.plazoleta.restaurants.adapters.driving.http.dto.response.PageResponse;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IOrderRequestMapper;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IOrderResponseMapper;
 import com.plazoleta.restaurants.domain.api.IOrderServicePort;
 import com.plazoleta.restaurants.domain.model.Order;
 import com.plazoleta.restaurants.domain.model.OrderStatus;
 import com.plazoleta.restaurants.domain.util.exceptions.InvalidOrderException;
+import com.plazoleta.restaurants.domain.util.paged.Page;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +23,9 @@ import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -49,6 +52,7 @@ class OrderControllerTest {
     private Order savedOrder;
     private OrderResponse orderResponse;
     private Authentication authentication;
+    private Authentication employeeAuthentication;
 
     @BeforeEach
     void setUp() {
@@ -77,6 +81,7 @@ class OrderControllerTest {
 
         // Setup authentication
         authentication = new TestingAuthenticationToken("1", null, "CLIENTE");
+        employeeAuthentication = new TestingAuthenticationToken("2", null, "EMPLEADO");
     }
 
     @Test
@@ -207,5 +212,376 @@ class OrderControllerTest {
         verify(orderServicePort, times(1)).createOrder(order, 1L);
         verify(orderResponseMapper, times(1)).orderToResponse(savedOrder);
         verifyNoMoreInteractions(orderRequestMapper, orderServicePort, orderResponseMapper);
+    }
+
+    // ============= NUEVOS TESTS PARA getOrdersByStatus =============
+
+    @Test
+    void getOrdersByStatus_WithValidStatus_ShouldReturnPagedOrders() {
+        // Arrange
+        String estado = "PENDIENTE";
+        int page = 0;
+        int size = 10;
+
+        Order order1 = new Order();
+        order1.setId(1L);
+        order1.setEstado(OrderStatus.PENDIENTE);
+
+        Order order2 = new Order();
+        order2.setId(2L);
+        order2.setEstado(OrderStatus.PENDIENTE);
+
+        List<Order> orders = Arrays.asList(order1, order2);
+        Page<Order> ordersPage = new Page<>(orders, page, size, 2L);
+
+        OrderResponse response1 = new OrderResponse();
+        response1.setId(1L);
+        response1.setEstado("PENDIENTE");
+
+        OrderResponse response2 = new OrderResponse();
+        response2.setId(2L);
+        response2.setEstado("PENDIENTE");
+
+        PageResponse<OrderResponse> pageResponse = new PageResponse<>();
+        pageResponse.setContent(Arrays.asList(response1, response2));
+        pageResponse.setPageNumber(page);
+        pageResponse.setPageSize(size);
+        pageResponse.setTotalElements(2L);
+
+        when(orderServicePort.getOrdersByEmployeeAndStatus(eq(2L), eq(OrderStatus.PENDIENTE), eq(page), eq(size)))
+                .thenReturn(ordersPage);
+        when(orderResponseMapper.toPageResponse(ordersPage)).thenReturn(pageResponse);
+
+        // Act
+        ResponseEntity<PageResponse<OrderResponse>> result = orderController.getOrdersByStatus(
+                estado, page, size, employeeAuthentication);
+
+        // Assert
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertEquals(2, result.getBody().getContent().size());
+        assertEquals(page, result.getBody().getPageNumber());
+        assertEquals(size, result.getBody().getPageSize());
+        assertEquals(2L, result.getBody().getTotalElements());
+
+        verify(orderServicePort).getOrdersByEmployeeAndStatus(2L, OrderStatus.PENDIENTE, page, size);
+        verify(orderResponseMapper).toPageResponse(ordersPage);
+    }
+
+    @Test
+    void getOrdersByStatus_WithNullStatus_ShouldReturnAllOrders() {
+        // Arrange
+        String estado = null;
+        int page = 0;
+        int size = 10;
+
+        Order order = new Order();
+        order.setId(1L);
+
+        List<Order> orders = Collections.singletonList(order);
+        Page<Order> ordersPage = new Page<>(orders, page, size, 1L);
+
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setId(1L);
+
+        PageResponse<OrderResponse> pageResponse = new PageResponse<>();
+        pageResponse.setContent(Collections.singletonList(orderResponse));
+        pageResponse.setPageNumber(page);
+        pageResponse.setPageSize(size);
+        pageResponse.setTotalElements(1L);
+
+        when(orderServicePort.getOrdersByEmployeeAndStatus(eq(2L), eq(null), eq(page), eq(size)))
+                .thenReturn(ordersPage);
+        when(orderResponseMapper.toPageResponse(ordersPage)).thenReturn(pageResponse);
+
+        // Act
+        ResponseEntity<PageResponse<OrderResponse>> result = orderController.getOrdersByStatus(
+                estado, page, size, employeeAuthentication);
+
+        // Assert
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertEquals(1, result.getBody().getContent().size());
+
+        verify(orderServicePort).getOrdersByEmployeeAndStatus(2L, null, page, size);
+        verify(orderResponseMapper).toPageResponse(ordersPage);
+    }
+
+    @Test
+    void getOrdersByStatus_WithEmptyStatus_ShouldReturnAllOrders() {
+        // Arrange
+        String estado = "";
+        int page = 0;
+        int size = 10;
+
+        Order order = new Order();
+        order.setId(1L);
+
+        List<Order> orders = Collections.singletonList(order);
+        Page<Order> ordersPage = new Page<>(orders, page, size, 1L);
+
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setId(1L);
+
+        PageResponse<OrderResponse> pageResponse = new PageResponse<>();
+        pageResponse.setContent(Collections.singletonList(orderResponse));
+        pageResponse.setPageNumber(page);
+        pageResponse.setPageSize(size);
+        pageResponse.setTotalElements(1L);
+
+        when(orderServicePort.getOrdersByEmployeeAndStatus(eq(2L), eq(null), eq(page), eq(size)))
+                .thenReturn(ordersPage);
+        when(orderResponseMapper.toPageResponse(ordersPage)).thenReturn(pageResponse);
+
+        // Act
+        ResponseEntity<PageResponse<OrderResponse>> result = orderController.getOrdersByStatus(
+                estado, page, size, employeeAuthentication);
+
+        // Assert
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        verify(orderServicePort).getOrdersByEmployeeAndStatus(2L, null, page, size);
+    }
+
+    @Test
+    void getOrdersByStatus_WithWhitespaceStatus_ShouldReturnAllOrders() {
+        // Arrange
+        String estado = "   ";
+        int page = 0;
+        int size = 10;
+
+        Order order = new Order();
+        order.setId(1L);
+
+        List<Order> orders = Collections.singletonList(order);
+        Page<Order> ordersPage = new Page<>(orders, page, size, 1L);
+
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setId(1L);
+
+        PageResponse<OrderResponse> pageResponse = new PageResponse<>();
+        pageResponse.setContent(Collections.singletonList(orderResponse));
+        pageResponse.setPageNumber(page);
+        pageResponse.setPageSize(size);
+        pageResponse.setTotalElements(1L);
+
+        when(orderServicePort.getOrdersByEmployeeAndStatus(eq(2L), eq(null), eq(page), eq(size)))
+                .thenReturn(ordersPage);
+        when(orderResponseMapper.toPageResponse(ordersPage)).thenReturn(pageResponse);
+
+        // Act
+        ResponseEntity<PageResponse<OrderResponse>> result = orderController.getOrdersByStatus(
+                estado, page, size, employeeAuthentication);
+
+        // Assert
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        verify(orderServicePort).getOrdersByEmployeeAndStatus(2L, null, page, size);
+    }
+
+    @Test
+    void getOrdersByStatus_WithLowercaseStatus_ShouldConvertToUppercase() {
+        // Arrange
+        String estado = "pendiente";
+        int page = 0;
+        int size = 10;
+
+        Order order = new Order();
+        order.setId(1L);
+
+        List<Order> orders = Collections.singletonList(order);
+        Page<Order> ordersPage = new Page<>(orders, page, size, 1L);
+
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setId(1L);
+
+        PageResponse<OrderResponse> pageResponse = new PageResponse<>();
+        pageResponse.setContent(Collections.singletonList(orderResponse));
+        pageResponse.setPageNumber(page);
+        pageResponse.setPageSize(size);
+        pageResponse.setTotalElements(1L);
+
+        when(orderServicePort.getOrdersByEmployeeAndStatus(eq(2L), eq(OrderStatus.PENDIENTE), eq(page), eq(size)))
+                .thenReturn(ordersPage);
+        when(orderResponseMapper.toPageResponse(ordersPage)).thenReturn(pageResponse);
+
+        // Act
+        ResponseEntity<PageResponse<OrderResponse>> result = orderController.getOrdersByStatus(
+                estado, page, size, employeeAuthentication);
+
+        // Assert
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        verify(orderServicePort).getOrdersByEmployeeAndStatus(2L, OrderStatus.PENDIENTE, page, size);
+    }
+
+    @Test
+    void getOrdersByStatus_WithMixedCaseStatus_ShouldConvertToUppercase() {
+        // Arrange
+        String estado = "En_PreParAcIoN";
+        int page = 0;
+        int size = 10;
+
+        Order order = new Order();
+        order.setId(1L);
+
+        List<Order> orders = Collections.singletonList(order);
+        Page<Order> ordersPage = new Page<>(orders, page, size, 1L);
+
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setId(1L);
+
+        PageResponse<OrderResponse> pageResponse = new PageResponse<>();
+        pageResponse.setContent(Collections.singletonList(orderResponse));
+        pageResponse.setPageNumber(page);
+        pageResponse.setPageSize(size);
+        pageResponse.setTotalElements(1L);
+
+        when(orderServicePort.getOrdersByEmployeeAndStatus(eq(2L), eq(OrderStatus.EN_PREPARACION), eq(page), eq(size)))
+                .thenReturn(ordersPage);
+        when(orderResponseMapper.toPageResponse(ordersPage)).thenReturn(pageResponse);
+
+        // Act
+        ResponseEntity<PageResponse<OrderResponse>> result = orderController.getOrdersByStatus(
+                estado, page, size, employeeAuthentication);
+
+        // Assert
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        verify(orderServicePort).getOrdersByEmployeeAndStatus(2L, OrderStatus.EN_PREPARACION, page, size);
+    }
+
+    @Test
+    void getOrdersByStatus_WithAllValidStatuses_ShouldWork() {
+        // Test todos los estados válidos
+        String[] validStatuses = {"PENDIENTE", "EN_PREPARACION", "LISTO", "ENTREGADO", "CANCELADO"};
+        OrderStatus[] expectedStatuses = {OrderStatus.PENDIENTE, OrderStatus.EN_PREPARACION,
+                OrderStatus.LISTO, OrderStatus.ENTREGADO, OrderStatus.CANCELADO};
+
+        for (int i = 0; i < validStatuses.length; i++) {
+            // Arrange
+            String estado = validStatuses[i];
+            OrderStatus expectedStatus = expectedStatuses[i];
+
+            Order order = new Order();
+            order.setId(1L);
+
+            List<Order> orders = Collections.singletonList(order);
+            Page<Order> ordersPage = new Page<>(orders, 0, 10, 1L);
+
+            OrderResponse orderResponse = new OrderResponse();
+            orderResponse.setId(1L);
+
+            PageResponse<OrderResponse> pageResponse = new PageResponse<>();
+            pageResponse.setContent(Collections.singletonList(orderResponse));
+            pageResponse.setPageNumber(0);
+            pageResponse.setPageSize(10);
+            pageResponse.setTotalElements(1L);
+
+            when(orderServicePort.getOrdersByEmployeeAndStatus(eq(2L), eq(expectedStatus), eq(0), eq(10)))
+                    .thenReturn(ordersPage);
+            when(orderResponseMapper.toPageResponse(ordersPage)).thenReturn(pageResponse);
+
+            // Act
+            ResponseEntity<PageResponse<OrderResponse>> result = orderController.getOrdersByStatus(
+                    estado, 0, 10, employeeAuthentication);
+
+            // Assert
+            assertEquals(HttpStatus.OK, result.getStatusCode());
+            verify(orderServicePort).getOrdersByEmployeeAndStatus(2L, expectedStatus, 0, 10);
+
+            // Reset mocks for next iteration
+            reset(orderServicePort, orderResponseMapper);
+        }
+    }
+
+    @Test
+    void getOrdersByStatus_WithDifferentEmployeeId_ShouldUseCorrectEmployeeId() {
+        // Arrange
+        Authentication differentEmployeeAuth = new TestingAuthenticationToken("999", null, "EMPLEADO");
+        String estado = "LISTO";
+
+        Order order = new Order();
+        order.setId(1L);
+
+        List<Order> orders = Collections.singletonList(order);
+        Page<Order> ordersPage = new Page<>(orders, 0, 10, 1L);
+
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setId(1L);
+
+        PageResponse<OrderResponse> pageResponse = new PageResponse<>();
+        pageResponse.setContent(Collections.singletonList(orderResponse));
+        pageResponse.setPageNumber(0);
+        pageResponse.setPageSize(10);
+        pageResponse.setTotalElements(1L);
+
+        when(orderServicePort.getOrdersByEmployeeAndStatus(eq(999L), eq(OrderStatus.LISTO), eq(0), eq(10)))
+                .thenReturn(ordersPage);
+        when(orderResponseMapper.toPageResponse(ordersPage)).thenReturn(pageResponse);
+
+        // Act
+        ResponseEntity<PageResponse<OrderResponse>> result = orderController.getOrdersByStatus(
+                estado, 0, 10, differentEmployeeAuth);
+
+        // Assert
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        verify(orderServicePort).getOrdersByEmployeeAndStatus(999L, OrderStatus.LISTO, 0, 10);
+    }
+
+    @Test
+    void getOrdersByStatus_ServiceThrowsException_ShouldPropagateException() {
+        // Arrange
+        String estado = "PENDIENTE";
+        when(orderServicePort.getOrdersByEmployeeAndStatus(eq(2L), eq(OrderStatus.PENDIENTE), eq(0), eq(10)))
+                .thenThrow(new RuntimeException("Error del servicio"));
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> orderController.getOrdersByStatus(estado, 0, 10, employeeAuthentication)
+        );
+
+        assertEquals("Error del servicio", exception.getMessage());
+        verify(orderResponseMapper, never()).toPageResponse(any());
+    }
+
+    @Test
+    void getOrdersByStatus_MapperReturnsNull_ShouldReturnNullBody() {
+        // Arrange
+        String estado = "PENDIENTE";
+
+        Order order = new Order();
+        order.setId(1L);
+
+        List<Order> orders = Collections.singletonList(order);
+        Page<Order> ordersPage = new Page<>(orders, 0, 10, 1L);
+
+        when(orderServicePort.getOrdersByEmployeeAndStatus(eq(2L), eq(OrderStatus.PENDIENTE), eq(0), eq(10)))
+                .thenReturn(ordersPage);
+        when(orderResponseMapper.toPageResponse(ordersPage)).thenReturn(null);
+
+        // Act
+        ResponseEntity<PageResponse<OrderResponse>> result = orderController.getOrdersByStatus(
+                estado, 0, 10, employeeAuthentication);
+
+        // Assert
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertNull(result.getBody());
+    }
+
+    @Test
+    void getOrdersByStatus_WithInvalidStatus_ShouldThrowIllegalArgumentException() {
+        // Arrange
+        String estado = "INVALID_STATUS";
+        int page = 0;
+        int size = 10;
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> orderController.getOrdersByStatus(estado, page, size, employeeAuthentication)
+        );
+
+        assertTrue(exception.getMessage().contains("INVALID_STATUS"));
+        // Removed problematic verify calls with any() matchers
+        verify(orderServicePort, never()).getOrdersByEmployeeAndStatus(anyLong(), any(), anyInt(), anyInt());
+        verify(orderResponseMapper, never()).toPageResponse(any());
     }
 }

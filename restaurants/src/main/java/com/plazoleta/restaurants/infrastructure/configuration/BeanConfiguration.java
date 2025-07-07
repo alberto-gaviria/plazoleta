@@ -56,15 +56,21 @@ public class BeanConfiguration {
             IOrderRepository orderRepository,
             IOrderDishRepository orderDishRepository,
             IDishRepository dishRepository,
+            IEmployeeRestaurantRepository employeeRestaurantRepository,
             IOrderEntityMapper orderEntityMapper,
             IOrderDishEntityMapper orderDishEntityMapper) {
-        return new OrderMysqlAdapter(orderRepository, orderDishRepository, dishRepository,
-                                     orderEntityMapper, orderDishEntityMapper);
+        return new OrderMysqlAdapter(
+                orderRepository,
+                orderDishRepository,
+                dishRepository,
+                employeeRestaurantRepository,
+                orderEntityMapper,
+                orderDishEntityMapper
+        );
     }
 
     @Bean
-    public IOrderServicePort orderServicePort(
-            IOrderPersistencePort orderPersistencePort) {
+    public IOrderServicePort orderServicePort(IOrderPersistencePort orderPersistencePort) {
         return new OrderUseCase(orderPersistencePort);
     }
 }

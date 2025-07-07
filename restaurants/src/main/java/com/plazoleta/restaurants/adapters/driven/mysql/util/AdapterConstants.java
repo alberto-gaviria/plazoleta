@@ -36,6 +36,7 @@ public final class AdapterConstants {
         public static final String PLATO_NO_ACTIVO = "El plato no está disponible";
         public static final String PLATOS_RESTAURANTE_DIFERENTE = "Los platos deben ser del mismo restaurante";
         public static final String CLIENTE_CON_PEDIDO_ACTIVO = "El cliente ya tiene un pedido activo";
+        public static final String EMPLEADO_SIN_RESTAURANTE = "El empleado no tiene un restaurante asignado";
 
         private ErrorMessages() {
             throw new IllegalStateException("Clase de constantes");

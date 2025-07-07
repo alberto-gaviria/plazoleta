@@ -10,6 +10,7 @@ public final class HttpConstants {
         public static final String ADMINISTRADOR = "ADMINISTRADOR";
         public static final String PROPIETARIO = "PROPIETARIO";
         public static final String CLIENTE = "CLIENTE";
+        public static final String EMPLEADO = "EMPLEADO";
 
         private Roles() { throw new IllegalStateException("Constants class"); }
     }
@@ -24,32 +25,6 @@ public final class HttpConstants {
         private Paths() { throw new IllegalStateException("Constants class"); }
     }
 
-    public static final class Messages {
-
-        public static final String CREATE_DISH_SUCCESS = "Plato creado exitosamente";
-        public static final String UPDATE_DISH_SUCCESS = "Plato actualizado exitosamente";
-        public static final String UPDATE_STATUS_SUCCESS = "Estado del plato actualizado exitosamente";
-        public static final String CREATE_RESTAURANT_SUCCESS = "Restaurante creado exitosamente";
-        public static final String GET_RESTAURANTS_SUCCESS = "Lista de restaurantes obtenida exitosamente";
-        public static final String GET_DISHES_SUCCESS = "Lista de platos obtenida exitosamente";
-
-        public static final String INVALID_INPUT = "Datos de entrada inválidos";
-        public static final String INVALID_PAGINATION = "Parámetros de paginación inválidos";
-        public static final String UNAUTHORIZED = "No autorizado - Token requerido";
-        public static final String FORBIDDEN_CREATE_DISH = "Prohibido - Solo propietarios pueden crear platos";
-        public static final String FORBIDDEN_UPDATE_DISH = "Prohibido - Solo el propietario del restaurante " +
-                "puede modificar platos";
-        public static final String FORBIDDEN_TOGGLE_DISH = "Prohibido - Solo el propietario del restaurante " +
-                "puede cambiar el estado de platos";
-        public static final String FORBIDDEN_ADMIN = "Prohibido - Usuario no tiene permisos de administrador";
-        public static final String DISH_NOT_FOUND = "Plato no encontrado";
-        public static final String RESTAURANT_NOT_FOUND = "Restaurante no encontrado";
-        public static final String RESTAURANT_ALREADY_EXISTS = "El restaurante ya existe";
-        public static final String INTERNAL_ERROR = "Error interno del servidor";
-
-        private Messages() { throw new IllegalStateException("Constants class"); }
-    }
-
     public static final class Pagination {
         public static final String DEFAULT_PAGE_VALUE = "0";
         public static final String DEFAULT_SIZE_VALUE = "10";
@@ -58,5 +33,25 @@ public final class HttpConstants {
         public static final int MAX_SIZE = 50;
 
         private Pagination() { throw new IllegalStateException("Constants class"); }
+    }
+
+    public static final class Messages {
+
+        public static final String CREATE_ORDER_SUCCESS = "Pedido creado exitosamente";
+        public static final String GET_ORDERS_SUCCESS = "Lista de pedidos obtenida exitosamente";
+
+        public static final String INVALID_ORDER_STATUS = "Estado de pedido inválido: ";
+        public static final String INVALID_INPUT = "Datos de entrada inválidos";
+        public static final String INVALID_PAGINATION = "Parámetros de paginación inválidos";
+        public static final String UNAUTHORIZED = "No autorizado - Token requerido";
+        public static final String FORBIDDEN_EMPLOYEE = "Prohibido - Solo empleados pueden listar pedidos";
+        public static final String FORBIDDEN_CLIENT = "Prohibido - Solo clientes pueden crear pedidos";
+        public static final String EMPLOYEE_WITHOUT_RESTAURANT = "Empleado sin restaurante asignado";
+        public static final String CLIENT_HAS_ACTIVE_ORDER = "El cliente ya tiene un pedido activo";
+        public static final String ORDER_NOT_FOUND = "Pedido no encontrado";
+        public static final String DISH_NOT_FOUND = "Plato o restaurante no encontrado";
+        public static final String INTERNAL_ERROR = "Error interno del servidor";
+
+        private Messages() { throw new IllegalStateException("Constants class"); }
     }
 }

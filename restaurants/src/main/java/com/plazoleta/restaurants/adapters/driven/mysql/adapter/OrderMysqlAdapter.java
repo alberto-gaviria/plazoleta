@@ -10,37 +10,44 @@ import com.plazoleta.restaurants.adapters.driven.mysql.mapper.IOrderDishEntityMa
 import com.plazoleta.restaurants.adapters.driven.mysql.repository.IDishRepository;
 import com.plazoleta.restaurants.adapters.driven.mysql.repository.IOrderRepository;
 import com.plazoleta.restaurants.adapters.driven.mysql.repository.IOrderDishRepository;
+import com.plazoleta.restaurants.adapters.driven.mysql.repository.IEmployeeRestaurantRepository;
 import com.plazoleta.restaurants.adapters.driven.mysql.util.AdapterConstants;
 import com.plazoleta.restaurants.domain.model.Order;
 import com.plazoleta.restaurants.domain.model.OrderDish;
+import com.plazoleta.restaurants.domain.util.paged.Page;
 import com.plazoleta.restaurants.domain.spi.IOrderPersistencePort;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class OrderMysqlAdapter implements IOrderPersistencePort {
 
     private final IOrderRepository orderRepository;
     private final IOrderDishRepository orderDishRepository;
     private final IDishRepository dishRepository;
+    private final IEmployeeRestaurantRepository employeeRestaurantRepository;
     private final IOrderEntityMapper orderEntityMapper;
     private final IOrderDishEntityMapper orderDishEntityMapper;
 
     public OrderMysqlAdapter(IOrderRepository orderRepository,
                              IOrderDishRepository orderDishRepository,
                              IDishRepository dishRepository,
+                             IEmployeeRestaurantRepository employeeRestaurantRepository,
                              IOrderEntityMapper orderEntityMapper,
                              IOrderDishEntityMapper orderDishEntityMapper) {
         this.orderRepository = orderRepository;
         this.orderDishRepository = orderDishRepository;
         this.dishRepository = dishRepository;
+        this.employeeRestaurantRepository = employeeRestaurantRepository;
         this.orderEntityMapper = orderEntityMapper;
         this.orderDishEntityMapper = orderDishEntityMapper;
     }
 
     @Override
     public Order saveOrder(Order order) {
-
         OrderEntity orderEntity = orderEntityMapper.toEntity(order);
         OrderEntity savedOrderEntity = orderRepository.save(orderEntity);
 
@@ -87,5 +94,51 @@ public class OrderMysqlAdapter implements IOrderPersistencePort {
     public boolean isDishActive(Long dishId) {
         Optional<DishEntity> dishEntity = dishRepository.findById(dishId);
         return dishEntity.map(DishEntity::getActivo).orElse(false);
+    }
+
+    @Override
+    public Page<Order> findOrdersByRestaurantAndStatus(Long restaurantId, com.plazoleta.restaurants.domain.model.OrderStatus estado, int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        org.springframework.data.domain.Page<OrderEntity> springPage;
+
+        if (estado != null) {
+            OrderStatus entityStatus = OrderStatus.valueOf(estado.name());
+            springPage = orderRepository.findByRestaurantIdAndStatus(restaurantId, entityStatus, pageable);
+        } else {
+            springPage = orderRepository.findByRestaurantId(restaurantId, pageable);
+        }
+
+        List<Order> content = springPage.getContent()
+                .stream()
+                .map(this::convertToOrderWithDishes)
+                .toList();
+
+        return new Page<>(
+                content,
+                springPage.getNumber(),
+                springPage.getSize(),
+                springPage.getTotalElements()
+        );
+    }
+
+    @Override
+    public Long getEmployeeRestaurantId(Long employeeId) {
+        Optional<Long> restaurantId = employeeRestaurantRepository.findRestaurantIdByEmployeeId(employeeId);
+
+        if (restaurantId.isEmpty()) {
+            throw new ElementNotFoundException(AdapterConstants.ErrorMessages.EMPLEADO_SIN_RESTAURANTE);
+        }
+
+        return restaurantId.get();
+    }
+
+    private Order convertToOrderWithDishes(OrderEntity orderEntity) {
+        Order order = orderEntityMapper.toModel(orderEntity);
+
+        List<OrderDishEntity> orderDishEntities = orderDishRepository.findByIdPedido(orderEntity.getId());
+        List<OrderDish> orderDishes = orderDishEntityMapper.toModelList(orderDishEntities);
+        order.setPlatos(orderDishes);
+
+        return order;
     }
 }

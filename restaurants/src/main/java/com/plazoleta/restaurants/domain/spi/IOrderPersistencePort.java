@@ -2,8 +2,7 @@ package com.plazoleta.restaurants.domain.spi;
 
 import com.plazoleta.restaurants.domain.model.Order;
 import com.plazoleta.restaurants.domain.model.OrderStatus;
-
-import java.util.Optional;
+import com.plazoleta.restaurants.domain.util.paged.Page;
 
 public interface IOrderPersistencePort {
     Order saveOrder(Order order);
@@ -11,4 +10,6 @@ public interface IOrderPersistencePort {
     boolean existsDishById(Long dishId);
     Long getDishRestaurantId(Long dishId);
     boolean isDishActive(Long dishId);
+    Page<Order> findOrdersByRestaurantAndStatus(Long restaurantId, OrderStatus estado, int pageNumber, int pageSize);
+    Long getEmployeeRestaurantId(Long employeeId);
 }

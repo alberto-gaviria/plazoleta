@@ -99,6 +99,7 @@ class HttpConstantsTest {
         assertEquals("ADMINISTRADOR", HttpConstants.Roles.ADMINISTRADOR);
         assertEquals("PROPIETARIO", HttpConstants.Roles.PROPIETARIO);
         assertEquals("CLIENTE", HttpConstants.Roles.CLIENTE);
+        assertEquals("EMPLEADO", HttpConstants.Roles.EMPLEADO);
     }
 
     @Test
@@ -107,38 +108,44 @@ class HttpConstantsTest {
         assertEquals("/platos", HttpConstants.Paths.PLATOS);
         assertEquals("/{dishId}", HttpConstants.Paths.DISH_BY_ID);
         assertEquals("/{dishId}/estado", HttpConstants.Paths.DISH_STATUS);
+        assertEquals("/restaurante/{restaurantId}", HttpConstants.Paths.DISH_BY_RESTAURANT);
+        assertEquals("/pedidos", HttpConstants.Paths.PEDIDOS);
     }
 
     @Test
     void shouldHaveCorrectSuccessMessages() {
         // Then
-        assertEquals("Plato creado exitosamente",
-                HttpConstants.Messages.CREATE_DISH_SUCCESS);
-        assertEquals("Plato actualizado exitosamente",
-                HttpConstants.Messages.UPDATE_DISH_SUCCESS);
-        assertEquals("Estado del plato actualizado exitosamente",
-                HttpConstants.Messages.UPDATE_STATUS_SUCCESS);
+        assertEquals("Pedido creado exitosamente",
+                     HttpConstants.Messages.CREATE_ORDER_SUCCESS);
+        assertEquals("Lista de pedidos obtenida exitosamente",
+                     HttpConstants.Messages.GET_ORDERS_SUCCESS);
     }
 
     @Test
     void shouldHaveCorrectErrorMessages() {
         // Then
+        assertEquals("Estado de pedido inválido: ",
+                     HttpConstants.Messages.INVALID_ORDER_STATUS);
         assertEquals("Datos de entrada inválidos",
-                HttpConstants.Messages.INVALID_INPUT);
+                     HttpConstants.Messages.INVALID_INPUT);
+        assertEquals("Parámetros de paginación inválidos",
+                     HttpConstants.Messages.INVALID_PAGINATION);
         assertEquals("No autorizado - Token requerido",
-                HttpConstants.Messages.UNAUTHORIZED);
-        assertEquals("Prohibido - Solo propietarios pueden crear platos",
-                HttpConstants.Messages.FORBIDDEN_CREATE_DISH);
-        assertEquals("Prohibido - Solo el propietario del restaurante puede modificar platos",
-                HttpConstants.Messages.FORBIDDEN_UPDATE_DISH);
-        assertEquals("Prohibido - Solo el propietario del restaurante puede cambiar el estado de platos",
-                HttpConstants.Messages.FORBIDDEN_TOGGLE_DISH);
-        assertEquals("Plato no encontrado",
-                HttpConstants.Messages.DISH_NOT_FOUND);
-        assertEquals("Restaurante no encontrado",
-                HttpConstants.Messages.RESTAURANT_NOT_FOUND);
+                     HttpConstants.Messages.UNAUTHORIZED);
+        assertEquals("Prohibido - Solo empleados pueden listar pedidos",
+                     HttpConstants.Messages.FORBIDDEN_EMPLOYEE);
+        assertEquals("Prohibido - Solo clientes pueden crear pedidos",
+                     HttpConstants.Messages.FORBIDDEN_CLIENT);
+        assertEquals("Empleado sin restaurante asignado",
+                     HttpConstants.Messages.EMPLOYEE_WITHOUT_RESTAURANT);
+        assertEquals("El cliente ya tiene un pedido activo",
+                     HttpConstants.Messages.CLIENT_HAS_ACTIVE_ORDER);
+        assertEquals("Pedido no encontrado",
+                     HttpConstants.Messages.ORDER_NOT_FOUND);
+        assertEquals("Plato o restaurante no encontrado",
+                     HttpConstants.Messages.DISH_NOT_FOUND);
         assertEquals("Error interno del servidor",
-                HttpConstants.Messages.INTERNAL_ERROR);
+                     HttpConstants.Messages.INTERNAL_ERROR);
     }
 
     @Test
@@ -162,6 +169,7 @@ class HttpConstantsTest {
         assertNotNull(HttpConstants.Roles.ADMINISTRADOR);
         assertNotNull(HttpConstants.Roles.PROPIETARIO);
         assertNotNull(HttpConstants.Roles.CLIENTE);
+        assertNotNull(HttpConstants.Roles.EMPLEADO);
     }
 
     @Test
@@ -170,26 +178,30 @@ class HttpConstantsTest {
         assertNotNull(HttpConstants.Paths.PLATOS);
         assertNotNull(HttpConstants.Paths.DISH_BY_ID);
         assertNotNull(HttpConstants.Paths.DISH_STATUS);
+        assertNotNull(HttpConstants.Paths.DISH_BY_RESTAURANT);
+        assertNotNull(HttpConstants.Paths.PEDIDOS);
     }
 
     @Test
     void shouldVerifyAllSuccessMessagesAreNotNull() {
         // Then
-        assertNotNull(HttpConstants.Messages.CREATE_DISH_SUCCESS);
-        assertNotNull(HttpConstants.Messages.UPDATE_DISH_SUCCESS);
-        assertNotNull(HttpConstants.Messages.UPDATE_STATUS_SUCCESS);
+        assertNotNull(HttpConstants.Messages.CREATE_ORDER_SUCCESS);
+        assertNotNull(HttpConstants.Messages.GET_ORDERS_SUCCESS);
     }
 
     @Test
     void shouldVerifyAllErrorMessagesAreNotNull() {
         // Then
+        assertNotNull(HttpConstants.Messages.INVALID_ORDER_STATUS);
         assertNotNull(HttpConstants.Messages.INVALID_INPUT);
+        assertNotNull(HttpConstants.Messages.INVALID_PAGINATION);
         assertNotNull(HttpConstants.Messages.UNAUTHORIZED);
-        assertNotNull(HttpConstants.Messages.FORBIDDEN_CREATE_DISH);
-        assertNotNull(HttpConstants.Messages.FORBIDDEN_UPDATE_DISH);
-        assertNotNull(HttpConstants.Messages.FORBIDDEN_TOGGLE_DISH);
+        assertNotNull(HttpConstants.Messages.FORBIDDEN_EMPLOYEE);
+        assertNotNull(HttpConstants.Messages.FORBIDDEN_CLIENT);
+        assertNotNull(HttpConstants.Messages.EMPLOYEE_WITHOUT_RESTAURANT);
+        assertNotNull(HttpConstants.Messages.CLIENT_HAS_ACTIVE_ORDER);
+        assertNotNull(HttpConstants.Messages.ORDER_NOT_FOUND);
         assertNotNull(HttpConstants.Messages.DISH_NOT_FOUND);
-        assertNotNull(HttpConstants.Messages.RESTAURANT_NOT_FOUND);
         assertNotNull(HttpConstants.Messages.INTERNAL_ERROR);
     }
 
@@ -226,6 +238,8 @@ class HttpConstantsTest {
         assertTrue(HttpConstants.Paths.DISH_BY_ID.contains("{dishId}"));
         assertTrue(HttpConstants.Paths.DISH_STATUS.contains("{dishId}"));
         assertTrue(HttpConstants.Paths.DISH_STATUS.contains("/estado"));
+        assertTrue(HttpConstants.Paths.DISH_BY_RESTAURANT.contains("{restaurantId}"));
+        assertTrue(HttpConstants.Paths.DISH_BY_RESTAURANT.contains("/restaurante"));
     }
 
     @Test
@@ -234,6 +248,7 @@ class HttpConstantsTest {
         assertEquals(HttpConstants.Roles.ADMINISTRADOR.toUpperCase(), HttpConstants.Roles.ADMINISTRADOR);
         assertEquals(HttpConstants.Roles.PROPIETARIO.toUpperCase(), HttpConstants.Roles.PROPIETARIO);
         assertEquals(HttpConstants.Roles.CLIENTE.toUpperCase(), HttpConstants.Roles.CLIENTE);
+        assertEquals(HttpConstants.Roles.EMPLEADO.toUpperCase(), HttpConstants.Roles.EMPLEADO);
     }
 
     @Test
@@ -242,25 +257,71 @@ class HttpConstantsTest {
         assertTrue(HttpConstants.Paths.PLATOS.startsWith("/"));
         assertTrue(HttpConstants.Paths.DISH_BY_ID.startsWith("/{"));
         assertTrue(HttpConstants.Paths.DISH_STATUS.startsWith("/{"));
+        assertTrue(HttpConstants.Paths.DISH_BY_RESTAURANT.startsWith("/restaurante"));
+        assertTrue(HttpConstants.Paths.PEDIDOS.startsWith("/"));
     }
 
     @Test
     void shouldVerifySuccessMessagesAreInSpanish() {
         // Then
-        assertTrue(HttpConstants.Messages.CREATE_DISH_SUCCESS.contains("exitosamente"));
-        assertTrue(HttpConstants.Messages.UPDATE_DISH_SUCCESS.contains("exitosamente"));
-        assertTrue(HttpConstants.Messages.UPDATE_STATUS_SUCCESS.contains("exitosamente"));
+        assertTrue(HttpConstants.Messages.CREATE_ORDER_SUCCESS.contains("exitosamente"));
+        assertTrue(HttpConstants.Messages.GET_ORDERS_SUCCESS.contains("exitosamente"));
     }
 
     @Test
     void shouldVerifyErrorMessagesAreInSpanish() {
         // Then
+        assertTrue(HttpConstants.Messages.INVALID_ORDER_STATUS.contains("inválido"));
         assertTrue(HttpConstants.Messages.INVALID_INPUT.contains("inválidos"));
+        assertTrue(HttpConstants.Messages.INVALID_PAGINATION.contains("inválidos"));
         assertTrue(HttpConstants.Messages.UNAUTHORIZED.contains("autorizado"));
-        assertTrue(HttpConstants.Messages.FORBIDDEN_CREATE_DISH.contains("Prohibido"));
+        assertTrue(HttpConstants.Messages.FORBIDDEN_EMPLOYEE.contains("Prohibido"));
+        assertTrue(HttpConstants.Messages.FORBIDDEN_CLIENT.contains("Prohibido"));
+        assertTrue(HttpConstants.Messages.EMPLOYEE_WITHOUT_RESTAURANT.contains("sin restaurante"));
+        assertTrue(HttpConstants.Messages.CLIENT_HAS_ACTIVE_ORDER.contains("pedido activo"));
+        assertTrue(HttpConstants.Messages.ORDER_NOT_FOUND.contains("no encontrado"));
         assertTrue(HttpConstants.Messages.DISH_NOT_FOUND.contains("no encontrado"));
-        assertTrue(HttpConstants.Messages.RESTAURANT_NOT_FOUND.contains("no encontrado"));
         assertTrue(HttpConstants.Messages.INTERNAL_ERROR.contains("Error interno"));
+    }
+
+    @Test
+    void shouldVerifyOrderRelatedMessages() {
+        // Then - Verificar que los mensajes relacionados con pedidos sean correctos
+        assertTrue(HttpConstants.Messages.CREATE_ORDER_SUCCESS.contains("Pedido"));
+        assertTrue(HttpConstants.Messages.GET_ORDERS_SUCCESS.contains("pedidos"));
+        assertTrue(HttpConstants.Messages.ORDER_NOT_FOUND.contains("Pedido"));
+        assertTrue(HttpConstants.Messages.CLIENT_HAS_ACTIVE_ORDER.contains("cliente"));
+    }
+
+    @Test
+    void shouldVerifyEmployeeRelatedMessages() {
+        // Then - Verificar que los mensajes relacionados con empleados sean correctos
+        assertTrue(HttpConstants.Messages.FORBIDDEN_EMPLOYEE.contains("empleados"));
+        assertTrue(HttpConstants.Messages.EMPLOYEE_WITHOUT_RESTAURANT.contains("Empleado"));
+    }
+
+    @Test
+    void shouldVerifyClientRelatedMessages() {
+        // Then - Verificar que los mensajes relacionados con clientes sean correctos
+        assertTrue(HttpConstants.Messages.FORBIDDEN_CLIENT.contains("clientes"));
+        assertTrue(HttpConstants.Messages.CLIENT_HAS_ACTIVE_ORDER.contains("cliente"));
+    }
+
+    @Test
+    void shouldVerifyForbiddenMessagesStructure() {
+        // Then - Verificar que los mensajes de prohibido tengan la estructura correcta
+        assertTrue(HttpConstants.Messages.FORBIDDEN_EMPLOYEE.startsWith("Prohibido"));
+        assertTrue(HttpConstants.Messages.FORBIDDEN_CLIENT.startsWith("Prohibido"));
+        assertTrue(HttpConstants.Messages.FORBIDDEN_EMPLOYEE.contains("Solo"));
+        assertTrue(HttpConstants.Messages.FORBIDDEN_CLIENT.contains("Solo"));
+    }
+
+    @Test
+    void shouldVerifyInvalidMessagesStructure() {
+        // Then - Verificar que los mensajes de inválido tengan la estructura correcta
+        assertTrue(HttpConstants.Messages.INVALID_INPUT.contains("inválidos"));
+        assertTrue(HttpConstants.Messages.INVALID_PAGINATION.contains("inválidos"));
+        assertTrue(HttpConstants.Messages.INVALID_ORDER_STATUS.endsWith(": "));
     }
 
     @Test
@@ -268,16 +329,39 @@ class HttpConstantsTest {
         // Then - All constants should be static final, verified by successful compilation
         // This test ensures constants exist and are accessible
         String role = HttpConstants.Roles.ADMINISTRADOR;
+        String empleado = HttpConstants.Roles.EMPLEADO;
         String path = HttpConstants.Paths.PLATOS;
-        String message = HttpConstants.Messages.CREATE_DISH_SUCCESS;
+        String pedidosPath = HttpConstants.Paths.PEDIDOS;
+        String message = HttpConstants.Messages.CREATE_ORDER_SUCCESS;
+        String orderMessage = HttpConstants.Messages.GET_ORDERS_SUCCESS;
         String pagination = HttpConstants.Pagination.DEFAULT_PAGE_VALUE;
         int minPage = HttpConstants.Pagination.MIN_PAGE;
 
         assertNotNull(role);
+        assertNotNull(empleado);
         assertNotNull(path);
+        assertNotNull(pedidosPath);
         assertNotNull(message);
+        assertNotNull(orderMessage);
         assertNotNull(pagination);
         assertTrue(minPage >= 0);
     }
 
+    @Test
+    void shouldVerifyAllPathsAreValidUrlPatterns() {
+        // Then - Verificar que todos los paths sean patrones de URL válidos
+        assertFalse(HttpConstants.Paths.PLATOS.contains(" "));
+        assertFalse(HttpConstants.Paths.DISH_BY_ID.contains(" "));
+        assertFalse(HttpConstants.Paths.DISH_STATUS.contains(" "));
+        assertFalse(HttpConstants.Paths.DISH_BY_RESTAURANT.contains(" "));
+        assertFalse(HttpConstants.Paths.PEDIDOS.contains(" "));
+    }
+
+    @Test
+    void shouldVerifyPathParameterFormat() {
+        // Then - Verificar que los parámetros de path tengan el formato correcto
+        assertTrue(HttpConstants.Paths.DISH_BY_ID.matches(".*\\{\\w+\\}.*"));
+        assertTrue(HttpConstants.Paths.DISH_STATUS.matches(".*\\{\\w+\\}.*"));
+        assertTrue(HttpConstants.Paths.DISH_BY_RESTAURANT.matches(".*\\{\\w+\\}.*"));
+    }
 }

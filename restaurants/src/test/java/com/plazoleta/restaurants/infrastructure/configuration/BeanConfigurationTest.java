@@ -17,6 +17,7 @@ import com.plazoleta.restaurants.domain.usecase.RestaurantUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -25,8 +26,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class BeanConfigurationTest {
-
-    private BeanConfiguration beanConfiguration;
 
     @Mock
     private IRestaurantRepository restaurantRepository;
@@ -50,15 +49,13 @@ class BeanConfigurationTest {
     private IDishWithCategoryMapper dishWithCategoryMapper;
 
     @Mock
-    private IRestaurantPersistencePort restaurantPersistencePort;
-
-    @Mock
-    private IDishPersistencePort dishPersistencePort;
-    @Mock
     private IOrderRepository orderRepository;
 
     @Mock
     private IOrderDishRepository orderDishRepository;
+
+    @Mock
+    private IEmployeeRestaurantRepository employeeRestaurantRepository;
 
     @Mock
     private IOrderEntityMapper orderEntityMapper;
@@ -67,125 +64,94 @@ class BeanConfigurationTest {
     private IOrderDishEntityMapper orderDishEntityMapper;
 
     @Mock
+    private IRestaurantPersistencePort restaurantPersistencePort;
+
+    @Mock
+    private IDishPersistencePort dishPersistencePort;
+
+    @Mock
     private IOrderPersistencePort orderPersistencePort;
+
+    @InjectMocks
+    private BeanConfiguration beanConfiguration;
 
     @BeforeEach
     void setUp() {
-        beanConfiguration = new BeanConfiguration();
+        // Los mocks se inicializan automáticamente con @Mock y @InjectMocks
     }
 
-    // ==================== RESTAURANT PERSISTENCE PORT TESTS ====================
+    // =================== RESTAURANT BEANS TESTS ===================
 
     @Test
-    void restaurantPersistencePort_WhenValidDependencies_ShouldReturnRestaurantMysqlAdapter() {
-        // When
+    void restaurantPersistencePort_ShouldCreateRestaurantMysqlAdapter() {
+        // Act
         IRestaurantPersistencePort result = beanConfiguration.restaurantPersistencePort(
-                restaurantRepository,
-                restaurantEntityMapper);
+                restaurantRepository, restaurantEntityMapper);
 
-        // Then
+        // Assert
         assertNotNull(result);
         assertInstanceOf(RestaurantMysqlAdapter.class, result);
     }
 
     @Test
-    void restaurantPersistencePort_WhenCalled_ShouldCreateNewInstance() {
-        // When
-        IRestaurantPersistencePort result1 = beanConfiguration.restaurantPersistencePort(
-                restaurantRepository,
-                restaurantEntityMapper);
-        IRestaurantPersistencePort result2 = beanConfiguration.restaurantPersistencePort(
-                restaurantRepository,
-                restaurantEntityMapper);
-
-        // Then
-        assertNotNull(result1);
-        assertNotNull(result2);
-        assertNotSame(result1, result2); // Diferentes instancias
-        assertInstanceOf(RestaurantMysqlAdapter.class, result1);
-        assertInstanceOf(RestaurantMysqlAdapter.class, result2);
-    }
-
-    @Test
-    void restaurantPersistencePort_WhenValidParameters_ShouldNotBeNull() {
-        // When
+    void restaurantPersistencePort_WithNullRepository_ShouldStillCreateAdapter() {
+        // Act
         IRestaurantPersistencePort result = beanConfiguration.restaurantPersistencePort(
-                restaurantRepository,
-                restaurantEntityMapper);
+                null, restaurantEntityMapper);
 
-        // Then
-        assertNotNull(result);
-    }
-
-    @Test
-    void restaurantPersistencePort_WhenDifferentRepositoryAndMapper_ShouldCreateAdapter() {
-        // Given
-        IRestaurantRepository differentRepository = mock(IRestaurantRepository.class);
-        IRestaurantEntityMapper differentMapper = mock(IRestaurantEntityMapper.class);
-
-        // When
-        IRestaurantPersistencePort result = beanConfiguration.restaurantPersistencePort(
-                differentRepository,
-                differentMapper);
-
-        // Then
+        // Assert
         assertNotNull(result);
         assertInstanceOf(RestaurantMysqlAdapter.class, result);
     }
 
-    // ==================== RESTAURANT SERVICE PORT TESTS ====================
+    @Test
+    void restaurantPersistencePort_WithNullMapper_ShouldStillCreateAdapter() {
+        // Act
+        IRestaurantPersistencePort result = beanConfiguration.restaurantPersistencePort(
+                restaurantRepository, null);
+
+        // Assert
+        assertNotNull(result);
+        assertInstanceOf(RestaurantMysqlAdapter.class, result);
+    }
 
     @Test
-    void restaurantServicePort_WhenValidPersistencePort_ShouldReturnRestaurantUseCase() {
-        // When
-        IRestaurantServicePort result = beanConfiguration.restaurantServicePort(restaurantPersistencePort);
+    void restaurantPersistencePort_WithNullParameters_ShouldStillCreateAdapter() {
+        // Act
+        IRestaurantPersistencePort result = beanConfiguration.restaurantPersistencePort(
+                null, null);
 
-        // Then
+        // Assert
+        assertNotNull(result);
+        assertInstanceOf(RestaurantMysqlAdapter.class, result);
+    }
+
+    @Test
+    void restaurantServicePort_ShouldCreateRestaurantUseCase() {
+        // Act
+        IRestaurantServicePort result = beanConfiguration.restaurantServicePort(
+                restaurantPersistencePort);
+
+        // Assert
         assertNotNull(result);
         assertInstanceOf(RestaurantUseCase.class, result);
     }
 
     @Test
-    void restaurantServicePort_WhenCalled_ShouldCreateNewInstance() {
-        // When
-        IRestaurantServicePort result1 = beanConfiguration.restaurantServicePort(restaurantPersistencePort);
-        IRestaurantServicePort result2 = beanConfiguration.restaurantServicePort(restaurantPersistencePort);
+    void restaurantServicePort_WithNullPersistencePort_ShouldStillCreateUseCase() {
+        // Act
+        IRestaurantServicePort result = beanConfiguration.restaurantServicePort(null);
 
-        // Then
-        assertNotNull(result1);
-        assertNotNull(result2);
-        assertNotSame(result1, result2); // Diferentes instancias
-        assertInstanceOf(RestaurantUseCase.class, result1);
-        assertInstanceOf(RestaurantUseCase.class, result2);
-    }
-
-    @Test
-    void restaurantServicePort_WhenValidParameter_ShouldNotBeNull() {
-        // When
-        IRestaurantServicePort result = beanConfiguration.restaurantServicePort(restaurantPersistencePort);
-
-        // Then
-        assertNotNull(result);
-    }
-
-    @Test
-    void restaurantServicePort_WhenDifferentPersistencePort_ShouldCreateUseCase() {
-        // Given
-        IRestaurantPersistencePort differentPersistencePort = mock(IRestaurantPersistencePort.class);
-
-        // When
-        IRestaurantServicePort result = beanConfiguration.restaurantServicePort(differentPersistencePort);
-
-        // Then
+        // Assert
         assertNotNull(result);
         assertInstanceOf(RestaurantUseCase.class, result);
     }
 
-    // ==================== DISH PERSISTENCE PORT TESTS (UPDATED FOR HU10) ====================
+    // =================== DISH BEANS TESTS ===================
 
     @Test
-    void dishPersistencePort_WhenValidDependencies_ShouldReturnDishMysqlAdapter() {
-        // When
+    void dishPersistencePort_ShouldCreateDishMysqlAdapter() {
+        // Act
         IDishPersistencePort result = beanConfiguration.dishPersistencePort(
                 dishRepository,
                 restaurantRepository,
@@ -194,598 +160,397 @@ class BeanConfigurationTest {
                 categoryEntityMapper,
                 dishWithCategoryMapper);
 
-        // Then
+        // Assert
         assertNotNull(result);
         assertInstanceOf(DishMysqlAdapter.class, result);
     }
 
     @Test
-    void dishPersistencePort_WhenCalled_ShouldCreateNewInstance() {
-        // When
-        IDishPersistencePort result1 = beanConfiguration.dishPersistencePort(
-                dishRepository,
-                restaurantRepository,
-                categoryRepository,
-                dishEntityMapper,
-                categoryEntityMapper,
-                dishWithCategoryMapper);
-        IDishPersistencePort result2 = beanConfiguration.dishPersistencePort(
-                dishRepository,
-                restaurantRepository,
-                categoryRepository,
-                dishEntityMapper,
-                categoryEntityMapper,
-                dishWithCategoryMapper);
-
-        // Then
-        assertNotNull(result1);
-        assertNotNull(result2);
-        assertNotSame(result1, result2); // Diferentes instancias
-        assertInstanceOf(DishMysqlAdapter.class, result1);
-        assertInstanceOf(DishMysqlAdapter.class, result2);
-    }
-
-    @Test
-    void dishPersistencePort_WhenValidParameters_ShouldNotBeNull() {
-        // When
+    void dishPersistencePort_WithSomeNullParameters_ShouldStillCreateAdapter() {
+        // Act
         IDishPersistencePort result = beanConfiguration.dishPersistencePort(
-                dishRepository,
+                null,
                 restaurantRepository,
                 categoryRepository,
                 dishEntityMapper,
-                categoryEntityMapper,
+                null,
                 dishWithCategoryMapper);
 
-        // Then
-        assertNotNull(result);
-    }
-
-    @Test
-    void dishPersistencePort_WhenDifferentRepositoriesAndMappers_ShouldCreateAdapter() {
-        // Given
-        IDishRepository differentDishRepository = mock(IDishRepository.class);
-        IRestaurantRepository differentRestaurantRepository = mock(IRestaurantRepository.class);
-        ICategoryRepository differentCategoryRepository = mock(ICategoryRepository.class);
-        IDishEntityMapper differentDishMapper = mock(IDishEntityMapper.class);
-        ICategoryEntityMapper differentCategoryMapper = mock(ICategoryEntityMapper.class);
-        IDishWithCategoryMapper differentDishWithCategoryMapper = mock(IDishWithCategoryMapper.class);
-
-        // When
-        IDishPersistencePort result = beanConfiguration.dishPersistencePort(
-                differentDishRepository,
-                differentRestaurantRepository,
-                differentCategoryRepository,
-                differentDishMapper,
-                differentCategoryMapper,
-                differentDishWithCategoryMapper);
-
-        // Then
+        // Assert
         assertNotNull(result);
         assertInstanceOf(DishMysqlAdapter.class, result);
     }
 
-    // ==================== DISH SERVICE PORT TESTS ====================
+    @Test
+    void dishPersistencePort_WithAllNullParameters_ShouldStillCreateAdapter() {
+        // Act
+        IDishPersistencePort result = beanConfiguration.dishPersistencePort(
+                null, null, null, null, null, null);
+
+        // Assert
+        assertNotNull(result);
+        assertInstanceOf(DishMysqlAdapter.class, result);
+    }
 
     @Test
-    void dishServicePort_WhenValidPersistencePort_ShouldReturnDishUseCase() {
-        // When
+    void dishServicePort_ShouldCreateDishUseCase() {
+        // Act
         IDishServicePort result = beanConfiguration.dishServicePort(dishPersistencePort);
 
-        // Then
+        // Assert
         assertNotNull(result);
         assertInstanceOf(DishUseCase.class, result);
     }
 
     @Test
-    void dishServicePort_WhenCalled_ShouldCreateNewInstance() {
-        // When
-        IDishServicePort result1 = beanConfiguration.dishServicePort(dishPersistencePort);
-        IDishServicePort result2 = beanConfiguration.dishServicePort(dishPersistencePort);
+    void dishServicePort_WithNullPersistencePort_ShouldStillCreateUseCase() {
+        // Act
+        IDishServicePort result = beanConfiguration.dishServicePort(null);
 
-        // Then
-        assertNotNull(result1);
-        assertNotNull(result2);
-        assertNotSame(result1, result2); // Diferentes instancias
-        assertInstanceOf(DishUseCase.class, result1);
-        assertInstanceOf(DishUseCase.class, result2);
-    }
-
-    @Test
-    void dishServicePort_WhenValidParameter_ShouldNotBeNull() {
-        // When
-        IDishServicePort result = beanConfiguration.dishServicePort(dishPersistencePort);
-
-        // Then
-        assertNotNull(result);
-    }
-
-    @Test
-    void dishServicePort_WhenDifferentPersistencePort_ShouldCreateUseCase() {
-        // Given
-        IDishPersistencePort differentPersistencePort = mock(IDishPersistencePort.class);
-
-        // When
-        IDishServicePort result = beanConfiguration.dishServicePort(differentPersistencePort);
-
-        // Then
+        // Assert
         assertNotNull(result);
         assertInstanceOf(DishUseCase.class, result);
     }
 
-    // ==================== INTEGRATION TESTS (UPDATED FOR HU10) ====================
+    // =================== ORDER BEANS TESTS ===================
 
     @Test
-    void allBeans_WhenConfiguredTogether_ShouldWorkCorrectly() {
-        // Given - Crear la cadena completa de beans
+    void orderPersistencePort_ShouldCreateOrderMysqlAdapter() {
+        // Act
+        IOrderPersistencePort result = beanConfiguration.orderPersistencePort(
+                orderRepository,
+                orderDishRepository,
+                dishRepository,
+                employeeRestaurantRepository,
+                orderEntityMapper,
+                orderDishEntityMapper);
+
+        // Assert
+        assertNotNull(result);
+        assertInstanceOf(OrderMysqlAdapter.class, result);
+    }
+
+    @Test
+    void orderPersistencePort_WithSomeNullParameters_ShouldStillCreateAdapter() {
+        // Act
+        IOrderPersistencePort result = beanConfiguration.orderPersistencePort(
+                null,
+                orderDishRepository,
+                dishRepository,
+                null,
+                orderEntityMapper,
+                orderDishEntityMapper);
+
+        // Assert
+        assertNotNull(result);
+        assertInstanceOf(OrderMysqlAdapter.class, result);
+    }
+
+    @Test
+    void orderPersistencePort_WithAllNullParameters_ShouldStillCreateAdapter() {
+        // Act
+        IOrderPersistencePort result = beanConfiguration.orderPersistencePort(
+                null, null, null, null, null, null);
+
+        // Assert
+        assertNotNull(result);
+        assertInstanceOf(OrderMysqlAdapter.class, result);
+    }
+
+    @Test
+    void orderServicePort_ShouldCreateOrderUseCase() {
+        // Act
+        IOrderServicePort result = beanConfiguration.orderServicePort(orderPersistencePort);
+
+        // Assert
+        assertNotNull(result);
+        assertInstanceOf(OrderUseCase.class, result);
+    }
+
+    @Test
+    void orderServicePort_WithNullPersistencePort_ShouldStillCreateUseCase() {
+        // Act
+        IOrderServicePort result = beanConfiguration.orderServicePort(null);
+
+        // Assert
+        assertNotNull(result);
+        assertInstanceOf(OrderUseCase.class, result);
+    }
+
+    // =================== INTEGRATION TESTS ===================
+
+    @Test
+    void allBeans_ShouldBeCreatedSuccessfully() {
+        // Act - Create all beans in sequence to test integration
         IRestaurantPersistencePort restaurantPersistence = beanConfiguration.restaurantPersistencePort(
-                restaurantRepository,
-                restaurantEntityMapper);
+                restaurantRepository, restaurantEntityMapper);
 
-        IRestaurantServicePort restaurantService = beanConfiguration.restaurantServicePort(restaurantPersistence);
+        IRestaurantServicePort restaurantService = beanConfiguration.restaurantServicePort(
+                restaurantPersistence);
 
         IDishPersistencePort dishPersistence = beanConfiguration.dishPersistencePort(
-                dishRepository,
-                restaurantRepository,
-                categoryRepository,
-                dishEntityMapper,
-                categoryEntityMapper,
-                dishWithCategoryMapper);
+                dishRepository, restaurantRepository, categoryRepository,
+                dishEntityMapper, categoryEntityMapper, dishWithCategoryMapper);
 
         IDishServicePort dishService = beanConfiguration.dishServicePort(dishPersistence);
 
-        // Then
+        IOrderPersistencePort orderPersistence = beanConfiguration.orderPersistencePort(
+                orderRepository, orderDishRepository, dishRepository,
+                employeeRestaurantRepository, orderEntityMapper, orderDishEntityMapper);
+
+        IOrderServicePort orderService = beanConfiguration.orderServicePort(orderPersistence);
+
+        // Assert
         assertNotNull(restaurantPersistence);
         assertNotNull(restaurantService);
         assertNotNull(dishPersistence);
         assertNotNull(dishService);
+        assertNotNull(orderPersistence);
+        assertNotNull(orderService);
 
         assertInstanceOf(RestaurantMysqlAdapter.class, restaurantPersistence);
         assertInstanceOf(RestaurantUseCase.class, restaurantService);
         assertInstanceOf(DishMysqlAdapter.class, dishPersistence);
         assertInstanceOf(DishUseCase.class, dishService);
+        assertInstanceOf(OrderMysqlAdapter.class, orderPersistence);
+        assertInstanceOf(OrderUseCase.class, orderService);
     }
 
     @Test
-    void beanConfiguration_WhenInstantiated_ShouldNotBeNull() {
-        // Then
-        assertNotNull(beanConfiguration);
-        assertInstanceOf(BeanConfiguration.class, beanConfiguration);
+    void beanConfiguration_ShouldHaveAnnotation() {
+        // Assert
+        assertTrue(BeanConfiguration.class.isAnnotationPresent(
+                org.springframework.context.annotation.Configuration.class));
     }
 
     @Test
-    void restaurantPersistencePort_WithSameParameters_ShouldCreateDifferentInstances() {
-        // When
-        IRestaurantPersistencePort adapter1 = beanConfiguration.restaurantPersistencePort(
-                restaurantRepository, restaurantEntityMapper);
-        IRestaurantPersistencePort adapter2 = beanConfiguration.restaurantPersistencePort(
-                restaurantRepository, restaurantEntityMapper);
-
-        // Then
-        assertNotSame(adapter1, adapter2);
-        assertEquals(adapter1.getClass(), adapter2.getClass());
+    void restaurantPersistencePortMethod_ShouldHaveBeanAnnotation() throws NoSuchMethodException {
+        // Assert
+        assertTrue(BeanConfiguration.class
+                           .getMethod("restaurantPersistencePort", IRestaurantRepository.class, IRestaurantEntityMapper.class)
+                           .isAnnotationPresent(org.springframework.context.annotation.Bean.class));
     }
 
     @Test
-    void dishPersistencePort_WithSameParameters_ShouldCreateDifferentInstances() {
-        // When
-        IDishPersistencePort adapter1 = beanConfiguration.dishPersistencePort(
-                dishRepository, restaurantRepository, categoryRepository,
-                dishEntityMapper, categoryEntityMapper, dishWithCategoryMapper);
-        IDishPersistencePort adapter2 = beanConfiguration.dishPersistencePort(
-                dishRepository, restaurantRepository, categoryRepository,
-                dishEntityMapper, categoryEntityMapper, dishWithCategoryMapper);
-
-        // Then
-        assertNotSame(adapter1, adapter2);
-        assertEquals(adapter1.getClass(), adapter2.getClass());
+    void restaurantServicePortMethod_ShouldHaveBeanAnnotation() throws NoSuchMethodException {
+        // Assert
+        assertTrue(BeanConfiguration.class
+                           .getMethod("restaurantServicePort", IRestaurantPersistencePort.class)
+                           .isAnnotationPresent(org.springframework.context.annotation.Bean.class));
     }
 
     @Test
-    void restaurantServicePort_WithSameParameters_ShouldCreateDifferentInstances() {
-        // When
-        IRestaurantServicePort service1 = beanConfiguration.restaurantServicePort(restaurantPersistencePort);
-        IRestaurantServicePort service2 = beanConfiguration.restaurantServicePort(restaurantPersistencePort);
-
-        // Then
-        assertNotSame(service1, service2);
-        assertEquals(service1.getClass(), service2.getClass());
+    void dishPersistencePortMethod_ShouldHaveBeanAnnotation() throws NoSuchMethodException {
+        // Assert
+        assertTrue(BeanConfiguration.class
+                           .getMethod("dishPersistencePort", IDishRepository.class, IRestaurantRepository.class,
+                                      ICategoryRepository.class, IDishEntityMapper.class, ICategoryEntityMapper.class,
+                                      IDishWithCategoryMapper.class)
+                           .isAnnotationPresent(org.springframework.context.annotation.Bean.class));
     }
 
     @Test
-    void dishServicePort_WithSameParameters_ShouldCreateDifferentInstances() {
-        // When
-        IDishServicePort service1 = beanConfiguration.dishServicePort(dishPersistencePort);
-        IDishServicePort service2 = beanConfiguration.dishServicePort(dishPersistencePort);
-
-        // Then
-        assertNotSame(service1, service2);
-        assertEquals(service1.getClass(), service2.getClass());
-    }
-
-    // ==================== VERIFICATION TESTS ====================
-
-    @Test
-    void restaurantPersistencePort_ShouldReturnCorrectImplementation() {
-        // When
-        IRestaurantPersistencePort result = beanConfiguration.restaurantPersistencePort(
-                restaurantRepository, restaurantEntityMapper);
-
-        // Then
-        assertTrue(result instanceof RestaurantMysqlAdapter);
-        assertTrue(result instanceof IRestaurantPersistencePort);
+    void dishServicePortMethod_ShouldHaveBeanAnnotation() throws NoSuchMethodException {
+        // Assert
+        assertTrue(BeanConfiguration.class
+                           .getMethod("dishServicePort", IDishPersistencePort.class)
+                           .isAnnotationPresent(org.springframework.context.annotation.Bean.class));
     }
 
     @Test
-    void restaurantServicePort_ShouldReturnCorrectImplementation() {
-        // When
-        IRestaurantServicePort result = beanConfiguration.restaurantServicePort(restaurantPersistencePort);
-
-        // Then
-        assertTrue(result instanceof RestaurantUseCase);
-        assertTrue(result instanceof IRestaurantServicePort);
+    void orderPersistencePortMethod_ShouldHaveBeanAnnotation() throws NoSuchMethodException {
+        // Assert
+        assertTrue(BeanConfiguration.class
+                           .getMethod("orderPersistencePort", IOrderRepository.class, IOrderDishRepository.class,
+                                      IDishRepository.class, IEmployeeRestaurantRepository.class,
+                                      IOrderEntityMapper.class, IOrderDishEntityMapper.class)
+                           .isAnnotationPresent(org.springframework.context.annotation.Bean.class));
     }
 
     @Test
-    void dishPersistencePort_ShouldReturnCorrectImplementation() {
-        // When
-        IDishPersistencePort result = beanConfiguration.dishPersistencePort(
-                dishRepository, restaurantRepository, categoryRepository,
-                dishEntityMapper, categoryEntityMapper, dishWithCategoryMapper);
-
-        // Then
-        assertTrue(result instanceof DishMysqlAdapter);
-        assertTrue(result instanceof IDishPersistencePort);
+    void orderServicePortMethod_ShouldHaveBeanAnnotation() throws NoSuchMethodException {
+        // Assert
+        assertTrue(BeanConfiguration.class
+                           .getMethod("orderServicePort", IOrderPersistencePort.class)
+                           .isAnnotationPresent(org.springframework.context.annotation.Bean.class));
     }
 
-    @Test
-    void dishServicePort_ShouldReturnCorrectImplementation() {
-        // When
-        IDishServicePort result = beanConfiguration.dishServicePort(dishPersistencePort);
-
-        // Then
-        assertTrue(result instanceof DishUseCase);
-        assertTrue(result instanceof IDishServicePort);
-    }
-
-    // ==================== EDGE CASE TESTS ====================
+    // =================== CONSTRUCTOR AND INSTANTIATION TESTS ===================
 
     @Test
-    void allBeanMethods_ShouldBePublic() {
-        // Given & When & Then
-        // Los métodos @Bean deben ser públicos para que Spring los detecte
-        // Este test verifica que todos los métodos bean están correctamente configurados
-        assertDoesNotThrow(() -> {
-            beanConfiguration.restaurantPersistencePort(restaurantRepository, restaurantEntityMapper);
-            beanConfiguration.restaurantServicePort(restaurantPersistencePort);
-            beanConfiguration.dishPersistencePort(dishRepository, restaurantRepository, categoryRepository,
-                                                  dishEntityMapper, categoryEntityMapper, dishWithCategoryMapper);
-            beanConfiguration.dishServicePort(dishPersistencePort);
-        });
-    }
-
-    @Test
-    void beanConfiguration_ShouldHaveNoArgsConstructor() {
-        // When & Then
+    void beanConfiguration_ShouldHavePublicConstructor() {
+        // Act & Assert
         assertDoesNotThrow(() -> new BeanConfiguration());
     }
 
     @Test
-    void fullIntegrationFlow_ShouldCreateCompleteObjectGraph() {
-        // Given
+    void beanConfiguration_ShouldBeInstantiable() {
+        // Act
         BeanConfiguration config = new BeanConfiguration();
 
-        // When
-        IRestaurantPersistencePort restaurantPersistence = config.restaurantPersistencePort(
-                restaurantRepository, restaurantEntityMapper);
-        IRestaurantServicePort restaurantService = config.restaurantServicePort(restaurantPersistence);
+        // Assert
+        assertNotNull(config);
+    }
 
-        IDishPersistencePort dishPersistence = config.dishPersistencePort(
+    // =================== DEPENDENCY INJECTION TESTS ===================
+
+    @Test
+    void restaurantBeans_ShouldMaintainDependencyChain() {
+        // Arrange
+        IRestaurantPersistencePort persistence = beanConfiguration.restaurantPersistencePort(
+                restaurantRepository, restaurantEntityMapper);
+
+        // Act
+        IRestaurantServicePort service = beanConfiguration.restaurantServicePort(persistence);
+
+        // Assert
+        assertNotNull(service);
+        assertInstanceOf(RestaurantUseCase.class, service);
+    }
+
+    @Test
+    void dishBeans_ShouldMaintainDependencyChain() {
+        // Arrange
+        IDishPersistencePort persistence = beanConfiguration.dishPersistencePort(
                 dishRepository, restaurantRepository, categoryRepository,
                 dishEntityMapper, categoryEntityMapper, dishWithCategoryMapper);
-        IDishServicePort dishService = config.dishServicePort(dishPersistence);
 
-        // Then
-        // Verificar que se ha creado el grafo completo de objetos
-        assertAll(
-                () -> assertNotNull(restaurantPersistence),
-                () -> assertNotNull(restaurantService),
-                () -> assertNotNull(dishPersistence),
-                () -> assertNotNull(dishService),
-                () -> assertInstanceOf(RestaurantMysqlAdapter.class, restaurantPersistence),
-                () -> assertInstanceOf(RestaurantUseCase.class, restaurantService),
-                () -> assertInstanceOf(DishMysqlAdapter.class, dishPersistence),
-                () -> assertInstanceOf(DishUseCase.class, dishService)
-        );
+        // Act
+        IDishServicePort service = beanConfiguration.dishServicePort(persistence);
+
+        // Assert
+        assertNotNull(service);
+        assertInstanceOf(DishUseCase.class, service);
     }
 
     @Test
-    void orderPersistencePort_WhenValidDependencies_ShouldReturnOrderMysqlAdapter() {
-        // When
-        IOrderPersistencePort result = beanConfiguration.orderPersistencePort(
-                orderRepository,
-                orderDishRepository,
-                dishRepository,
-                orderEntityMapper,
-                orderDishEntityMapper);
-
-        // Then
-        assertNotNull(result);
-        assertInstanceOf(OrderMysqlAdapter.class, result);
-    }
-
-    @Test
-    void orderPersistencePort_WhenCalled_ShouldCreateNewInstance() {
-        // When
-        IOrderPersistencePort result1 = beanConfiguration.orderPersistencePort(
-                orderRepository,
-                orderDishRepository,
-                dishRepository,
-                orderEntityMapper,
-                orderDishEntityMapper);
-        IOrderPersistencePort result2 = beanConfiguration.orderPersistencePort(
-                orderRepository,
-                orderDishRepository,
-                dishRepository,
-                orderEntityMapper,
-                orderDishEntityMapper);
-
-        // Then
-        assertNotNull(result1);
-        assertNotNull(result2);
-        assertNotSame(result1, result2); // Diferentes instancias
-        assertInstanceOf(OrderMysqlAdapter.class, result1);
-        assertInstanceOf(OrderMysqlAdapter.class, result2);
-    }
-
-    @Test
-    void orderPersistencePort_WhenValidParameters_ShouldNotBeNull() {
-        // When
-        IOrderPersistencePort result = beanConfiguration.orderPersistencePort(
-                orderRepository,
-                orderDishRepository,
-                dishRepository,
-                orderEntityMapper,
-                orderDishEntityMapper);
-
-        // Then
-        assertNotNull(result);
-    }
-
-    @Test
-    void orderPersistencePort_WhenDifferentRepositoriesAndMappers_ShouldCreateAdapter() {
-        // Given
-        IOrderRepository differentOrderRepository = mock(IOrderRepository.class);
-        IOrderDishRepository differentOrderDishRepository = mock(IOrderDishRepository.class);
-        IDishRepository differentDishRepository = mock(IDishRepository.class);
-        IOrderEntityMapper differentOrderEntityMapper = mock(IOrderEntityMapper.class);
-        IOrderDishEntityMapper differentOrderDishEntityMapper = mock(IOrderDishEntityMapper.class);
-
-        // When
-        IOrderPersistencePort result = beanConfiguration.orderPersistencePort(
-                differentOrderRepository,
-                differentOrderDishRepository,
-                differentDishRepository,
-                differentOrderEntityMapper,
-                differentOrderDishEntityMapper);
-
-        // Then
-        assertNotNull(result);
-        assertInstanceOf(OrderMysqlAdapter.class, result);
-    }
-
-// ==================== ORDER SERVICE PORT TESTS ====================
-
-    @Test
-    void orderServicePort_WhenValidPersistencePort_ShouldReturnOrderUseCase() {
-        // When
-        IOrderServicePort result = beanConfiguration.orderServicePort(orderPersistencePort);
-
-        // Then
-        assertNotNull(result);
-        assertInstanceOf(OrderUseCase.class, result);
-    }
-
-    @Test
-    void orderServicePort_WhenCalled_ShouldCreateNewInstance() {
-        // When
-        IOrderServicePort result1 = beanConfiguration.orderServicePort(orderPersistencePort);
-        IOrderServicePort result2 = beanConfiguration.orderServicePort(orderPersistencePort);
-
-        // Then
-        assertNotNull(result1);
-        assertNotNull(result2);
-        assertNotSame(result1, result2); // Diferentes instancias
-        assertInstanceOf(OrderUseCase.class, result1);
-        assertInstanceOf(OrderUseCase.class, result2);
-    }
-
-    @Test
-    void orderServicePort_WhenValidParameter_ShouldNotBeNull() {
-        // When
-        IOrderServicePort result = beanConfiguration.orderServicePort(orderPersistencePort);
-
-        // Then
-        assertNotNull(result);
-    }
-
-    @Test
-    void orderServicePort_WhenDifferentPersistencePort_ShouldCreateUseCase() {
-        // Given
-        IOrderPersistencePort differentPersistencePort = mock(IOrderPersistencePort.class);
-
-        // When
-        IOrderServicePort result = beanConfiguration.orderServicePort(differentPersistencePort);
-
-        // Then
-        assertNotNull(result);
-        assertInstanceOf(OrderUseCase.class, result);
-    }
-
-// ==================== ORDER INTEGRATION TESTS ====================
-
-    @Test
-    void orderBeans_WhenConfiguredTogether_ShouldWorkCorrectly() {
-        // Given - Crear la cadena completa de beans para Order
-        IOrderPersistencePort orderPersistence = beanConfiguration.orderPersistencePort(
-                orderRepository,
-                orderDishRepository,
-                dishRepository,
-                orderEntityMapper,
-                orderDishEntityMapper);
-
-        IOrderServicePort orderService = beanConfiguration.orderServicePort(orderPersistence);
-
-        // Then
-        assertNotNull(orderPersistence);
-        assertNotNull(orderService);
-        assertInstanceOf(OrderMysqlAdapter.class, orderPersistence);
-        assertInstanceOf(OrderUseCase.class, orderService);
-    }
-
-    @Test
-    void orderPersistencePort_WithSameParameters_ShouldCreateDifferentInstances() {
-        // When
-        IOrderPersistencePort adapter1 = beanConfiguration.orderPersistencePort(
+    void orderBeans_ShouldMaintainDependencyChain() {
+        // Arrange
+        IOrderPersistencePort persistence = beanConfiguration.orderPersistencePort(
                 orderRepository, orderDishRepository, dishRepository,
-                orderEntityMapper, orderDishEntityMapper);
-        IOrderPersistencePort adapter2 = beanConfiguration.orderPersistencePort(
-                orderRepository, orderDishRepository, dishRepository,
-                orderEntityMapper, orderDishEntityMapper);
+                employeeRestaurantRepository, orderEntityMapper, orderDishEntityMapper);
 
-        // Then
-        assertNotSame(adapter1, adapter2);
-        assertEquals(adapter1.getClass(), adapter2.getClass());
+        // Act
+        IOrderServicePort service = beanConfiguration.orderServicePort(persistence);
+
+        // Assert
+        assertNotNull(service);
+        assertInstanceOf(OrderUseCase.class, service);
+    }
+
+    // =================== RETURN TYPE VERIFICATION TESTS ===================
+
+    @Test
+    void restaurantPersistencePort_ShouldReturnCorrectInterface() {
+        // Act
+        IRestaurantPersistencePort result = beanConfiguration.restaurantPersistencePort(
+                restaurantRepository, restaurantEntityMapper);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result instanceof IRestaurantPersistencePort);
     }
 
     @Test
-    void orderServicePort_WithSameParameters_ShouldCreateDifferentInstances() {
-        // When
-        IOrderServicePort service1 = beanConfiguration.orderServicePort(orderPersistencePort);
-        IOrderServicePort service2 = beanConfiguration.orderServicePort(orderPersistencePort);
+    void dishPersistencePort_ShouldReturnCorrectInterface() {
+        // Act
+        IDishPersistencePort result = beanConfiguration.dishPersistencePort(
+                dishRepository, restaurantRepository, categoryRepository,
+                dishEntityMapper, categoryEntityMapper, dishWithCategoryMapper);
 
-        // Then
-        assertNotSame(service1, service2);
-        assertEquals(service1.getClass(), service2.getClass());
+        // Assert
+        assertNotNull(result);
+        assertTrue(result instanceof IDishPersistencePort);
     }
 
-// ==================== ORDER VERIFICATION TESTS ====================
-
     @Test
-    void orderPersistencePort_ShouldReturnCorrectImplementation() {
-        // When
+    void orderPersistencePort_ShouldReturnCorrectInterface() {
+        // Act
         IOrderPersistencePort result = beanConfiguration.orderPersistencePort(
                 orderRepository, orderDishRepository, dishRepository,
-                orderEntityMapper, orderDishEntityMapper);
+                employeeRestaurantRepository, orderEntityMapper, orderDishEntityMapper);
 
-        // Then
-        assertTrue(result instanceof OrderMysqlAdapter);
+        // Assert
+        assertNotNull(result);
         assertTrue(result instanceof IOrderPersistencePort);
     }
 
     @Test
-    void orderServicePort_ShouldReturnCorrectImplementation() {
-        // When
+    void restaurantServicePort_ShouldReturnCorrectInterface() {
+        // Act
+        IRestaurantServicePort result = beanConfiguration.restaurantServicePort(
+                restaurantPersistencePort);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result instanceof IRestaurantServicePort);
+    }
+
+    @Test
+    void dishServicePort_ShouldReturnCorrectInterface() {
+        // Act
+        IDishServicePort result = beanConfiguration.dishServicePort(dishPersistencePort);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result instanceof IDishServicePort);
+    }
+
+    @Test
+    void orderServicePort_ShouldReturnCorrectInterface() {
+        // Act
         IOrderServicePort result = beanConfiguration.orderServicePort(orderPersistencePort);
 
-        // Then
-        assertTrue(result instanceof OrderUseCase);
+        // Assert
+        assertNotNull(result);
         assertTrue(result instanceof IOrderServicePort);
     }
 
-// ==================== COMPLETE INTEGRATION TEST (UPDATED) ====================
+    // =================== MULTIPLE CALLS TESTS ===================
 
     @Test
-    void allBeans_IncludingOrder_WhenConfiguredTogether_ShouldWorkCorrectly() {
-        // Given - Crear la cadena completa de beans incluyendo Order
-        IRestaurantPersistencePort restaurantPersistence = beanConfiguration.restaurantPersistencePort(
-                restaurantRepository,
-                restaurantEntityMapper);
+    void restaurantPersistencePort_MultipleCalls_ShouldCreateNewInstances() {
+        // Act
+        IRestaurantPersistencePort result1 = beanConfiguration.restaurantPersistencePort(
+                restaurantRepository, restaurantEntityMapper);
+        IRestaurantPersistencePort result2 = beanConfiguration.restaurantPersistencePort(
+                restaurantRepository, restaurantEntityMapper);
 
-        IRestaurantServicePort restaurantService = beanConfiguration.restaurantServicePort(restaurantPersistence);
-
-        IDishPersistencePort dishPersistence = beanConfiguration.dishPersistencePort(
-                dishRepository,
-                restaurantRepository,
-                categoryRepository,
-                dishEntityMapper,
-                categoryEntityMapper,
-                dishWithCategoryMapper);
-
-        IDishServicePort dishService = beanConfiguration.dishServicePort(dishPersistence);
-
-        IOrderPersistencePort orderPersistence = beanConfiguration.orderPersistencePort(
-                orderRepository,
-                orderDishRepository,
-                dishRepository,
-                orderEntityMapper,
-                orderDishEntityMapper);
-
-        IOrderServicePort orderService = beanConfiguration.orderServicePort(orderPersistence);
-
-        // Then
-        assertNotNull(restaurantPersistence);
-        assertNotNull(restaurantService);
-        assertNotNull(dishPersistence);
-        assertNotNull(dishService);
-        assertNotNull(orderPersistence);
-        assertNotNull(orderService);
-
-        assertInstanceOf(RestaurantMysqlAdapter.class, restaurantPersistence);
-        assertInstanceOf(RestaurantUseCase.class, restaurantService);
-        assertInstanceOf(DishMysqlAdapter.class, dishPersistence);
-        assertInstanceOf(DishUseCase.class, dishService);
-        assertInstanceOf(OrderMysqlAdapter.class, orderPersistence);
-        assertInstanceOf(OrderUseCase.class, orderService);
+        // Assert
+        assertNotNull(result1);
+        assertNotNull(result2);
+        assertNotSame(result1, result2); // Different instances
     }
 
     @Test
-    void fullIntegrationFlow_IncludingOrder_ShouldCreateCompleteObjectGraph() {
-        // Given
-        BeanConfiguration config = new BeanConfiguration();
-
-        // When
-        IRestaurantPersistencePort restaurantPersistence = config.restaurantPersistencePort(
-                restaurantRepository, restaurantEntityMapper);
-        IRestaurantServicePort restaurantService = config.restaurantServicePort(restaurantPersistence);
-
-        IDishPersistencePort dishPersistence = config.dishPersistencePort(
+    void dishPersistencePort_MultipleCalls_ShouldCreateNewInstances() {
+        // Act
+        IDishPersistencePort result1 = beanConfiguration.dishPersistencePort(
                 dishRepository, restaurantRepository, categoryRepository,
                 dishEntityMapper, categoryEntityMapper, dishWithCategoryMapper);
-        IDishServicePort dishService = config.dishServicePort(dishPersistence);
+        IDishPersistencePort result2 = beanConfiguration.dishPersistencePort(
+                dishRepository, restaurantRepository, categoryRepository,
+                dishEntityMapper, categoryEntityMapper, dishWithCategoryMapper);
 
-        IOrderPersistencePort orderPersistence = config.orderPersistencePort(
-                orderRepository, orderDishRepository, dishRepository,
-                orderEntityMapper, orderDishEntityMapper);
-        IOrderServicePort orderService = config.orderServicePort(orderPersistence);
-
-        // Then
-        // Verificar que se ha creado el grafo completo de objetos incluyendo Order
-        assertAll(
-                () -> assertNotNull(restaurantPersistence),
-                () -> assertNotNull(restaurantService),
-                () -> assertNotNull(dishPersistence),
-                () -> assertNotNull(dishService),
-                () -> assertNotNull(orderPersistence),
-                () -> assertNotNull(orderService),
-                () -> assertInstanceOf(RestaurantMysqlAdapter.class, restaurantPersistence),
-                () -> assertInstanceOf(RestaurantUseCase.class, restaurantService),
-                () -> assertInstanceOf(DishMysqlAdapter.class, dishPersistence),
-                () -> assertInstanceOf(DishUseCase.class, dishService),
-                () -> assertInstanceOf(OrderMysqlAdapter.class, orderPersistence),
-                () -> assertInstanceOf(OrderUseCase.class, orderService)
-        );
+        // Assert
+        assertNotNull(result1);
+        assertNotNull(result2);
+        assertNotSame(result1, result2); // Different instances
     }
 
-// ==================== ORDER EDGE CASE TESTS ====================
-
     @Test
-    void orderBeanMethods_ShouldBePublic() {
-        // Given & When & Then
-        // Los métodos @Bean deben ser públicos para que Spring los detecte
-        assertDoesNotThrow(() -> {
-            beanConfiguration.orderPersistencePort(orderRepository, orderDishRepository, dishRepository,
-                                                   orderEntityMapper, orderDishEntityMapper);
-            beanConfiguration.orderServicePort(orderPersistencePort);
-        });
+    void orderPersistencePort_MultipleCalls_ShouldCreateNewInstances() {
+        // Act
+        IOrderPersistencePort result1 = beanConfiguration.orderPersistencePort(
+                orderRepository, orderDishRepository, dishRepository,
+                employeeRestaurantRepository, orderEntityMapper, orderDishEntityMapper);
+        IOrderPersistencePort result2 = beanConfiguration.orderPersistencePort(
+                orderRepository, orderDishRepository, dishRepository,
+                employeeRestaurantRepository, orderEntityMapper, orderDishEntityMapper);
+
+        // Assert
+        assertNotNull(result1);
+        assertNotNull(result2);
+        assertNotSame(result1, result2); // Different instances
     }
 }
