@@ -277,6 +277,7 @@ class OrderMysqlAdapterTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void findOrdersByRestaurantAndStatus_WithStatus_ShouldReturnPagedOrders() {
         // Arrange
         Long restaurantId = 1L;
@@ -293,7 +294,7 @@ class OrderMysqlAdapterTest {
         List<OrderEntity> orderEntities = Arrays.asList(orderEntity1, orderEntity2);
 
         org.springframework.data.domain.Page<OrderEntity> springPage =
-                mock(org.springframework.data.domain.Page.class);
+                (org.springframework.data.domain.Page<OrderEntity>) mock(org.springframework.data.domain.Page.class);
         when(springPage.getContent()).thenReturn(orderEntities);
         when(springPage.getNumber()).thenReturn(pageNumber);
         when(springPage.getSize()).thenReturn(pageSize);
@@ -339,6 +340,7 @@ class OrderMysqlAdapterTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void findOrdersByRestaurantAndStatus_WithoutStatus_ShouldReturnPagedOrders() {
         // Arrange
         Long restaurantId = 1L;
@@ -351,7 +353,7 @@ class OrderMysqlAdapterTest {
         List<OrderEntity> orderEntities = Arrays.asList(orderEntity);
 
         org.springframework.data.domain.Page<OrderEntity> springPage =
-                mock(org.springframework.data.domain.Page.class);
+                (org.springframework.data.domain.Page<OrderEntity>) mock(org.springframework.data.domain.Page.class);
         when(springPage.getContent()).thenReturn(orderEntities);
         when(springPage.getNumber()).thenReturn(pageNumber);
         when(springPage.getSize()).thenReturn(pageSize);
@@ -413,5 +415,63 @@ class OrderMysqlAdapterTest {
         assertThrows(ElementNotFoundException.class,
                      () -> orderMysqlAdapter.getEmployeeRestaurantId(employeeId));
         verify(employeeRestaurantRepository).findRestaurantIdByEmployeeId(employeeId);
+    }
+
+    @Test
+    void findOrderById_OrderExists_ShouldReturnOrder() {
+        // Arrange
+        Long orderId = 1L;
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(orderEntity));
+        when(orderEntityMapper.toModel(orderEntity)).thenReturn(order);
+        when(orderDishRepository.findByIdPedido(orderId))
+                .thenReturn(Collections.singletonList(orderDishEntity));
+        when(orderDishEntityMapper.toModelList(Collections.singletonList(orderDishEntity)))
+                .thenReturn(Collections.singletonList(orderDish));
+
+        // Act
+        Optional<Order> result = orderMysqlAdapter.findOrderById(orderId);
+
+        // Assert
+        assertTrue(result.isPresent());
+        assertEquals(order.getId(), result.get().getId());
+        verify(orderRepository).findById(orderId);
+        verify(orderDishRepository).findByIdPedido(orderId);
+    }
+
+    @Test
+    void findOrderById_OrderNotExists_ShouldReturnEmpty() {
+        // Arrange
+        Long orderId = 1L;
+        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+        // Act
+        Optional<Order> result = orderMysqlAdapter.findOrderById(orderId);
+
+        // Assert
+        assertFalse(result.isPresent());
+        verify(orderRepository).findById(orderId);
+        verify(orderDishRepository, never()).findByIdPedido(any());
+    }
+
+    @Test
+    void updateOrder_ShouldReturnUpdatedOrder() {
+        // Arrange
+        when(orderEntityMapper.toEntity(order)).thenReturn(orderEntity);
+        when(orderRepository.save(orderEntity)).thenReturn(orderEntity);
+        when(orderEntityMapper.toModel(orderEntity)).thenReturn(order);
+        when(orderDishRepository.findByIdPedido(orderEntity.getId()))
+                .thenReturn(Collections.singletonList(orderDishEntity));
+        when(orderDishEntityMapper.toModelList(Collections.singletonList(orderDishEntity)))
+                .thenReturn(Collections.singletonList(orderDish));
+
+        // Act
+        Order result = orderMysqlAdapter.updateOrder(order);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(order.getId(), result.getId());
+        verify(orderEntityMapper).toEntity(order);
+        verify(orderRepository).save(orderEntity);
+        verify(orderDishRepository).findByIdPedido(orderEntity.getId());
     }
 }

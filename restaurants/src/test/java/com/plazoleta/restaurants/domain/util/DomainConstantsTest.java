@@ -21,7 +21,7 @@ class DomainConstantsTest {
                 constructor::newInstance
         );
 
-        assertTrue(exception.getCause() instanceof IllegalStateException);
+        assertInstanceOf(IllegalStateException.class, exception.getCause());
         assertEquals("Clase de constantes", exception.getCause().getMessage());
     }
 
@@ -38,7 +38,7 @@ class DomainConstantsTest {
                 constructor::newInstance
         );
 
-        assertTrue(exception.getCause() instanceof IllegalStateException);
+        assertInstanceOf(IllegalStateException.class, exception.getCause());
         assertEquals("Clase de constantes", exception.getCause().getMessage());
     }
 
@@ -55,7 +55,7 @@ class DomainConstantsTest {
                 constructor::newInstance
         );
 
-        assertTrue(exception.getCause() instanceof IllegalStateException);
+        assertInstanceOf(IllegalStateException.class, exception.getCause());
         assertEquals("Clase de constantes", exception.getCause().getMessage());
     }
 
@@ -72,7 +72,7 @@ class DomainConstantsTest {
                 constructor::newInstance
         );
 
-        assertTrue(exception.getCause() instanceof IllegalStateException);
+        assertInstanceOf(IllegalStateException.class, exception.getCause());
         assertEquals("Clase de constantes", exception.getCause().getMessage());
     }
 
@@ -96,9 +96,9 @@ class DomainConstantsTest {
     @Test
     void shouldHaveCorrectRestaurantRoleIds() {
         // Then
-        assertEquals(1L, DomainConstants.Restaurant.ROL_ADMINISTRADOR_ID);
-        assertEquals(2L, DomainConstants.Restaurant.ROL_PROPIETARIO_ID);
-        assertEquals(4L, DomainConstants.Restaurant.ROL_CLIENTE_ID);
+        assertEquals(Long.valueOf(1L), DomainConstants.Restaurant.ROL_ADMINISTRADOR_ID);
+        assertEquals(Long.valueOf(2L), DomainConstants.Restaurant.ROL_PROPIETARIO_ID);
+        assertEquals(Long.valueOf(4L), DomainConstants.Restaurant.ROL_CLIENTE_ID);
     }
 
     @Test
@@ -108,6 +108,7 @@ class DomainConstantsTest {
         assertEquals(10, DomainConstants.Restaurant.DEFAULT_PAGE_SIZE);
         assertEquals(0, DomainConstants.Restaurant.MIN_PAGE_NUMBER);
         assertEquals(1, DomainConstants.Restaurant.MIN_PAGE_SIZE);
+        assertEquals(1, DomainConstants.Order.MAX_RESTAURANTS_PER_ORDER);
     }
 
     @Test
@@ -240,6 +241,15 @@ class DomainConstantsTest {
         assertEquals("No se encontró el plato especificado", DomainConstants.Order.ERROR_PLATO_NO_ENCONTRADO);
         assertEquals("El plato no está disponible", DomainConstants.Order.ERROR_PLATO_NO_ACTIVO);
         assertEquals("El cliente ya tiene un pedido en proceso (pendiente, en preparación o listo)", DomainConstants.Order.ERROR_CLIENTE_TIENE_PEDIDO_ACTIVO);
+    }
+
+    @Test
+    void shouldHaveCorrectOrderAssignmentErrorMessages() {
+        // Then
+        assertEquals("No se encontró el pedido especificado", DomainConstants.Order.ERROR_PEDIDO_NO_ENCONTRADO);
+        assertEquals("El empleado no pertenece al restaurante del pedido", DomainConstants.Order.ERROR_EMPLEADO_RESTAURANTE_DIFERENTE);
+        assertEquals("Solo se pueden asignar pedidos en estado PENDIENTE", DomainConstants.Order.ERROR_PEDIDO_NO_PENDIENTE);
+        assertEquals("El ID del pedido es obligatorio", DomainConstants.Order.ERROR_PEDIDO_ID_REQUERIDO);
     }
 
     @Test

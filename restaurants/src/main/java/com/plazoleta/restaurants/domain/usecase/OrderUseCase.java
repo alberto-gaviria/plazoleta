@@ -11,6 +11,7 @@ import com.plazoleta.restaurants.domain.util.paged.Page;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 public class OrderUseCase implements IOrderServicePort {
@@ -46,6 +47,31 @@ public class OrderUseCase implements IOrderServicePort {
         Long restaurantId = orderPersistencePort.getEmployeeRestaurantId(employeeId);
 
         return orderPersistencePort.findOrdersByRestaurantAndStatus(restaurantId, estado, pageNumber, pageSize);
+    }
+
+    @Override
+    public Order assignEmployeeToOrder(Long orderId, Long employeeId) {
+        validateAssignEmployeeParameters(orderId, employeeId);
+
+        Optional<Order> orderOptional = orderPersistencePort.findOrderById(orderId);
+        if (orderOptional.isEmpty()) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_PEDIDO_NO_ENCONTRADO);
+        }
+
+        Order order = orderOptional.get();
+
+        Long employeeRestaurantId = orderPersistencePort.getEmployeeRestaurantId(employeeId);
+        if (!order.getIdRestaurante().equals(employeeRestaurantId)) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_EMPLEADO_RESTAURANTE_DIFERENTE);
+        }
+
+        if (!OrderStatus.PENDIENTE.equals(order.getEstado())) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_PEDIDO_NO_PENDIENTE);
+        }
+        order.setIdEmpleado(employeeId);
+        order.setEstado(OrderStatus.EN_PREPARACION);
+
+        return orderPersistencePort.updateOrder(order);
     }
 
     private void validateEmployeeOrderListParameters(Long employeeId, int pageNumber, int pageSize) {
@@ -112,7 +138,7 @@ public class OrderUseCase implements IOrderServicePort {
             restaurantIds.add(dishRestaurantId);
         }
 
-        if (restaurantIds.size() > 1) {
+        if (restaurantIds.size() > DomainConstants.Order.MAX_RESTAURANTS_PER_ORDER) {
             throw new InvalidOrderException(DomainConstants.Order.ERROR_PLATOS_MISMO_RESTAURANTE);
         }
 
@@ -131,6 +157,16 @@ public class OrderUseCase implements IOrderServicePort {
             if (!orderPersistencePort.isDishActive(orderDish.getIdPlato())) {
                 throw new InvalidOrderException(DomainConstants.Order.ERROR_PLATO_NO_ACTIVO);
             }
+        }
+    }
+
+    private void validateAssignEmployeeParameters(Long orderId, Long employeeId) {
+        if (orderId == null) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_PEDIDO_ID_REQUERIDO);
+        }
+
+        if (employeeId == null) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_EMPLEADO_REQUERIDO);
         }
     }
 }

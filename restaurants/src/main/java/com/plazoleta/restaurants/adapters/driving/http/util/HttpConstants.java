@@ -22,6 +22,8 @@ public final class HttpConstants {
         public static final String DISH_BY_RESTAURANT = "/restaurante/{restaurantId}";
         public static final String PEDIDOS = "/pedidos";
 
+        public static final String ASSIGN_EMPLOYEE = "/asignar";
+
         private Paths() { throw new IllegalStateException("Constants class"); }
     }
 
@@ -39,6 +41,8 @@ public final class HttpConstants {
 
         public static final String CREATE_ORDER_SUCCESS = "Pedido creado exitosamente";
         public static final String GET_ORDERS_SUCCESS = "Lista de pedidos obtenida exitosamente";
+
+        public static final String ASSIGN_EMPLOYEE_SUCCESS = "Empleado asignado exitosamente al pedido";
 
         public static final String INVALID_ORDER_STATUS = "Estado de pedido inválido: ";
         public static final String INVALID_INPUT = "Datos de entrada inválidos";

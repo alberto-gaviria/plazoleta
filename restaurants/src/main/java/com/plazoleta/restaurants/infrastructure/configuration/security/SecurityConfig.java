@@ -40,6 +40,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/platos/{dishId}").hasAuthority("PROPIETARIO")
                         .requestMatchers(HttpMethod.GET, "/platos/restaurante/{restaurantId}").hasAuthority("CLIENTE")
                         .requestMatchers(HttpMethod.POST, "/pedidos").hasAuthority("CLIENTE")
+                        .requestMatchers(HttpMethod.GET, "/pedidos").hasAuthority("EMPLEADO")
+                        .requestMatchers(HttpMethod.PATCH, "/pedidos/asignar").hasAuthority("EMPLEADO")
                         .anyRequest().authenticated()
                 );
 

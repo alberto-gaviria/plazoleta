@@ -98,6 +98,7 @@ public final class DomainConstants {
         public static final int MAX_PAGE_SIZE = 100;
         public static final int MIN_PAGE_NUMBER = 0;
         public static final int MIN_PAGE_SIZE = 1;
+        public static final int MAX_RESTAURANTS_PER_ORDER = 1;
 
         public static final String ESTADO_PENDIENTE = "PENDIENTE";
         public static final String ESTADO_EN_PREPARACION = "EN_PREPARACION";
@@ -118,6 +119,11 @@ public final class DomainConstants {
         public static final String ERROR_PLATO_NO_ENCONTRADO = "No se encontró el plato especificado";
         public static final String ERROR_PLATO_NO_ACTIVO = "El plato no está disponible";
         public static final String ERROR_CLIENTE_TIENE_PEDIDO_ACTIVO = "El cliente ya tiene un pedido en proceso (pendiente, en preparación o listo)";
+
+        public static final String ERROR_PEDIDO_NO_ENCONTRADO = "No se encontró el pedido especificado";
+        public static final String ERROR_EMPLEADO_RESTAURANTE_DIFERENTE = "El empleado no pertenece al restaurante del pedido";
+        public static final String ERROR_PEDIDO_NO_PENDIENTE = "Solo se pueden asignar pedidos en estado PENDIENTE";
+        public static final String ERROR_PEDIDO_ID_REQUERIDO = "El ID del pedido es obligatorio";
 
         public static final String ERROR_PAGE_NUMBER_INVALID = "El número de página debe ser mayor o igual a " + MIN_PAGE_NUMBER;
         public static final String ERROR_PAGE_SIZE_INVALID = "El tamaño de página debe ser mayor o igual a " + MIN_PAGE_SIZE;

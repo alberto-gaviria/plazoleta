@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -592,5 +593,162 @@ class OrderUseCaseTest {
         );
 
         assertEquals(DomainConstants.Order.ERROR_PLATO_NO_ENCONTRADO, exception.getMessage());
+    }
+
+    // =================== TESTS PARA assignEmployeeToOrder (FALTANTES) ===================
+
+    @Test
+    void assignEmployeeToOrder_ValidAssignment_ShouldReturnUpdatedOrder() {
+        // Arrange
+        Long orderId = 1L;
+        Order existingOrder = new Order();
+        existingOrder.setId(orderId);
+        existingOrder.setIdRestaurante(restaurantId);
+        existingOrder.setEstado(OrderStatus.PENDIENTE);
+
+        Order updatedOrder = new Order();
+        updatedOrder.setId(orderId);
+        updatedOrder.setIdEmpleado(employeeId);
+        updatedOrder.setEstado(OrderStatus.EN_PREPARACION);
+
+        when(orderPersistencePort.findOrderById(orderId)).thenReturn(Optional.of(existingOrder));
+        when(orderPersistencePort.getEmployeeRestaurantId(employeeId)).thenReturn(restaurantId);
+        when(orderPersistencePort.updateOrder(any(Order.class))).thenReturn(updatedOrder);
+
+        // Act
+        Order result = orderUseCase.assignEmployeeToOrder(orderId, employeeId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(orderId, result.getId());
+        assertEquals(employeeId, result.getIdEmpleado());
+        assertEquals(OrderStatus.EN_PREPARACION, result.getEstado());
+
+        verify(orderPersistencePort).findOrderById(orderId);
+        verify(orderPersistencePort).getEmployeeRestaurantId(employeeId);
+        verify(orderPersistencePort).updateOrder(argThat(order ->
+                                                                 order.getIdEmpleado().equals(employeeId) &&
+                                                                         order.getEstado() == OrderStatus.EN_PREPARACION
+        ));
+    }
+
+    @Test
+    void assignEmployeeToOrder_NullOrderId_ShouldThrowInvalidOrderException() {
+        // Act & Assert
+        InvalidOrderException exception = assertThrows(
+                InvalidOrderException.class,
+                () -> orderUseCase.assignEmployeeToOrder(null, employeeId)
+        );
+
+        assertEquals(DomainConstants.Order.ERROR_PEDIDO_ID_REQUERIDO, exception.getMessage());
+        verify(orderPersistencePort, never()).findOrderById(any());
+    }
+
+    @Test
+    void assignEmployeeToOrder_NullEmployeeId_ShouldThrowInvalidOrderException() {
+        // Act & Assert
+        InvalidOrderException exception = assertThrows(
+                InvalidOrderException.class,
+                () -> orderUseCase.assignEmployeeToOrder(1L, null)
+        );
+
+        assertEquals(DomainConstants.Order.ERROR_EMPLEADO_REQUERIDO, exception.getMessage());
+        verify(orderPersistencePort, never()).findOrderById(any());
+    }
+
+    @Test
+    void assignEmployeeToOrder_OrderNotFound_ShouldThrowInvalidOrderException() {
+        // Arrange
+        Long orderId = 1L;
+        when(orderPersistencePort.findOrderById(orderId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        InvalidOrderException exception = assertThrows(
+                InvalidOrderException.class,
+                () -> orderUseCase.assignEmployeeToOrder(orderId, employeeId)
+        );
+
+        assertEquals(DomainConstants.Order.ERROR_PEDIDO_NO_ENCONTRADO, exception.getMessage());
+        verify(orderPersistencePort).findOrderById(orderId);
+        verify(orderPersistencePort, never()).getEmployeeRestaurantId(any());
+    }
+
+    @Test
+    void assignEmployeeToOrder_EmployeeRestaurantDifferent_ShouldThrowInvalidOrderException() {
+        // Arrange
+        Long orderId = 1L;
+        Long differentRestaurantId = 99L;
+
+        Order existingOrder = new Order();
+        existingOrder.setId(orderId);
+        existingOrder.setIdRestaurante(restaurantId);
+        existingOrder.setEstado(OrderStatus.PENDIENTE);
+
+        when(orderPersistencePort.findOrderById(orderId)).thenReturn(Optional.of(existingOrder));
+        when(orderPersistencePort.getEmployeeRestaurantId(employeeId)).thenReturn(differentRestaurantId);
+
+        // Act & Assert
+        InvalidOrderException exception = assertThrows(
+                InvalidOrderException.class,
+                () -> orderUseCase.assignEmployeeToOrder(orderId, employeeId)
+        );
+
+        assertEquals(DomainConstants.Order.ERROR_EMPLEADO_RESTAURANTE_DIFERENTE, exception.getMessage());
+        verify(orderPersistencePort).findOrderById(orderId);
+        verify(orderPersistencePort).getEmployeeRestaurantId(employeeId);
+        verify(orderPersistencePort, never()).updateOrder(any());
+    }
+
+    @Test
+    void assignEmployeeToOrder_OrderNotInPendienteStatus_ShouldThrowInvalidOrderException() {
+        // Arrange
+        Long orderId = 1L;
+        Order existingOrder = new Order();
+        existingOrder.setId(orderId);
+        existingOrder.setIdRestaurante(restaurantId);
+        existingOrder.setEstado(OrderStatus.EN_PREPARACION); // Not PENDIENTE
+
+        when(orderPersistencePort.findOrderById(orderId)).thenReturn(Optional.of(existingOrder));
+        when(orderPersistencePort.getEmployeeRestaurantId(employeeId)).thenReturn(restaurantId);
+
+        // Act & Assert
+        InvalidOrderException exception = assertThrows(
+                InvalidOrderException.class,
+                () -> orderUseCase.assignEmployeeToOrder(orderId, employeeId)
+        );
+
+        assertEquals(DomainConstants.Order.ERROR_PEDIDO_NO_PENDIENTE, exception.getMessage());
+        verify(orderPersistencePort).findOrderById(orderId);
+        verify(orderPersistencePort).getEmployeeRestaurantId(employeeId);
+        verify(orderPersistencePort, never()).updateOrder(any());
+    }
+
+    @Test
+    void assignEmployeeToOrder_WithDifferentOrderStatuses_ShouldFailForNonPendiente() {
+        // Test with different non-PENDIENTE statuses
+        OrderStatus[] invalidStatuses = {OrderStatus.EN_PREPARACION, OrderStatus.LISTO, OrderStatus.ENTREGADO, OrderStatus.CANCELADO};
+
+        for (OrderStatus status : invalidStatuses) {
+            // Arrange
+            Long orderId = 1L;
+            Order existingOrder = new Order();
+            existingOrder.setId(orderId);
+            existingOrder.setIdRestaurante(restaurantId);
+            existingOrder.setEstado(status);
+
+            when(orderPersistencePort.findOrderById(orderId)).thenReturn(Optional.of(existingOrder));
+            when(orderPersistencePort.getEmployeeRestaurantId(employeeId)).thenReturn(restaurantId);
+
+            // Act & Assert
+            InvalidOrderException exception = assertThrows(
+                    InvalidOrderException.class,
+                    () -> orderUseCase.assignEmployeeToOrder(orderId, employeeId)
+            );
+
+            assertEquals(DomainConstants.Order.ERROR_PEDIDO_NO_PENDIENTE, exception.getMessage());
+
+            // Reset for next iteration
+            reset(orderPersistencePort);
+        }
     }
 }

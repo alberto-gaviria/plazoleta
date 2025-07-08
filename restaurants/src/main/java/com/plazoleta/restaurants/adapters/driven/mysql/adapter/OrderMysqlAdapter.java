@@ -21,7 +21,6 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class OrderMysqlAdapter implements IOrderPersistencePort {
 
@@ -130,6 +129,25 @@ public class OrderMysqlAdapter implements IOrderPersistencePort {
         }
 
         return restaurantId.get();
+    }
+
+    @Override
+    public Optional<Order> findOrderById(Long orderId) {
+        Optional<OrderEntity> orderEntity = orderRepository.findById(orderId);
+        if (orderEntity.isPresent()) {
+            Order order = convertToOrderWithDishes(orderEntity.get());
+            return Optional.of(order);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public Order updateOrder(Order order) {
+        OrderEntity orderEntity = orderEntityMapper.toEntity(order);
+        orderEntity.setId(order.getId());
+
+        OrderEntity savedOrderEntity = orderRepository.save(orderEntity);
+        return convertToOrderWithDishes(savedOrderEntity);
     }
 
     private Order convertToOrderWithDishes(OrderEntity orderEntity) {

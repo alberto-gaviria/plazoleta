@@ -1,5 +1,6 @@
 package com.plazoleta.restaurants.adapters.driving.http.controller;
 
+import com.plazoleta.restaurants.adapters.driving.http.dto.request.AssignEmployeeToOrderRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.CreateOrderRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.OrderDishRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.response.OrderResponse;
@@ -48,8 +49,10 @@ class OrderControllerTest {
     private OrderController orderController;
 
     private CreateOrderRequest createOrderRequest;
+    private AssignEmployeeToOrderRequest assignEmployeeRequest;
     private Order order;
     private Order savedOrder;
+    private Order updatedOrder;
     private OrderResponse orderResponse;
     private Authentication authentication;
     private Authentication employeeAuthentication;
@@ -59,6 +62,9 @@ class OrderControllerTest {
         // Setup request
         OrderDishRequest orderDishRequest = new OrderDishRequest(1L, 2);
         createOrderRequest = new CreateOrderRequest(10L, Collections.singletonList(orderDishRequest));
+
+        // Setup assign employee request
+        assignEmployeeRequest = new AssignEmployeeToOrderRequest(1L);
 
         // Setup domain order
         order = new Order();
@@ -71,6 +77,15 @@ class OrderControllerTest {
         savedOrder.setIdRestaurante(10L);
         savedOrder.setEstado(OrderStatus.PENDIENTE);
         savedOrder.setFecha(LocalDateTime.now());
+
+        // Setup updated order
+        updatedOrder = new Order();
+        updatedOrder.setId(1L);
+        updatedOrder.setIdCliente(1L);
+        updatedOrder.setIdRestaurante(10L);
+        updatedOrder.setIdEmpleado(2L);
+        updatedOrder.setEstado(OrderStatus.EN_PREPARACION);
+        updatedOrder.setFecha(LocalDateTime.now());
 
         // Setup response
         orderResponse = new OrderResponse();
@@ -583,5 +598,78 @@ class OrderControllerTest {
         // Removed problematic verify calls with any() matchers
         verify(orderServicePort, never()).getOrdersByEmployeeAndStatus(anyLong(), any(), anyInt(), anyInt());
         verify(orderResponseMapper, never()).toPageResponse(any());
+    }
+
+    // ============= TESTS ESENCIALES PARA assignEmployeeToOrder =============
+
+    @Test
+    void assignEmployeeToOrder_ValidRequest_ShouldReturnUpdatedOrder() {
+        // Arrange
+        OrderResponse updatedOrderResponse = new OrderResponse();
+        updatedOrderResponse.setId(1L);
+        updatedOrderResponse.setIdCliente(1L);
+        updatedOrderResponse.setIdRestaurante(10L);
+        updatedOrderResponse.setIdEmpleado(2L);
+        updatedOrderResponse.setEstado("EN_PREPARACION");
+
+        when(orderServicePort.assignEmployeeToOrder(eq(1L), eq(2L))).thenReturn(updatedOrder);
+        when(orderResponseMapper.orderToResponse(updatedOrder)).thenReturn(updatedOrderResponse);
+
+        // Act
+        ResponseEntity<OrderResponse> result = orderController.assignEmployeeToOrder(
+                assignEmployeeRequest, employeeAuthentication);
+
+        // Assert
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertEquals(1L, result.getBody().getId());
+        assertEquals(2L, result.getBody().getIdEmpleado());
+        assertEquals("EN_PREPARACION", result.getBody().getEstado());
+
+        verify(orderServicePort).assignEmployeeToOrder(1L, 2L);
+        verify(orderResponseMapper).orderToResponse(updatedOrder);
+    }
+
+    @Test
+    void assignEmployeeToOrder_ServiceThrowsInvalidOrderException_ShouldPropagateException() {
+        // Arrange
+        when(orderServicePort.assignEmployeeToOrder(eq(1L), eq(2L)))
+                .thenThrow(new InvalidOrderException("El pedido no está en estado PENDIENTE"));
+
+        // Act & Assert
+        InvalidOrderException exception = assertThrows(
+                InvalidOrderException.class,
+                () -> orderController.assignEmployeeToOrder(assignEmployeeRequest, employeeAuthentication)
+        );
+
+        assertEquals("El pedido no está en estado PENDIENTE", exception.getMessage());
+        verify(orderServicePort).assignEmployeeToOrder(1L, 2L);
+        verify(orderResponseMapper, never()).orderToResponse(any());
+    }
+
+    @Test
+    void assignEmployeeToOrder_WithDifferentEmployeeId_ShouldUseCorrectEmployeeId() {
+        // Arrange
+        Authentication differentEmployeeAuth = new TestingAuthenticationToken("999", null, "EMPLEADO");
+        OrderResponse updatedOrderResponse = new OrderResponse();
+        updatedOrderResponse.setId(1L);
+        updatedOrderResponse.setIdEmpleado(999L);
+
+        Order differentUpdatedOrder = new Order();
+        differentUpdatedOrder.setId(1L);
+        differentUpdatedOrder.setIdEmpleado(999L);
+        differentUpdatedOrder.setEstado(OrderStatus.EN_PREPARACION);
+
+        when(orderServicePort.assignEmployeeToOrder(eq(1L), eq(999L))).thenReturn(differentUpdatedOrder);
+        when(orderResponseMapper.orderToResponse(differentUpdatedOrder)).thenReturn(updatedOrderResponse);
+
+        // Act
+        ResponseEntity<OrderResponse> result = orderController.assignEmployeeToOrder(
+                assignEmployeeRequest, differentEmployeeAuth);
+
+        // Assert
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(999L, result.getBody().getIdEmpleado());
+        verify(orderServicePort).assignEmployeeToOrder(1L, 999L);
     }
 }

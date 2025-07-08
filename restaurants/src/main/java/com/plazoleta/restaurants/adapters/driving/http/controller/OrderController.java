@@ -1,5 +1,6 @@
 package com.plazoleta.restaurants.adapters.driving.http.controller;
 
+import com.plazoleta.restaurants.adapters.driving.http.dto.request.AssignEmployeeToOrderRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.CreateOrderRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.response.OrderResponse;
 import com.plazoleta.restaurants.adapters.driving.http.dto.response.PageResponse;
@@ -113,6 +114,31 @@ public class OrderController {
                 currentEmployeeId, orderStatus, page, size);
 
         PageResponse<OrderResponse> response = orderResponseMapper.toPageResponse(ordersPage);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Asignarse a un pedido",
+            description = "Permite a un empleado asignarse a un pedido en estado PENDIENTE y cambiar su estado a EN_PREPARACION")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Empleado asignado exitosamente al pedido"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos o pedido no en estado PENDIENTE"),
+            @ApiResponse(responseCode = "401", description = "No autorizado - Token requerido"),
+            @ApiResponse(responseCode = "403", description = "Prohibido - Solo empleados pueden asignarse a pedidos"),
+            @ApiResponse(responseCode = "404", description = "Pedido no encontrado o empleado sin restaurante asignado"),
+            @ApiResponse(responseCode = "409", description = "El pedido no pertenece al restaurante del empleado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @PatchMapping(HttpConstants.Paths.ASSIGN_EMPLOYEE)
+    @PreAuthorize("hasAuthority(T(com.plazoleta.restaurants.adapters.driving.http.util.HttpConstants$Roles).EMPLEADO)")
+    public ResponseEntity<OrderResponse> assignEmployeeToOrder(
+            @Parameter(description = "Datos para asignar empleado al pedido", required = true)
+            @Valid @RequestBody AssignEmployeeToOrderRequest request,
+            Authentication authentication) {
+
+        Long currentEmployeeId = Long.valueOf(authentication.getName());
+        Order updatedOrder = orderServicePort.assignEmployeeToOrder(request.getIdPedido(), currentEmployeeId);
+
+        OrderResponse response = orderResponseMapper.orderToResponse(updatedOrder);
         return ResponseEntity.ok(response);
     }
 }

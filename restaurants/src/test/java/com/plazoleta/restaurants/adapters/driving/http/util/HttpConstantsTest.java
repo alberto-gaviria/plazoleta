@@ -110,6 +110,7 @@ class HttpConstantsTest {
         assertEquals("/{dishId}/estado", HttpConstants.Paths.DISH_STATUS);
         assertEquals("/restaurante/{restaurantId}", HttpConstants.Paths.DISH_BY_RESTAURANT);
         assertEquals("/pedidos", HttpConstants.Paths.PEDIDOS);
+        assertEquals("/asignar", HttpConstants.Paths.ASSIGN_EMPLOYEE);
     }
 
     @Test
@@ -119,6 +120,8 @@ class HttpConstantsTest {
                      HttpConstants.Messages.CREATE_ORDER_SUCCESS);
         assertEquals("Lista de pedidos obtenida exitosamente",
                      HttpConstants.Messages.GET_ORDERS_SUCCESS);
+        assertEquals("Empleado asignado exitosamente al pedido",
+                     HttpConstants.Messages.ASSIGN_EMPLOYEE_SUCCESS);
     }
 
     @Test
@@ -180,6 +183,7 @@ class HttpConstantsTest {
         assertNotNull(HttpConstants.Paths.DISH_STATUS);
         assertNotNull(HttpConstants.Paths.DISH_BY_RESTAURANT);
         assertNotNull(HttpConstants.Paths.PEDIDOS);
+        assertNotNull(HttpConstants.Paths.ASSIGN_EMPLOYEE);
     }
 
     @Test
@@ -187,6 +191,7 @@ class HttpConstantsTest {
         // Then
         assertNotNull(HttpConstants.Messages.CREATE_ORDER_SUCCESS);
         assertNotNull(HttpConstants.Messages.GET_ORDERS_SUCCESS);
+        assertNotNull(HttpConstants.Messages.ASSIGN_EMPLOYEE_SUCCESS);
     }
 
     @Test
@@ -259,6 +264,7 @@ class HttpConstantsTest {
         assertTrue(HttpConstants.Paths.DISH_STATUS.startsWith("/{"));
         assertTrue(HttpConstants.Paths.DISH_BY_RESTAURANT.startsWith("/restaurante"));
         assertTrue(HttpConstants.Paths.PEDIDOS.startsWith("/"));
+        assertTrue(HttpConstants.Paths.ASSIGN_EMPLOYEE.startsWith("/"));
     }
 
     @Test
@@ -266,6 +272,7 @@ class HttpConstantsTest {
         // Then
         assertTrue(HttpConstants.Messages.CREATE_ORDER_SUCCESS.contains("exitosamente"));
         assertTrue(HttpConstants.Messages.GET_ORDERS_SUCCESS.contains("exitosamente"));
+        assertTrue(HttpConstants.Messages.ASSIGN_EMPLOYEE_SUCCESS.contains("exitosamente"));
     }
 
     @Test
@@ -291,6 +298,8 @@ class HttpConstantsTest {
         assertTrue(HttpConstants.Messages.GET_ORDERS_SUCCESS.contains("pedidos"));
         assertTrue(HttpConstants.Messages.ORDER_NOT_FOUND.contains("Pedido"));
         assertTrue(HttpConstants.Messages.CLIENT_HAS_ACTIVE_ORDER.contains("cliente"));
+        assertTrue(HttpConstants.Messages.ASSIGN_EMPLOYEE_SUCCESS.contains("Empleado"));
+        assertTrue(HttpConstants.Messages.ASSIGN_EMPLOYEE_SUCCESS.contains("pedido"));
     }
 
     @Test
@@ -298,6 +307,7 @@ class HttpConstantsTest {
         // Then - Verificar que los mensajes relacionados con empleados sean correctos
         assertTrue(HttpConstants.Messages.FORBIDDEN_EMPLOYEE.contains("empleados"));
         assertTrue(HttpConstants.Messages.EMPLOYEE_WITHOUT_RESTAURANT.contains("Empleado"));
+        assertTrue(HttpConstants.Messages.ASSIGN_EMPLOYEE_SUCCESS.contains("Empleado"));
     }
 
     @Test
@@ -332,8 +342,10 @@ class HttpConstantsTest {
         String empleado = HttpConstants.Roles.EMPLEADO;
         String path = HttpConstants.Paths.PLATOS;
         String pedidosPath = HttpConstants.Paths.PEDIDOS;
+        String assignPath = HttpConstants.Paths.ASSIGN_EMPLOYEE;
         String message = HttpConstants.Messages.CREATE_ORDER_SUCCESS;
         String orderMessage = HttpConstants.Messages.GET_ORDERS_SUCCESS;
+        String assignMessage = HttpConstants.Messages.ASSIGN_EMPLOYEE_SUCCESS;
         String pagination = HttpConstants.Pagination.DEFAULT_PAGE_VALUE;
         int minPage = HttpConstants.Pagination.MIN_PAGE;
 
@@ -341,8 +353,10 @@ class HttpConstantsTest {
         assertNotNull(empleado);
         assertNotNull(path);
         assertNotNull(pedidosPath);
+        assertNotNull(assignPath);
         assertNotNull(message);
         assertNotNull(orderMessage);
+        assertNotNull(assignMessage);
         assertNotNull(pagination);
         assertTrue(minPage >= 0);
     }
@@ -355,6 +369,7 @@ class HttpConstantsTest {
         assertFalse(HttpConstants.Paths.DISH_STATUS.contains(" "));
         assertFalse(HttpConstants.Paths.DISH_BY_RESTAURANT.contains(" "));
         assertFalse(HttpConstants.Paths.PEDIDOS.contains(" "));
+        assertFalse(HttpConstants.Paths.ASSIGN_EMPLOYEE.contains(" "));
     }
 
     @Test
@@ -363,5 +378,14 @@ class HttpConstantsTest {
         assertTrue(HttpConstants.Paths.DISH_BY_ID.matches(".*\\{\\w+\\}.*"));
         assertTrue(HttpConstants.Paths.DISH_STATUS.matches(".*\\{\\w+\\}.*"));
         assertTrue(HttpConstants.Paths.DISH_BY_RESTAURANT.matches(".*\\{\\w+\\}.*"));
+    }
+
+    @Test
+    void shouldVerifyAssignEmployeePathFormat() {
+        // Then - Verificar que el path de asignar empleado sea correcto
+        assertEquals("/asignar", HttpConstants.Paths.ASSIGN_EMPLOYEE);
+        assertTrue(HttpConstants.Paths.ASSIGN_EMPLOYEE.startsWith("/"));
+        assertFalse(HttpConstants.Paths.ASSIGN_EMPLOYEE.contains("{"));
+        assertFalse(HttpConstants.Paths.ASSIGN_EMPLOYEE.contains("}"));
     }
 }
