@@ -3,63 +3,62 @@ package com.plazoleta.restaurants.adapters.driving.http.util;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class HttpConstantsTest {
 
     @Test
-    void testPrivateConstructorHttpConstants() {
-        assertThrows(IllegalStateException.class, () -> invokePrivateConstructor(HttpConstants.class));
+    void testPrivateConstructorOfHttpConstants() throws Exception {
+        assertThrowsIllegalState(HttpConstants.class);
     }
 
     @Test
-    void testPrivateConstructorRoles() {
-        assertThrows(IllegalStateException.class, () -> invokePrivateConstructor(HttpConstants.Roles.class));
+    void testPrivateConstructorOfMessages() throws Exception {
+        assertThrowsIllegalState(HttpConstants.Messages.class);
     }
 
     @Test
-    void testPrivateConstructorPaths() {
-        assertThrows(IllegalStateException.class, () -> invokePrivateConstructor(HttpConstants.Paths.class));
+    void testPrivateConstructorOfHttpStatusMessages() throws Exception {
+        assertThrowsIllegalState(HttpConstants.HttpStatusMessages.class);
     }
 
     @Test
-    void testPrivateConstructorPagination() {
-        assertThrows(IllegalStateException.class, () -> invokePrivateConstructor(HttpConstants.Pagination.class));
+    void testPrivateConstructorOfPaths() throws Exception {
+        assertThrowsIllegalState(HttpConstants.Paths.class);
     }
 
     @Test
-    void testPrivateConstructorMessages() {
-        assertThrows(IllegalStateException.class, () -> invokePrivateConstructor(HttpConstants.Messages.class));
+    void testPrivateConstructorOfRoles() throws Exception {
+        assertThrowsIllegalState(HttpConstants.Roles.class);
     }
 
     @Test
-    void testPrivateConstructorValidationPatterns() {
-        assertThrows(IllegalStateException.class, () -> invokePrivateConstructor(HttpConstants.ValidationPatterns.class));
+    void testPrivateConstructorOfPagination() throws Exception {
+        assertThrowsIllegalState(HttpConstants.Pagination.class);
     }
 
     @Test
-    void testPrivateConstructorHeaders() {
-        assertThrows(IllegalStateException.class, () -> invokePrivateConstructor(HttpConstants.Headers.class));
+    void testPrivateConstructorOfValidationPatterns() throws Exception {
+        assertThrowsIllegalState(HttpConstants.ValidationPatterns.class);
     }
 
     @Test
-    void testPrivateConstructorHttpStatusMessages() {
-        assertThrows(IllegalStateException.class, () -> invokePrivateConstructor(HttpConstants.HttpStatusMessages.class));
+    void testPrivateConstructorOfHeaders() throws Exception {
+        assertThrowsIllegalState(HttpConstants.Headers.class);
     }
 
-    private void invokePrivateConstructor(Class<?> clazz) throws Exception {
+    private void assertThrowsIllegalState(Class<?> clazz) throws Exception {
         Constructor<?> constructor = clazz.getDeclaredConstructor();
         constructor.setAccessible(true);
         try {
             constructor.newInstance();
-        } catch (InvocationTargetException e) {
-            // Verificamos que la causa sea la excepción esperada
-            if (!(e.getCause() instanceof IllegalStateException)) {
-                throw e;
-            }
-            throw (IllegalStateException) e.getCause();
+            fail("Expected IllegalStateException to be thrown");
+        } catch (Exception e) {
+            Throwable cause = e.getCause();
+            assertNotNull(cause, "Expected cause to be not null");
+            assertTrue(cause instanceof IllegalStateException, "Expected IllegalStateException but got: " + cause.getClass());
+            assertEquals("Clase de constantes", cause.getMessage());
         }
     }
 }

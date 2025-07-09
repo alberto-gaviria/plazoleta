@@ -2,6 +2,7 @@ package com.plazoleta.restaurants.adapters.driving.http.controller;
 
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.AssignEmployeeToOrderRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.CreateOrderRequest;
+import com.plazoleta.restaurants.adapters.driving.http.dto.request.DeliverOrderRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.MarkOrderReadyRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.response.OrderResponse;
 import com.plazoleta.restaurants.adapters.driving.http.dto.response.PageResponse;
@@ -163,6 +164,35 @@ public class OrderController {
         Order updatedOrder = orderServicePort.markOrderAsReady(request.getIdPedido(), currentEmployeeId);
 
         OrderResponse response = orderResponseMapper.orderToResponse(updatedOrder);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Entregar pedido",
+            description = "Permite a un empleado marcar un pedido como entregado validando el PIN de seguridad")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Pedido entregado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos o PIN incorrecto"),
+            @ApiResponse(responseCode = "401", description = "No autorizado - Token requerido"),
+            @ApiResponse(responseCode = "403", description = "Prohibido - Solo empleados pueden realizar esta acción"),
+            @ApiResponse(responseCode = "404", description = "Pedido no encontrado"),
+            @ApiResponse(responseCode = "409", description = "El pedido no está en estado listo o ya fue entregado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @PatchMapping(HttpConstants.Paths.DELIVER_ORDER)
+    @PreAuthorize("hasAuthority(T(com.plazoleta.restaurants.adapters.driving.http.util.HttpConstants$Roles).EMPLEADO)")
+    public ResponseEntity<OrderResponse> deliverOrder(
+            @Parameter(description = "Datos para entregar el pedido con PIN de seguridad", required = true)
+            @Valid @RequestBody DeliverOrderRequest request,
+            Authentication authentication) {
+
+        Long currentEmployeeId = Long.valueOf(authentication.getName());
+        Order deliveredOrder = orderServicePort.deliverOrder(
+                request.getIdPedido(),
+                request.getPinSeguridad(),
+                currentEmployeeId
+        );
+
+        OrderResponse response = orderResponseMapper.orderToResponse(deliveredOrder);
         return ResponseEntity.ok(response);
     }
 }

@@ -123,6 +123,41 @@ public class OrderUseCase implements IOrderServicePort {
         return updatedOrder;
     }
 
+    @Override
+    public Order deliverOrder(Long orderId, String pin, Long employeeId) {
+        if (orderId == null || employeeId == null) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_PEDIDO_EMPLEADO_REQUERIDOS);
+        }
+
+        if (pin == null || pin.trim().isEmpty()) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_PIN_REQUERIDO);
+        }
+
+        Optional<Order> orderOptional = orderPersistencePort.findOrderById(orderId);
+        if (orderOptional.isEmpty()) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_PEDIDO_NO_ENCONTRADO);
+        }
+
+        Order order = orderOptional.get();
+        Long employeeRestaurantId = orderPersistencePort.getEmployeeRestaurantId(employeeId);
+
+        if (!order.getIdRestaurante().equals(employeeRestaurantId)) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_EMPLEADO_RESTAURANTE_DIFERENTE);
+        }
+
+        if (!OrderStatus.LISTO.equals(order.getEstado())) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_PEDIDO_NO_LISTO);
+        }
+
+        if (!pin.equals(order.getPinSeguridad())) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_PIN_INVALIDO);
+        }
+
+        order.setEstado(OrderStatus.ENTREGADO);
+
+        return orderPersistencePort.updateOrder(order);
+    }
+
     private void validateOrderCreation(Order order, Long clientId) {
         if (order == null) {
             throw new InvalidOrderException(DomainConstants.Order.ERROR_ORDER_NULO);

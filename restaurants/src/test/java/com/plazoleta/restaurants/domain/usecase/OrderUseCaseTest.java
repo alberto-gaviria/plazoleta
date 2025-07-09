@@ -309,4 +309,93 @@ class OrderUseCaseTest {
         assertEquals(DomainConstants.Order.ERROR_PEDIDO_NO_ENCONTRADO, ex.getMessage());
     }
 
+    @Test
+    void deliverOrder_valid_deliveredSuccessfully() {
+        Order order = new Order();
+        order.setIdRestaurante(10L);
+        order.setEstado(OrderStatus.LISTO);
+        order.setPinSeguridad("1234");
+
+        when(orderPersistencePort.findOrderById(1L)).thenReturn(Optional.of(order));
+        when(orderPersistencePort.getEmployeeRestaurantId(2L)).thenReturn(10L);
+        when(orderPersistencePort.updateOrder(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Order result = orderUseCase.deliverOrder(1L, "1234", 2L);
+
+        assertEquals(OrderStatus.ENTREGADO, result.getEstado());
+    }
+
+    @Test
+    void deliverOrder_wrongPin_throwsException() {
+        Order order = new Order();
+        order.setIdRestaurante(10L);
+        order.setEstado(OrderStatus.LISTO);
+        order.setPinSeguridad("1234");
+
+        when(orderPersistencePort.findOrderById(1L)).thenReturn(Optional.of(order));
+        when(orderPersistencePort.getEmployeeRestaurantId(2L)).thenReturn(10L);
+
+        InvalidOrderException ex = assertThrows(InvalidOrderException.class,
+                                                () -> orderUseCase.deliverOrder(1L, "0000", 2L));
+        assertEquals(DomainConstants.Order.ERROR_PIN_INVALIDO, ex.getMessage());
+    }
+
+    @Test
+    void deliverOrder_wrongState_throwsException() {
+        Order order = new Order();
+        order.setIdRestaurante(10L);
+        order.setEstado(OrderStatus.PENDIENTE); // no es LISTO
+        order.setPinSeguridad("1234");
+
+        when(orderPersistencePort.findOrderById(1L)).thenReturn(Optional.of(order));
+        when(orderPersistencePort.getEmployeeRestaurantId(2L)).thenReturn(10L);
+
+        InvalidOrderException ex = assertThrows(InvalidOrderException.class,
+                                                () -> orderUseCase.deliverOrder(1L, "1234", 2L));
+        assertEquals(DomainConstants.Order.ERROR_PEDIDO_NO_LISTO, ex.getMessage());
+    }
+
+    @Test
+    void deliverOrder_differentRestaurant_throwsException() {
+        Order order = new Order();
+        order.setIdRestaurante(10L);
+        order.setEstado(OrderStatus.LISTO);
+        order.setPinSeguridad("1234");
+
+        when(orderPersistencePort.findOrderById(1L)).thenReturn(Optional.of(order));
+        when(orderPersistencePort.getEmployeeRestaurantId(2L)).thenReturn(99L);
+
+        InvalidOrderException ex = assertThrows(InvalidOrderException.class,
+                                                () -> orderUseCase.deliverOrder(1L, "1234", 2L));
+        assertEquals(DomainConstants.Order.ERROR_EMPLEADO_RESTAURANTE_DIFERENTE, ex.getMessage());
+    }
+
+    @Test
+    void deliverOrder_orderNotFound_throwsException() {
+        when(orderPersistencePort.findOrderById(1L)).thenReturn(Optional.empty());
+
+        InvalidOrderException ex = assertThrows(InvalidOrderException.class,
+                                                () -> orderUseCase.deliverOrder(1L, "1234", 2L));
+        assertEquals(DomainConstants.Order.ERROR_PEDIDO_NO_ENCONTRADO, ex.getMessage());
+    }
+
+    @Test
+    void deliverOrder_nullParams_throwsException() {
+        InvalidOrderException ex1 = assertThrows(InvalidOrderException.class,
+                                                 () -> orderUseCase.deliverOrder(null, "1234", 2L));
+        assertEquals(DomainConstants.Order.ERROR_PEDIDO_EMPLEADO_REQUERIDOS, ex1.getMessage());
+
+        InvalidOrderException ex2 = assertThrows(InvalidOrderException.class,
+                                                 () -> orderUseCase.deliverOrder(1L, "1234", null));
+        assertEquals(DomainConstants.Order.ERROR_PEDIDO_EMPLEADO_REQUERIDOS, ex2.getMessage());
+    }
+
+    @Test
+    void deliverOrder_emptyPin_throwsException() {
+        InvalidOrderException ex = assertThrows(InvalidOrderException.class,
+                                                () -> orderUseCase.deliverOrder(1L, "   ", 2L));
+        assertEquals(DomainConstants.Order.ERROR_PIN_REQUERIDO, ex.getMessage());
+    }
+
+
 }

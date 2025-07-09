@@ -127,10 +127,14 @@ public final class DomainConstants {
         public static final String ERROR_PEDIDO_NO_EN_PREPARACION = "Solo se pueden marcar como listos pedidos en estado EN_PREPARACION";
         public static final String ERROR_PEDIDO_ID_REQUERIDO = "El ID del pedido es obligatorio";
 
-        // Nuevas constantes agregadas para OrderUseCase
         public static final String ERROR_PEDIDO_EMPLEADO_REQUERIDOS = "El ID del pedido y empleado son obligatorios";
         public static final String ERROR_DATOS_PLATOS_INVALIDOS = "Datos de platos inválidos";
         public static final String ERROR_ENVIANDO_NOTIFICACION_SMS = "Error enviando notificación SMS: ";
+
+        public static final String ERROR_PIN_REQUERIDO = "El PIN de seguridad es obligatorio";
+        public static final String ERROR_PIN_INVALIDO = "El PIN de seguridad no es válido";
+        public static final String ERROR_PEDIDO_NO_LISTO = "Solo se pueden entregar pedidos en estado LISTO";
+        public static final String ERROR_PEDIDO_YA_ENTREGADO = "El pedido ya fue entregado";
 
         public static final String ERROR_PAGE_NUMBER_INVALID = "El número de página debe ser mayor o igual a " + MIN_PAGE_NUMBER;
         public static final String ERROR_PAGE_SIZE_INVALID = "El tamaño de página debe ser mayor o igual a " + MIN_PAGE_SIZE;

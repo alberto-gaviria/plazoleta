@@ -42,6 +42,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/pedidos").hasAuthority("CLIENTE")
                         .requestMatchers(HttpMethod.GET, "/pedidos").hasAuthority("EMPLEADO")
                         .requestMatchers(HttpMethod.PATCH, "/pedidos/asignar").hasAuthority("EMPLEADO")
+                        .requestMatchers(HttpMethod.PATCH, "/pedidos/marcar-listo").hasAuthority("EMPLEADO")
+                        .requestMatchers(HttpMethod.PATCH, "/pedidos/entregar").hasAuthority("EMPLEADO") // NUEVA RUTA
                         .anyRequest().authenticated()
                 );
 

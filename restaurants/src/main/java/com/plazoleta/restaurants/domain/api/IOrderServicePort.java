@@ -9,4 +9,5 @@ public interface IOrderServicePort {
     Page<Order> getOrdersByEmployeeAndStatus(Long employeeId, OrderStatus estado, int pageNumber, int pageSize);
     Order assignEmployeeToOrder(Long orderId, Long employeeId);
     Order markOrderAsReady(Long orderId, Long employeeId);
+    Order deliverOrder(Long orderId, String pin, Long employeeId); // NUEVO MÉTODO
 }

@@ -25,6 +25,7 @@ public final class HttpConstants {
         public static final String PEDIDOS = "/pedidos";
         public static final String ASSIGN_EMPLOYEE = "/asignar";
         public static final String MARK_ORDER_READY = "/marcar-listo";
+        public static final String DELIVER_ORDER = "/entregar";
 
         private Paths() {
             throw new IllegalStateException("Clase de constantes");
@@ -49,6 +50,7 @@ public final class HttpConstants {
         public static final String GET_ORDERS_SUCCESS = "Lista de pedidos obtenida exitosamente";
         public static final String ASSIGN_EMPLOYEE_SUCCESS = "Empleado asignado exitosamente al pedido";
         public static final String ORDER_READY_SUCCESS = "Pedido marcado como listo y notificación enviada";
+        public static final String DELIVER_ORDER_SUCCESS = "Pedido entregado exitosamente";
         public static final String CREATE_DISH_SUCCESS = "Plato creado exitosamente";
         public static final String UPDATE_DISH_SUCCESS = "Plato actualizado exitosamente";
         public static final String TOGGLE_DISH_SUCCESS = "Estado del plato actualizado exitosamente";
@@ -74,6 +76,7 @@ public final class HttpConstants {
         public static final String CATEGORY_NOT_FOUND = "Categoría no encontrada";
         public static final String INTERNAL_ERROR = "Error interno del servidor";
         public static final String NOTIFICATION_ERROR = "Error enviando notificación";
+        public static final String INVALID_PIN = "PIN de seguridad inválido";
 
         private Messages() {
             throw new IllegalStateException("Clase de constantes");
