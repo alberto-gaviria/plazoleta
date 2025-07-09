@@ -397,5 +397,77 @@ class OrderUseCaseTest {
         assertEquals(DomainConstants.Order.ERROR_PIN_REQUERIDO, ex.getMessage());
     }
 
+    @Test
+    void cancelOrder_successfulCancellation() {
+        Long orderId = 1L;
+        Long clientId = 10L;
+        Order order = new Order();
+        order.setId(orderId);
+        order.setIdCliente(clientId);
+        order.setEstado(OrderStatus.PENDIENTE);
+
+        when(orderPersistencePort.findOrderById(orderId)).thenReturn(Optional.of(order));
+        when(orderPersistencePort.updateOrder(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Order result = orderUseCase.cancelOrder(orderId, clientId);
+
+        assertEquals(OrderStatus.CANCELADO, result.getEstado());
+        verify(orderPersistencePort).updateOrder(order);
+    }
+
+    @Test
+    void cancelOrder_nullOrderId_throwsException() {
+        InvalidOrderException ex = assertThrows(InvalidOrderException.class,
+                                                () -> orderUseCase.cancelOrder(null, 1L));
+
+        assertEquals(DomainConstants.Order.ERROR_PEDIDO_ID_REQUERIDO, ex.getMessage());
+    }
+
+    @Test
+    void cancelOrder_nullClientId_throwsException() {
+        InvalidOrderException ex = assertThrows(InvalidOrderException.class,
+                                                () -> orderUseCase.cancelOrder(1L, null));
+
+        assertEquals(DomainConstants.Order.ERROR_CLIENTE_REQUERIDO, ex.getMessage());
+    }
+
+    @Test
+    void cancelOrder_orderNotFound_throwsException() {
+        when(orderPersistencePort.findOrderById(1L)).thenReturn(Optional.empty());
+
+        InvalidOrderException ex = assertThrows(InvalidOrderException.class,
+                                                () -> orderUseCase.cancelOrder(1L, 1L));
+
+        assertEquals(DomainConstants.Order.ERROR_PEDIDO_NO_ENCONTRADO, ex.getMessage());
+    }
+
+    @Test
+    void cancelOrder_clientNotOwner_throwsException() {
+        Order order = new Order();
+        order.setIdCliente(99L); // distinto del clientId enviado
+        order.setEstado(OrderStatus.PENDIENTE);
+
+        when(orderPersistencePort.findOrderById(1L)).thenReturn(Optional.of(order));
+
+        InvalidOrderException ex = assertThrows(InvalidOrderException.class,
+                                                () -> orderUseCase.cancelOrder(1L, 1L));
+
+        assertEquals(DomainConstants.Order.ERROR_PEDIDO_NO_PERTENECE_CLIENTE, ex.getMessage());
+    }
+
+    @Test
+    void cancelOrder_invalidStatus_throwsException() {
+        Order order = new Order();
+        order.setIdCliente(1L);
+        order.setEstado(OrderStatus.EN_PREPARACION); // No está en estado PENDIENTE
+
+        when(orderPersistencePort.findOrderById(1L)).thenReturn(Optional.of(order));
+
+        InvalidOrderException ex = assertThrows(InvalidOrderException.class,
+                                                () -> orderUseCase.cancelOrder(1L, 1L));
+
+        assertEquals(DomainConstants.Order.ERROR_PEDIDO_NO_PUEDE_CANCELARSE, ex.getMessage());
+    }
+
 
 }

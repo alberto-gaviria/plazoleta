@@ -158,6 +158,36 @@ public class OrderUseCase implements IOrderServicePort {
         return orderPersistencePort.updateOrder(order);
     }
 
+    @Override
+    public Order cancelOrder(Long orderId, Long clientId) {
+        if (orderId == null) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_PEDIDO_ID_REQUERIDO);
+        }
+
+        if (clientId == null) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_CLIENTE_REQUERIDO);
+        }
+
+        Optional<Order> orderOptional = orderPersistencePort.findOrderById(orderId);
+        if (orderOptional.isEmpty()) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_PEDIDO_NO_ENCONTRADO);
+        }
+
+        Order order = orderOptional.get();
+
+        if (!order.getIdCliente().equals(clientId)) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_PEDIDO_NO_PERTENECE_CLIENTE);
+        }
+
+        if (!OrderStatus.PENDIENTE.equals(order.getEstado())) {
+            throw new InvalidOrderException(DomainConstants.Order.ERROR_PEDIDO_NO_PUEDE_CANCELARSE);
+        }
+
+        order.setEstado(OrderStatus.CANCELADO);
+
+        return orderPersistencePort.updateOrder(order);
+    }
+
     private void validateOrderCreation(Order order, Long clientId) {
         if (order == null) {
             throw new InvalidOrderException(DomainConstants.Order.ERROR_ORDER_NULO);

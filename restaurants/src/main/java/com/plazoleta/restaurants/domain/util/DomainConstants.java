@@ -7,7 +7,6 @@ public final class DomainConstants {
     }
 
     public static final class Restaurant {
-
         public static final String SOLO_NUMEROS_PATTERN = "^[0-9]+$";
         public static final String TELEFONO_PATTERN = "^\\+?[0-9]{1,13}$";
 
@@ -51,11 +50,8 @@ public final class DomainConstants {
     }
 
     public static final class Dish {
-
         public static final String ROL_PROPIETARIO = "PROPIETARIO";
-
         public static final int MIN_PRICE_VALUE = 0;
-
         public static final int MAX_PAGE_SIZE = 100;
         public static final int MIN_PAGE_NUMBER = 0;
         public static final int MIN_PAGE_SIZE = 1;
@@ -63,27 +59,22 @@ public final class DomainConstants {
         public static final String ERROR_DISH_NULO = "El plato no puede ser nulo";
         public static final String ERROR_NOMBRE_REQUERIDO = "El nombre del plato es obligatorio";
         public static final String ERROR_PRECIO_REQUERIDO = "El precio del plato es obligatorio";
-        public static final String ERROR_PRECIO_POSITIVO = "El precio del plato debe ser un número entero positivo " +
-                "y mayor a " + MIN_PRICE_VALUE;
+        public static final String ERROR_PRECIO_POSITIVO = "El precio del plato debe ser un número entero positivo y mayor a " + MIN_PRICE_VALUE;
         public static final String ERROR_DESCRIPCION_REQUERIDA = "La descripción del plato es obligatoria";
         public static final String ERROR_URL_IMAGEN_REQUERIDA = "La URL de la imagen es obligatoria";
         public static final String ERROR_CATEGORIA_REQUERIDA = "La categoría es obligatoria";
         public static final String ERROR_RESTAURANTE_REQUERIDO = "El restaurante es obligatorio";
         public static final String ERROR_RESTAURANTE_NO_ENCONTRADO = "No se encontró el restaurante especificado";
-        public static final String ERROR_PROPIETARIO_NO_AUTORIZADO = "Solo el propietario del restaurante puede crear " +
-                "o modificar platos";
+        public static final String ERROR_PROPIETARIO_NO_AUTORIZADO = "Solo el propietario del restaurante puede crear o modificar platos";
         public static final String ERROR_DISH_NO_ENCONTRADO = "No se encontró el plato especificado";
         public static final String ERROR_DISH_ID_REQUERIDO = "El ID del plato es obligatorio";
         public static final String ERROR_USUARIO_REQUERIDO = "El ID del usuario es obligatorio";
         public static final String ERROR_ESTADO_REQUERIDO = "El estado del plato (activo/inactivo) es obligatorio";
         public static final String ERROR_PLATO_OTRO_RESTAURANTE = "No se pueden modificar platos de otros restaurantes";
 
-        public static final String ERROR_PAGE_NUMBER_INVALID = "El número de página debe ser mayor o igual a "
-                + MIN_PAGE_NUMBER;
-        public static final String ERROR_PAGE_SIZE_INVALID = "El tamaño de página debe ser mayor o igual a "
-                + MIN_PAGE_SIZE;
-        public static final String ERROR_PAGE_SIZE_TOO_LARGE = "El tamaño de página no puede ser mayor a "
-                + MAX_PAGE_SIZE;
+        public static final String ERROR_PAGE_NUMBER_INVALID = "El número de página debe ser mayor o igual a " + MIN_PAGE_NUMBER;
+        public static final String ERROR_PAGE_SIZE_INVALID = "El tamaño de página debe ser mayor o igual a " + MIN_PAGE_SIZE;
+        public static final String ERROR_PAGE_SIZE_TOO_LARGE = "El tamaño de página no puede ser mayor a " + MAX_PAGE_SIZE;
 
         private Dish() {
             throw new IllegalStateException("Clase de constantes");
@@ -91,7 +82,6 @@ public final class DomainConstants {
     }
 
     public static final class Order {
-
         public static final String ROL_CLIENTE = "CLIENTE";
         public static final String ROL_EMPLEADO = "EMPLEADO";
 
@@ -135,6 +125,9 @@ public final class DomainConstants {
         public static final String ERROR_PIN_INVALIDO = "El PIN de seguridad no es válido";
         public static final String ERROR_PEDIDO_NO_LISTO = "Solo se pueden entregar pedidos en estado LISTO";
         public static final String ERROR_PEDIDO_YA_ENTREGADO = "El pedido ya fue entregado";
+
+        public static final String ERROR_PEDIDO_NO_PERTENECE_CLIENTE = "El pedido no pertenece al cliente especificado";
+        public static final String ERROR_PEDIDO_NO_PUEDE_CANCELARSE = "Lo sentimos, tu pedido ya está en preparación y no puede cancelarse";
 
         public static final String ERROR_PAGE_NUMBER_INVALID = "El número de página debe ser mayor o igual a " + MIN_PAGE_NUMBER;
         public static final String ERROR_PAGE_SIZE_INVALID = "El tamaño de página debe ser mayor o igual a " + MIN_PAGE_SIZE;

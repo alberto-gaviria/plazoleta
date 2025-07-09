@@ -156,4 +156,24 @@ class OrderControllerTest {
         assertEquals(HttpStatus.OK, result.getStatusCode());
         assertEquals(response, result.getBody());
     }
+    @Test
+    void cancelOrder_shouldReturnOkResponse() {
+        // Arrange
+        CancelOrderRequest request = new CancelOrderRequest();
+        request.setIdPedido(1L);
+
+        Order cancelledOrder = new Order();
+        OrderResponse response = new OrderResponse();
+
+        when(orderServicePort.cancelOrder(1L, 123L)).thenReturn(cancelledOrder);
+        when(orderResponseMapper.orderToResponse(cancelledOrder)).thenReturn(response);
+
+        // Act
+        ResponseEntity<OrderResponse> result = orderController.cancelOrder(request, authentication);
+
+        // Assert
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(response, result.getBody());
+    }
+
 }

@@ -38,12 +38,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/restaurantes").hasAuthority("CLIENTE")
                         .requestMatchers(HttpMethod.POST, "/platos").hasAuthority("PROPIETARIO")
                         .requestMatchers(HttpMethod.PUT, "/platos/{dishId}").hasAuthority("PROPIETARIO")
+                        .requestMatchers(HttpMethod.PATCH, "/platos/{dishId}/estado").hasAuthority("PROPIETARIO")
                         .requestMatchers(HttpMethod.GET, "/platos/restaurante/{restaurantId}").hasAuthority("CLIENTE")
                         .requestMatchers(HttpMethod.POST, "/pedidos").hasAuthority("CLIENTE")
                         .requestMatchers(HttpMethod.GET, "/pedidos").hasAuthority("EMPLEADO")
                         .requestMatchers(HttpMethod.PATCH, "/pedidos/asignar").hasAuthority("EMPLEADO")
                         .requestMatchers(HttpMethod.PATCH, "/pedidos/marcar-listo").hasAuthority("EMPLEADO")
-                        .requestMatchers(HttpMethod.PATCH, "/pedidos/entregar").hasAuthority("EMPLEADO") // NUEVA RUTA
+                        .requestMatchers(HttpMethod.PATCH, "/pedidos/entregar").hasAuthority("EMPLEADO")
+                        .requestMatchers(HttpMethod.PATCH, "/pedidos/cancelar").hasAuthority("CLIENTE")
                         .anyRequest().authenticated()
                 );
 

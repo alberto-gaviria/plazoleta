@@ -1,6 +1,7 @@
 package com.plazoleta.restaurants.adapters.driving.http.controller;
 
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.AssignEmployeeToOrderRequest;
+import com.plazoleta.restaurants.adapters.driving.http.dto.request.CancelOrderRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.CreateOrderRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.DeliverOrderRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.MarkOrderReadyRequest;
@@ -193,6 +194,31 @@ public class OrderController {
         );
 
         OrderResponse response = orderResponseMapper.orderToResponse(deliveredOrder);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Cancelar pedido",
+            description = "Permite a un cliente cancelar su pedido si está en estado PENDIENTE")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Pedido cancelado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autorizado - Token requerido"),
+            @ApiResponse(responseCode = "403", description = "Prohibido - Solo clientes pueden cancelar pedidos"),
+            @ApiResponse(responseCode = "404", description = "Pedido no encontrado"),
+            @ApiResponse(responseCode = "409", description = "El pedido ya está en preparación y no puede cancelarse"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @PatchMapping(HttpConstants.Paths.CANCEL_ORDER)
+    @PreAuthorize("hasAuthority(T(com.plazoleta.restaurants.adapters.driving.http.util.HttpConstants$Roles).CLIENTE)")
+    public ResponseEntity<OrderResponse> cancelOrder(
+            @Parameter(description = "Datos para cancelar el pedido", required = true)
+            @Valid @RequestBody CancelOrderRequest request,
+            Authentication authentication) {
+
+        Long currentClientId = Long.valueOf(authentication.getName());
+        Order cancelledOrder = orderServicePort.cancelOrder(request.getIdPedido(), currentClientId);
+
+        OrderResponse response = orderResponseMapper.orderToResponse(cancelledOrder);
         return ResponseEntity.ok(response);
     }
 }
