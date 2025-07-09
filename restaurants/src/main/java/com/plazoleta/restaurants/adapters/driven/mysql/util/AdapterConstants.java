@@ -18,6 +18,7 @@ public final class AdapterConstants {
         public static final String ID_PEDIDO_COLUMN = "id_pedido";
         public static final String CANTIDAD_COLUMN = "cantidad";
         public static final String ACTIVO_COLUMN = "activo";
+        public static final String PIN_SEGURIDAD_COLUMN = "pin_seguridad";
 
         private DatabaseColumns() {
             throw new IllegalStateException("Clase de constantes");
@@ -43,15 +44,23 @@ public final class AdapterConstants {
         }
     }
 
-    public static final class QueryConstants {
-        public static final String FIND_ACTIVE_ORDER_BY_CLIENT =
-                "SELECT o FROM OrderEntity o WHERE o.idCliente = :clientId AND o.estado IN ('PENDIENTE', 'EN_PREPARACION', 'LISTO')";
-        public static final String FIND_ACTIVE_DISHES_BY_RESTAURANT_AND_CATEGORY =
-                "SELECT d FROM DishEntity d WHERE d.idRestaurante = :restaurantId AND d.activo = true AND (:categoryId IS NULL OR d.idCategoria = :categoryId)";
-        public static final String FIND_ORDERS_BY_PEDIDO_ID =
-                "SELECT od FROM OrderDishEntity od WHERE od.idPedido = :pedidoId";
+    public static final class LogMessages {
+        public static final String NOTIFICATION_SUCCESS = "Notificación enviada exitosamente para pedido: {}";
+        public static final String NOTIFICATION_ERROR_STATUS = "Error enviando notificación para pedido: {}. Status: {}";
+        public static final String NOTIFICATION_COMMUNICATION_ERROR = "Error de comunicación con messaging service para pedido: {}. Error: {}";
+        public static final String NOTIFICATION_UNEXPECTED_ERROR = "Error inesperado enviando notificación para pedido: {}. Error: {}";
 
-        private QueryConstants() {
+        private LogMessages() {
+            throw new IllegalStateException("Clase de constantes");
+        }
+    }
+
+    public static final class TemporaryData {
+        // DATOS TEMPORALES PARA DESARROLLO - REMOVER EN PRODUCCIÓN
+        public static final String DEFAULT_CLIENT_PHONE = "+573001234567";
+        public static final String DUMMY_CLIENT_PHONE = "+573107096798";
+
+        private TemporaryData() {
             throw new IllegalStateException("Clase de constantes");
         }
     }

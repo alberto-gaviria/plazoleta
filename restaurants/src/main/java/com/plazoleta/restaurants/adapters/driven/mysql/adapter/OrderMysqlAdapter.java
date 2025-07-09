@@ -1,16 +1,10 @@
 package com.plazoleta.restaurants.adapters.driven.mysql.adapter;
 
-import com.plazoleta.restaurants.adapters.driven.mysql.entity.DishEntity;
-import com.plazoleta.restaurants.adapters.driven.mysql.entity.OrderDishEntity;
-import com.plazoleta.restaurants.adapters.driven.mysql.entity.OrderEntity;
-import com.plazoleta.restaurants.adapters.driven.mysql.entity.OrderStatus;
+import com.plazoleta.restaurants.adapters.driven.mysql.entity.*;
 import com.plazoleta.restaurants.adapters.driven.mysql.exception.ElementNotFoundException;
 import com.plazoleta.restaurants.adapters.driven.mysql.mapper.IOrderEntityMapper;
 import com.plazoleta.restaurants.adapters.driven.mysql.mapper.IOrderDishEntityMapper;
-import com.plazoleta.restaurants.adapters.driven.mysql.repository.IDishRepository;
-import com.plazoleta.restaurants.adapters.driven.mysql.repository.IOrderRepository;
-import com.plazoleta.restaurants.adapters.driven.mysql.repository.IOrderDishRepository;
-import com.plazoleta.restaurants.adapters.driven.mysql.repository.IEmployeeRestaurantRepository;
+import com.plazoleta.restaurants.adapters.driven.mysql.repository.*;
 import com.plazoleta.restaurants.adapters.driven.mysql.util.AdapterConstants;
 import com.plazoleta.restaurants.domain.model.Order;
 import com.plazoleta.restaurants.domain.model.OrderDish;
@@ -28,6 +22,7 @@ public class OrderMysqlAdapter implements IOrderPersistencePort {
     private final IOrderDishRepository orderDishRepository;
     private final IDishRepository dishRepository;
     private final IEmployeeRestaurantRepository employeeRestaurantRepository;
+    private final IRestaurantRepository restaurantRepository;
     private final IOrderEntityMapper orderEntityMapper;
     private final IOrderDishEntityMapper orderDishEntityMapper;
 
@@ -35,12 +30,14 @@ public class OrderMysqlAdapter implements IOrderPersistencePort {
                              IOrderDishRepository orderDishRepository,
                              IDishRepository dishRepository,
                              IEmployeeRestaurantRepository employeeRestaurantRepository,
+                             IRestaurantRepository restaurantRepository,
                              IOrderEntityMapper orderEntityMapper,
                              IOrderDishEntityMapper orderDishEntityMapper) {
         this.orderRepository = orderRepository;
         this.orderDishRepository = orderDishRepository;
         this.dishRepository = dishRepository;
         this.employeeRestaurantRepository = employeeRestaurantRepository;
+        this.restaurantRepository = restaurantRepository;
         this.orderEntityMapper = orderEntityMapper;
         this.orderDishEntityMapper = orderDishEntityMapper;
     }
@@ -148,6 +145,32 @@ public class OrderMysqlAdapter implements IOrderPersistencePort {
 
         OrderEntity savedOrderEntity = orderRepository.save(orderEntity);
         return convertToOrderWithDishes(savedOrderEntity);
+    }
+
+    @Override
+    public String getClientPhoneByOrderId(Long orderId) {
+        Optional<OrderEntity> orderEntity = orderRepository.findById(orderId);
+        if (orderEntity.isEmpty()) {
+            throw new ElementNotFoundException(AdapterConstants.ErrorMessages.ORDER_NO_ENCONTRADO);
+        }
+
+        return AdapterConstants.TemporaryData.DUMMY_CLIENT_PHONE;
+    }
+
+    @Override
+    public String getRestaurantNameByOrderId(Long orderId) {
+        Optional<OrderEntity> orderEntity = orderRepository.findById(orderId);
+        if (orderEntity.isEmpty()) {
+            throw new ElementNotFoundException(AdapterConstants.ErrorMessages.ORDER_NO_ENCONTRADO);
+        }
+
+        Long restaurantId = orderEntity.get().getIdRestaurante();
+        Optional<RestaurantEntity> restaurantEntity = restaurantRepository.findById(restaurantId);
+        if (restaurantEntity.isEmpty()) {
+            throw new ElementNotFoundException(AdapterConstants.ErrorMessages.RESTAURANT_NO_ENCONTRADO);
+        }
+
+        return restaurantEntity.get().getNombre();
     }
 
     private Order convertToOrderWithDishes(OrderEntity orderEntity) {

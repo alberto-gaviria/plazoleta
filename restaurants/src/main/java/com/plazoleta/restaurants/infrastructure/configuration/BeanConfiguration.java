@@ -1,11 +1,14 @@
 package com.plazoleta.restaurants.infrastructure.configuration;
 
+import com.plazoleta.restaurants.adapters.driven.messaging.adapter.MessagingServiceAdapter;
+import com.plazoleta.restaurants.adapters.driven.messaging.client.IMessagingServiceClient;
 import com.plazoleta.restaurants.adapters.driven.mysql.adapter.DishMysqlAdapter;
 import com.plazoleta.restaurants.adapters.driven.mysql.adapter.OrderMysqlAdapter;
 import com.plazoleta.restaurants.adapters.driven.mysql.adapter.RestaurantMysqlAdapter;
 import com.plazoleta.restaurants.adapters.driven.mysql.mapper.*;
 import com.plazoleta.restaurants.adapters.driven.mysql.repository.*;
 import com.plazoleta.restaurants.domain.api.IDishServicePort;
+import com.plazoleta.restaurants.domain.api.IMessagingServicePort;
 import com.plazoleta.restaurants.domain.api.IOrderServicePort;
 import com.plazoleta.restaurants.domain.api.IRestaurantServicePort;
 import com.plazoleta.restaurants.domain.spi.IDishPersistencePort;
@@ -57,6 +60,7 @@ public class BeanConfiguration {
             IOrderDishRepository orderDishRepository,
             IDishRepository dishRepository,
             IEmployeeRestaurantRepository employeeRestaurantRepository,
+            IRestaurantRepository restaurantRepository,
             IOrderEntityMapper orderEntityMapper,
             IOrderDishEntityMapper orderDishEntityMapper) {
         return new OrderMysqlAdapter(
@@ -64,13 +68,20 @@ public class BeanConfiguration {
                 orderDishRepository,
                 dishRepository,
                 employeeRestaurantRepository,
+                restaurantRepository,
                 orderEntityMapper,
                 orderDishEntityMapper
         );
     }
 
     @Bean
-    public IOrderServicePort orderServicePort(IOrderPersistencePort orderPersistencePort) {
-        return new OrderUseCase(orderPersistencePort);
+    public IMessagingServicePort messagingServicePort(IMessagingServiceClient messagingServiceClient) {
+        return new MessagingServiceAdapter(messagingServiceClient);
+    }
+
+    @Bean
+    public IOrderServicePort orderServicePort(IOrderPersistencePort orderPersistencePort,
+                                              IMessagingServicePort messagingServicePort) {
+        return new OrderUseCase(orderPersistencePort, messagingServicePort);
     }
 }

@@ -8,4 +8,5 @@ public interface IOrderServicePort {
     Order createOrder(Order order, Long clientId);
     Page<Order> getOrdersByEmployeeAndStatus(Long employeeId, OrderStatus estado, int pageNumber, int pageSize);
     Order assignEmployeeToOrder(Long orderId, Long employeeId);
+    Order markOrderAsReady(Long orderId, Long employeeId);
 }

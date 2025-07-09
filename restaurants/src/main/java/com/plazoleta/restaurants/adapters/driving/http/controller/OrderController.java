@@ -2,6 +2,7 @@ package com.plazoleta.restaurants.adapters.driving.http.controller;
 
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.AssignEmployeeToOrderRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.request.CreateOrderRequest;
+import com.plazoleta.restaurants.adapters.driving.http.dto.request.MarkOrderReadyRequest;
 import com.plazoleta.restaurants.adapters.driving.http.dto.response.OrderResponse;
 import com.plazoleta.restaurants.adapters.driving.http.dto.response.PageResponse;
 import com.plazoleta.restaurants.adapters.driving.http.mapper.IOrderRequestMapper;
@@ -45,15 +46,14 @@ public class OrderController {
     }
 
     @Operation(summary = "Crear un nuevo pedido",
-            description = "Permite a un cliente crear un nuevo pedido con platos de un mismo restaurante")
+            description = "Permite a un cliente crear un nuevo pedido con platos de un restaurante")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = HttpConstants.Messages.CREATE_ORDER_SUCCESS),
-            @ApiResponse(responseCode = "400", description = HttpConstants.Messages.INVALID_INPUT),
-            @ApiResponse(responseCode = "401", description = HttpConstants.Messages.UNAUTHORIZED),
-            @ApiResponse(responseCode = "403", description = HttpConstants.Messages.FORBIDDEN_CLIENT),
-            @ApiResponse(responseCode = "409", description = HttpConstants.Messages.CLIENT_HAS_ACTIVE_ORDER),
-            @ApiResponse(responseCode = "404", description = HttpConstants.Messages.DISH_NOT_FOUND),
-            @ApiResponse(responseCode = "500", description = HttpConstants.Messages.INTERNAL_ERROR)
+            @ApiResponse(responseCode = "201", description = "Pedido creado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autorizado - Token requerido"),
+            @ApiResponse(responseCode = "403", description = "Prohibido - Solo clientes pueden crear pedidos"),
+            @ApiResponse(responseCode = "409", description = "El cliente ya tiene un pedido activo"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @PostMapping
     @PreAuthorize("hasAuthority(T(com.plazoleta.restaurants.adapters.driving.http.util.HttpConstants$Roles).CLIENTE)")
@@ -71,14 +71,14 @@ public class OrderController {
     }
 
     @Operation(summary = "Listar pedidos por estado",
-            description = "Permite a un empleado listar los pedidos de su restaurante filtrados por estado")
+            description = "Permite a un empleado listar los pedidos de su restaurante, con filtro opcional por estado")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = HttpConstants.Messages.GET_ORDERS_SUCCESS),
-            @ApiResponse(responseCode = "400", description = HttpConstants.Messages.INVALID_PAGINATION),
-            @ApiResponse(responseCode = "401", description = HttpConstants.Messages.UNAUTHORIZED),
-            @ApiResponse(responseCode = "403", description = HttpConstants.Messages.FORBIDDEN_EMPLOYEE),
-            @ApiResponse(responseCode = "404", description = HttpConstants.Messages.EMPLOYEE_WITHOUT_RESTAURANT),
-            @ApiResponse(responseCode = "500", description = HttpConstants.Messages.INTERNAL_ERROR)
+            @ApiResponse(responseCode = "200", description = "Lista de pedidos obtenida exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Parámetros de paginación inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autorizado - Token requerido"),
+            @ApiResponse(responseCode = "403", description = "Prohibido - Solo empleados pueden realizar esta acción"),
+            @ApiResponse(responseCode = "404", description = "Empleado sin restaurante asignado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @GetMapping
     @PreAuthorize("hasAuthority(T(com.plazoleta.restaurants.adapters.driving.http.util.HttpConstants$Roles).EMPLEADO)")
@@ -96,7 +96,6 @@ public class OrderController {
             @Min(value = HttpConstants.Pagination.MIN_SIZE, message = "El tamaño de página debe ser mayor a " + HttpConstants.Pagination.MIN_SIZE)
             @Max(value = HttpConstants.Pagination.MAX_SIZE, message = "El tamaño de página no puede ser mayor a " + HttpConstants.Pagination.MAX_SIZE)
             int size,
-
             Authentication authentication) {
 
         Long currentEmployeeId = Long.valueOf(authentication.getName());
@@ -118,14 +117,14 @@ public class OrderController {
     }
 
     @Operation(summary = "Asignarse a un pedido",
-            description = "Permite a un empleado asignarse a un pedido en estado PENDIENTE y cambiar su estado a EN_PREPARACION")
+            description = "Permite a un empleado asignarse a un pedido pendiente de su restaurante")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Empleado asignado exitosamente al pedido"),
-            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos o pedido no en estado PENDIENTE"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
             @ApiResponse(responseCode = "401", description = "No autorizado - Token requerido"),
-            @ApiResponse(responseCode = "403", description = "Prohibido - Solo empleados pueden asignarse a pedidos"),
-            @ApiResponse(responseCode = "404", description = "Pedido no encontrado o empleado sin restaurante asignado"),
-            @ApiResponse(responseCode = "409", description = "El pedido no pertenece al restaurante del empleado"),
+            @ApiResponse(responseCode = "403", description = "Prohibido - Solo empleados pueden realizar esta acción"),
+            @ApiResponse(responseCode = "404", description = "Pedido no encontrado"),
+            @ApiResponse(responseCode = "409", description = "El pedido ya tiene un empleado asignado o no está en estado pendiente"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @PatchMapping(HttpConstants.Paths.ASSIGN_EMPLOYEE)
@@ -137,6 +136,31 @@ public class OrderController {
 
         Long currentEmployeeId = Long.valueOf(authentication.getName());
         Order updatedOrder = orderServicePort.assignEmployeeToOrder(request.getIdPedido(), currentEmployeeId);
+
+        OrderResponse response = orderResponseMapper.orderToResponse(updatedOrder);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Marcar pedido como listo",
+            description = "Permite a un empleado marcar un pedido como listo y enviar notificación al cliente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Pedido marcado como listo y notificación enviada"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+            @ApiResponse(responseCode = "401", description = "No autorizado - Token requerido"),
+            @ApiResponse(responseCode = "403", description = "Prohibido - Solo empleados pueden realizar esta acción"),
+            @ApiResponse(responseCode = "404", description = "Pedido no encontrado"),
+            @ApiResponse(responseCode = "409", description = "El pedido no está en estado de preparación"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @PatchMapping(HttpConstants.Paths.MARK_ORDER_READY)
+    @PreAuthorize("hasAuthority(T(com.plazoleta.restaurants.adapters.driving.http.util.HttpConstants$Roles).EMPLEADO)")
+    public ResponseEntity<OrderResponse> markOrderAsReady(
+            @Parameter(description = "Datos para marcar pedido como listo", required = true)
+            @Valid @RequestBody MarkOrderReadyRequest request,
+            Authentication authentication) {
+
+        Long currentEmployeeId = Long.valueOf(authentication.getName());
+        Order updatedOrder = orderServicePort.markOrderAsReady(request.getIdPedido(), currentEmployeeId);
 
         OrderResponse response = orderResponseMapper.orderToResponse(updatedOrder);
         return ResponseEntity.ok(response);

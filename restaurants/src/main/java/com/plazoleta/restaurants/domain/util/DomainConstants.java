@@ -113,6 +113,7 @@ public final class DomainConstants {
         public static final String ERROR_PLATOS_REQUERIDOS = "Los platos son obligatorios";
         public static final String ERROR_PLATO_ID_REQUERIDO = "El ID del plato es obligatorio";
         public static final String ERROR_CANTIDAD_POSITIVA = "La cantidad debe ser mayor a 0";
+        public static final String ERROR_EMPLEADO_NO_PERTENECE_RESTAURANTE = "El empleado no pertenece al restaurante del pedido";
 
         public static final String ERROR_PLATOS_MISMO_RESTAURANTE = "Todos los platos deben ser del mismo restaurante";
         public static final String ERROR_RESTAURANTE_NO_COINCIDE = "El restaurante del pedido no coincide con el de los platos";
@@ -123,7 +124,13 @@ public final class DomainConstants {
         public static final String ERROR_PEDIDO_NO_ENCONTRADO = "No se encontró el pedido especificado";
         public static final String ERROR_EMPLEADO_RESTAURANTE_DIFERENTE = "El empleado no pertenece al restaurante del pedido";
         public static final String ERROR_PEDIDO_NO_PENDIENTE = "Solo se pueden asignar pedidos en estado PENDIENTE";
+        public static final String ERROR_PEDIDO_NO_EN_PREPARACION = "Solo se pueden marcar como listos pedidos en estado EN_PREPARACION";
         public static final String ERROR_PEDIDO_ID_REQUERIDO = "El ID del pedido es obligatorio";
+
+        // Nuevas constantes agregadas para OrderUseCase
+        public static final String ERROR_PEDIDO_EMPLEADO_REQUERIDOS = "El ID del pedido y empleado son obligatorios";
+        public static final String ERROR_DATOS_PLATOS_INVALIDOS = "Datos de platos inválidos";
+        public static final String ERROR_ENVIANDO_NOTIFICACION_SMS = "Error enviando notificación SMS: ";
 
         public static final String ERROR_PAGE_NUMBER_INVALID = "El número de página debe ser mayor o igual a " + MIN_PAGE_NUMBER;
         public static final String ERROR_PAGE_SIZE_INVALID = "El tamaño de página debe ser mayor o igual a " + MIN_PAGE_SIZE;

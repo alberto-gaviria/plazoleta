@@ -16,4 +16,6 @@ public interface IOrderPersistencePort {
     Long getEmployeeRestaurantId(Long employeeId);
     Optional<Order> findOrderById(Long orderId);
     Order updateOrder(Order order);
+    String getClientPhoneByOrderId(Long orderId);
+    String getRestaurantNameByOrderId(Long orderId);
 }
