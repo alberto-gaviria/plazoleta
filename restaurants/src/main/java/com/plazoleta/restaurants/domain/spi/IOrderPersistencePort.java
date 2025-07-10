@@ -21,4 +21,5 @@ public interface IOrderPersistencePort {
     String getRestaurantNameByOrderId(Long orderId);
     String getClientEmailById(Long clientId);
     String getEmployeeEmailById(Long employeeId);
+
 }

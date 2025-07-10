@@ -65,4 +65,16 @@ public class UserController {
         User user = userQueryServicePort.getUserById(id);
         return ResponseEntity.ok(user.getCorreo());
     }
+
+    @Operation(summary = "Obtener teléfono del usuario",
+            description = "Permite obtener el número de teléfono de un usuario específico por su ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Teléfono encontrado"),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
+    })
+    @GetMapping("/{id}/telefono")
+    public ResponseEntity<String> getUserPhone(@PathVariable Long id) {
+        User user = userQueryServicePort.getUserById(id);
+        return ResponseEntity.ok(user.getCelular());
+    }
 }

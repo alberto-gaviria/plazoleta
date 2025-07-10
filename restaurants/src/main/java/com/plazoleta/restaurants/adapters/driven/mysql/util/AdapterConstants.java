@@ -161,4 +161,16 @@ public final class AdapterConstants {
             throw new IllegalStateException("Clase de constantes");
         }
     }
+
+    public static final class PhoneValidationConstants {
+        public static final String PHONE_REGEX = "^\\+57[0-9]{10}$";
+        public static final int MIN_PHONE_LENGTH_FOR_MASKING = 7;
+        public static final int PHONE_MASK_PREFIX_LENGTH = 6;
+        public static final int PHONE_MASK_SUFFIX_LENGTH = 3;
+        public static final String PHONE_MASK_PATTERN = "****";
+
+        private PhoneValidationConstants() {
+            throw new IllegalStateException("Clase de constantes");
+        }
+    }
 }

@@ -152,16 +152,6 @@ public class OrderMysqlAdapter implements IOrderPersistencePort {
     }
 
     @Override
-    public String getClientPhoneByOrderId(Long orderId) {
-        Optional<OrderEntity> orderEntity = orderRepository.findById(orderId);
-        if (orderEntity.isEmpty()) {
-            throw new ElementNotFoundException(AdapterConstants.ErrorMessages.ORDER_NO_ENCONTRADO);
-        }
-
-        return AdapterConstants.TemporaryData.DUMMY_CLIENT_PHONE;
-    }
-
-    @Override
     public String getRestaurantNameByOrderId(Long orderId) {
         Optional<OrderEntity> orderEntity = orderRepository.findById(orderId);
         if (orderEntity.isEmpty()) {
@@ -203,5 +193,47 @@ public class OrderMysqlAdapter implements IOrderPersistencePort {
         order.setPlatos(orderDishes);
 
         return order;
+    }
+
+    @Override
+    public String getClientPhoneByOrderId(Long orderId) {
+        try {
+            Optional<OrderEntity> orderEntity = orderRepository.findById(orderId);
+            if (orderEntity.isEmpty()) {
+                throw new ElementNotFoundException(AdapterConstants.ErrorMessages.ORDER_NO_ENCONTRADO);
+            }
+
+            Long clientId = orderEntity.get().getIdCliente();
+
+            try {
+                String realPhone = userServiceClient.getUserPhone(clientId);
+
+                if (isValidPhoneFormat(realPhone)) {
+                    return realPhone;
+                } else {
+                    return AdapterConstants.TemporaryData.DUMMY_CLIENT_PHONE;
+                }
+            } catch (Exception e) {
+                return AdapterConstants.TemporaryData.DUMMY_CLIENT_PHONE;
+            }
+
+        } catch (Exception e) {
+            return AdapterConstants.TemporaryData.DUMMY_CLIENT_PHONE;
+        }
+    }
+
+    private boolean isValidPhoneFormat(String phone) {
+        return phone != null &&
+                !phone.trim().isEmpty() &&
+                phone.matches(AdapterConstants.PhoneValidationConstants.PHONE_REGEX);
+    }
+
+    private String maskPhone(String phone) {
+        if (phone.length() > AdapterConstants.PhoneValidationConstants.MIN_PHONE_LENGTH_FOR_MASKING) {
+            return phone.substring(0, AdapterConstants.PhoneValidationConstants.PHONE_MASK_PREFIX_LENGTH) +
+                    AdapterConstants.PhoneValidationConstants.PHONE_MASK_PATTERN +
+                    phone.substring(phone.length() - AdapterConstants.PhoneValidationConstants.PHONE_MASK_SUFFIX_LENGTH);
+        }
+        return AdapterConstants.PhoneValidationConstants.PHONE_MASK_PATTERN;
     }
 }

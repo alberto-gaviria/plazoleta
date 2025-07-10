@@ -14,4 +14,7 @@ public interface IUserServiceClient {
 
     @GetMapping("/usuarios/{id}/email")
     String getUserEmail(@PathVariable("id") Long id);
+
+    @GetMapping("/usuarios/{id}/telefono")
+    String getUserPhone(@PathVariable("id") Long id);
 }
