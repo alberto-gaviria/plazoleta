@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/pedidos/marcar-listo").hasAuthority("EMPLEADO")
                         .requestMatchers(HttpMethod.PATCH, "/pedidos/entregar").hasAuthority("EMPLEADO")
                         .requestMatchers(HttpMethod.PATCH, "/pedidos/cancelar").hasAuthority("CLIENTE")
+                        .requestMatchers(HttpMethod.GET, "/usuarios/{id}/email").permitAll()
                         .anyRequest().authenticated()
                 );
 

@@ -1,4 +1,3 @@
-// 1. EmployeeRestaurantEntity.java - CREAR NUEVA ENTIDAD
 package com.plazoleta.restaurants.adapters.driven.mysql.entity;
 
 import jakarta.persistence.*;

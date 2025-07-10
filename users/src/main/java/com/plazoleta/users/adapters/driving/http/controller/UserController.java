@@ -53,4 +53,16 @@ public class UserController {
         UserResponse userResponse = userResponseMapper.userToDto(user);
         return ResponseEntity.ok(userResponse);
     }
+
+    @Operation(summary = "Obtener email del usuario",
+            description = "Permite obtener el email de un usuario específico por su ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Email encontrado"),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
+    })
+    @GetMapping("/{id}/email")
+    public ResponseEntity<String> getUserEmail(@PathVariable Long id) {
+        User user = userQueryServicePort.getUserById(id);
+        return ResponseEntity.ok(user.getCorreo());
+    }
 }

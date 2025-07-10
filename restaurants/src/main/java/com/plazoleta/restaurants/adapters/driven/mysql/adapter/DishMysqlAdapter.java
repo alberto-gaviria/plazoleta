@@ -21,7 +21,6 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class DishMysqlAdapter implements IDishPersistencePort {
 
@@ -112,7 +111,7 @@ public class DishMysqlAdapter implements IDishPersistencePort {
         Optional<CategoryEntity> categoryEntity = categoryRepository.findById(dishEntity.getIdCategoria());
         Category category = categoryEntity
                 .map(categoryEntityMapper::toModel)
-                .orElse(new Category(dishEntity.getIdCategoria(), "Categoría no encontrada", ""));
+                .orElse(new Category(dishEntity.getIdCategoria(), AdapterConstants.ErrorMessages.CATEGORY_NO_ENCONTRADA, ""));
 
         return dishWithCategoryMapper.toModel(dishEntity, category);
     }

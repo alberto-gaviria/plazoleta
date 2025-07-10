@@ -34,6 +34,7 @@ public final class AdapterConstants {
         public static final String ORDER_NO_ENCONTRADO = "No se encontró el pedido solicitado";
         public static final String CLIENTE_NO_ENCONTRADO = "No se encontró el cliente solicitado";
         public static final String CATEGORIA_NO_ENCONTRADA = "No se encontró la categoría solicitada";
+        public static final String CATEGORY_NO_ENCONTRADA = "Categoría no encontrada";
         public static final String PLATO_NO_ACTIVO = "El plato no está disponible";
         public static final String PLATOS_RESTAURANTE_DIFERENTE = "Los platos deben ser del mismo restaurante";
         public static final String CLIENTE_CON_PEDIDO_ACTIVO = "El cliente ya tiene un pedido activo";
@@ -56,9 +57,12 @@ public final class AdapterConstants {
     }
 
     public static final class TemporaryData {
-        // DATOS TEMPORALES PARA DESARROLLO - REMOVER EN PRODUCCIÓN
+
         public static final String DEFAULT_CLIENT_PHONE = "+573001234567";
         public static final String DUMMY_CLIENT_PHONE = "+573107096798";
+        public static final String DEFAULT_CLIENT_EMAIL_PREFIX = "cliente.";
+        public static final String DEFAULT_EMPLOYEE_EMAIL_PREFIX = "empleado.";
+        public static final String DEFAULT_EMAIL_DOMAIN = "@plazoleta.com";
 
         private TemporaryData() {
             throw new IllegalStateException("Clase de constantes");

@@ -26,7 +26,7 @@ public final class HttpConstants {
         public static final String ASSIGN_EMPLOYEE = "/asignar";
         public static final String MARK_ORDER_READY = "/marcar-listo";
         public static final String DELIVER_ORDER = "/entregar";
-        public static final String CANCEL_ORDER = "/cancelar"; // NUEVO PATH HU16
+        public static final String CANCEL_ORDER = "/cancelar";
 
         private Paths() {
             throw new IllegalStateException("Clase de constantes");
@@ -46,13 +46,13 @@ public final class HttpConstants {
     }
 
     public static final class Messages {
-        // Success Messages
+
         public static final String CREATE_ORDER_SUCCESS = "Pedido creado exitosamente";
         public static final String GET_ORDERS_SUCCESS = "Lista de pedidos obtenida exitosamente";
         public static final String ASSIGN_EMPLOYEE_SUCCESS = "Empleado asignado exitosamente al pedido";
         public static final String ORDER_READY_SUCCESS = "Pedido marcado como listo y notificación enviada";
         public static final String DELIVER_ORDER_SUCCESS = "Pedido entregado exitosamente";
-        public static final String CANCEL_ORDER_SUCCESS = "Pedido cancelado exitosamente"; // NUEVO HU16
+        public static final String CANCEL_ORDER_SUCCESS = "Pedido cancelado exitosamente";
         public static final String CREATE_DISH_SUCCESS = "Plato creado exitosamente";
         public static final String UPDATE_DISH_SUCCESS = "Plato actualizado exitosamente";
         public static final String TOGGLE_DISH_SUCCESS = "Estado del plato actualizado exitosamente";
@@ -60,7 +60,6 @@ public final class HttpConstants {
         public static final String CREATE_RESTAURANT_SUCCESS = "Restaurante creado exitosamente";
         public static final String GET_RESTAURANTS_SUCCESS = "Lista de restaurantes obtenida exitosamente";
 
-        // Error Messages
         public static final String INVALID_ORDER_STATUS = "Estado de pedido inválido: ";
         public static final String INVALID_INPUT = "Datos de entrada inválidos";
         public static final String INVALID_PAGINATION = "Parámetros de paginación inválidos";

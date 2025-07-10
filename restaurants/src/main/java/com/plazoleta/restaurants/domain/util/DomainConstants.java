@@ -133,6 +133,9 @@ public final class DomainConstants {
         public static final String ERROR_PAGE_SIZE_INVALID = "El tamaño de página debe ser mayor o igual a " + MIN_PAGE_SIZE;
         public static final String ERROR_PAGE_SIZE_TOO_LARGE = "El tamaño de página no puede ser mayor a " + MAX_PAGE_SIZE;
 
+        public static final String FALLBACK_CLIENT_EMAIL = "cliente.no.disponible@plazoleta.com";
+        public static final String FALLBACK_EMPLOYEE_EMAIL = "empleado.no.disponible@plazoleta.com";
+
         private Order() {
             throw new IllegalStateException("Clase de constantes");
         }

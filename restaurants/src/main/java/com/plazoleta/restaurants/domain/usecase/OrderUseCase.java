@@ -2,6 +2,7 @@ package com.plazoleta.restaurants.domain.usecase;
 
 import com.plazoleta.restaurants.domain.api.IMessagingServicePort;
 import com.plazoleta.restaurants.domain.api.IOrderServicePort;
+import com.plazoleta.restaurants.domain.api.ITraceabilityServicePort;
 import com.plazoleta.restaurants.domain.model.Order;
 import com.plazoleta.restaurants.domain.model.OrderDish;
 import com.plazoleta.restaurants.domain.model.OrderStatus;
@@ -20,11 +21,14 @@ public class OrderUseCase implements IOrderServicePort {
 
     private final IOrderPersistencePort orderPersistencePort;
     private final IMessagingServicePort messagingServicePort;
+    private final ITraceabilityServicePort traceabilityServicePort;
 
     public OrderUseCase(IOrderPersistencePort orderPersistencePort,
-                        IMessagingServicePort messagingServicePort) {
+                        IMessagingServicePort messagingServicePort,
+                        ITraceabilityServicePort traceabilityServicePort) {
         this.orderPersistencePort = orderPersistencePort;
         this.messagingServicePort = messagingServicePort;
+        this.traceabilityServicePort = traceabilityServicePort;
     }
 
     @Override
@@ -37,7 +41,12 @@ public class OrderUseCase implements IOrderServicePort {
         order.setIdEmpleado(null);
         order.setPinSeguridad(null);
 
-        return orderPersistencePort.saveOrder(order);
+        Order savedOrder = orderPersistencePort.saveOrder(order);
+
+        recordTraceability(savedOrder.getId(), clientId, null,
+                           DomainConstants.Order.ESTADO_PENDIENTE, null, null);
+
+        return savedOrder;
     }
 
     @Override
@@ -75,7 +84,12 @@ public class OrderUseCase implements IOrderServicePort {
         order.setIdEmpleado(employeeId);
         order.setEstado(OrderStatus.EN_PREPARACION);
 
-        return orderPersistencePort.updateOrder(order);
+        Order savedOrder = orderPersistencePort.updateOrder(order);
+
+        recordTraceability(orderId, order.getIdCliente(), DomainConstants.Order.ESTADO_PENDIENTE,
+                           DomainConstants.Order.ESTADO_EN_PREPARACION, employeeId, null);
+
+        return savedOrder;
     }
 
     @Override
@@ -106,6 +120,9 @@ public class OrderUseCase implements IOrderServicePort {
 
         Order updatedOrder = orderPersistencePort.updateOrder(order);
 
+        recordTraceability(orderId, order.getIdCliente(), DomainConstants.Order.ESTADO_EN_PREPARACION,
+                           DomainConstants.Order.ESTADO_LISTO, employeeId, null);
+
         try {
             String clientPhone = orderPersistencePort.getClientPhoneByOrderId(orderId);
             String restaurantName = orderPersistencePort.getRestaurantNameByOrderId(orderId);
@@ -117,7 +134,7 @@ public class OrderUseCase implements IOrderServicePort {
                     restaurantName
             );
         } catch (Exception e) {
-            System.err.println(DomainConstants.Order.ERROR_ENVIANDO_NOTIFICACION_SMS + e.getMessage());
+
         }
 
         return updatedOrder;
@@ -155,7 +172,12 @@ public class OrderUseCase implements IOrderServicePort {
 
         order.setEstado(OrderStatus.ENTREGADO);
 
-        return orderPersistencePort.updateOrder(order);
+        Order savedOrder = orderPersistencePort.updateOrder(order);
+
+        recordTraceability(orderId, order.getIdCliente(), DomainConstants.Order.ESTADO_LISTO,
+                           DomainConstants.Order.ESTADO_ENTREGADO, employeeId, null);
+
+        return savedOrder;
     }
 
     @Override
@@ -185,7 +207,50 @@ public class OrderUseCase implements IOrderServicePort {
 
         order.setEstado(OrderStatus.CANCELADO);
 
-        return orderPersistencePort.updateOrder(order);
+        Order savedOrder = orderPersistencePort.updateOrder(order);
+
+        recordTraceability(orderId, clientId, DomainConstants.Order.ESTADO_PENDIENTE,
+                           DomainConstants.Order.ESTADO_CANCELADO, null, null);
+
+        return savedOrder;
+    }
+
+    private void recordTraceability(Long orderId, Long clientId, String previousStatus,
+                                    String newStatus, Long employeeId, String specificMessage) {
+        try {
+            String clientEmail = getClientEmailSafely(clientId);
+            String employeeEmail = getEmployeeEmailSafely(employeeId);
+
+            traceabilityServicePort.recordOrderStatusChange(
+                    orderId,
+                    clientId,
+                    clientEmail,
+                    previousStatus,
+                    newStatus,
+                    employeeId,
+                    employeeEmail
+            );
+        } catch (Exception e) {
+
+        }
+    }
+
+    private String getClientEmailSafely(Long clientId) {
+        try {
+            if (clientId == null) return null;
+            return orderPersistencePort.getClientEmailById(clientId);
+        } catch (Exception e) {
+            return DomainConstants.Order.FALLBACK_CLIENT_EMAIL;
+        }
+    }
+
+    private String getEmployeeEmailSafely(Long employeeId) {
+        try {
+            if (employeeId == null) return null;
+            return orderPersistencePort.getEmployeeEmailById(employeeId);
+        } catch (Exception e) {
+            return DomainConstants.Order.FALLBACK_EMPLOYEE_EMAIL;
+        }
     }
 
     private void validateOrderCreation(Order order, Long clientId) {

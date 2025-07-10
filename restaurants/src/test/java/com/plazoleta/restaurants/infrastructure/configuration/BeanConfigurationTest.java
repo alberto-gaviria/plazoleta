@@ -7,17 +7,21 @@ import com.plazoleta.restaurants.adapters.driven.mysql.adapter.OrderMysqlAdapter
 import com.plazoleta.restaurants.adapters.driven.mysql.adapter.RestaurantMysqlAdapter;
 import com.plazoleta.restaurants.adapters.driven.mysql.mapper.*;
 import com.plazoleta.restaurants.adapters.driven.mysql.repository.*;
+import com.plazoleta.restaurants.adapters.driven.traceability.adapter.TraceabilityServiceAdapter;
+import com.plazoleta.restaurants.adapters.driven.traceability.client.ITraceabilityServiceClient;
+import com.plazoleta.restaurants.adapters.driven.users.client.IUserServiceClient;
 import com.plazoleta.restaurants.domain.api.*;
 import com.plazoleta.restaurants.domain.spi.*;
-import com.plazoleta.restaurants.domain.usecase.*;
-
+import com.plazoleta.restaurants.domain.usecase.DishUseCase;
+import com.plazoleta.restaurants.domain.usecase.OrderUseCase;
+import com.plazoleta.restaurants.domain.usecase.RestaurantUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
-class BeanConfigurationTest {
+public class BeanConfigurationTest {
 
     private BeanConfiguration beanConfiguration;
 
@@ -27,57 +31,60 @@ class BeanConfigurationTest {
     }
 
     @Test
-    void testRestaurantPersistencePortBean() {
+    void testRestaurantPersistencePort() {
         IRestaurantRepository restaurantRepository = mock(IRestaurantRepository.class);
-        IRestaurantEntityMapper restaurantEntityMapper = mock(IRestaurantEntityMapper.class);
+        IRestaurantEntityMapper mapper = mock(IRestaurantEntityMapper.class);
 
-        IRestaurantPersistencePort result = beanConfiguration.restaurantPersistencePort(restaurantRepository, restaurantEntityMapper);
-        assertNotNull(result);
-        assertTrue(result instanceof RestaurantMysqlAdapter);
+        IRestaurantPersistencePort port = beanConfiguration.restaurantPersistencePort(restaurantRepository, mapper);
+
+        assertNotNull(port);
+        assertTrue(port instanceof RestaurantMysqlAdapter);
     }
 
     @Test
-    void testRestaurantServicePortBean() {
-        IRestaurantPersistencePort restaurantPersistencePort = mock(IRestaurantPersistencePort.class);
+    void testRestaurantServicePort() {
+        IRestaurantPersistencePort persistencePort = mock(IRestaurantPersistencePort.class);
 
-        IRestaurantServicePort result = beanConfiguration.restaurantServicePort(restaurantPersistencePort);
-        assertNotNull(result);
-        assertTrue(result instanceof RestaurantUseCase);
+        IRestaurantServicePort servicePort = beanConfiguration.restaurantServicePort(persistencePort);
+
+        assertNotNull(servicePort);
+        assertTrue(servicePort instanceof RestaurantUseCase);
     }
 
     @Test
-    void testDishPersistencePortBean() {
+    void testDishPersistencePort() {
         IDishRepository dishRepository = mock(IDishRepository.class);
         IRestaurantRepository restaurantRepository = mock(IRestaurantRepository.class);
         ICategoryRepository categoryRepository = mock(ICategoryRepository.class);
-        IDishEntityMapper dishEntityMapper = mock(IDishEntityMapper.class);
-        ICategoryEntityMapper categoryEntityMapper = mock(ICategoryEntityMapper.class);
+        IDishEntityMapper dishMapper = mock(IDishEntityMapper.class);
+        ICategoryEntityMapper categoryMapper = mock(ICategoryEntityMapper.class);
         IDishWithCategoryMapper dishWithCategoryMapper = mock(IDishWithCategoryMapper.class);
 
-        IDishPersistencePort result = beanConfiguration.dishPersistencePort(
+        IDishPersistencePort port = beanConfiguration.dishPersistencePort(
                 dishRepository,
                 restaurantRepository,
                 categoryRepository,
-                dishEntityMapper,
-                categoryEntityMapper,
+                dishMapper,
+                categoryMapper,
                 dishWithCategoryMapper
         );
 
-        assertNotNull(result);
-        assertTrue(result instanceof DishMysqlAdapter);
+        assertNotNull(port);
+        assertTrue(port instanceof DishMysqlAdapter);
     }
 
     @Test
-    void testDishServicePortBean() {
-        IDishPersistencePort dishPersistencePort = mock(IDishPersistencePort.class);
+    void testDishServicePort() {
+        IDishPersistencePort persistencePort = mock(IDishPersistencePort.class);
 
-        IDishServicePort result = beanConfiguration.dishServicePort(dishPersistencePort);
-        assertNotNull(result);
-        assertTrue(result instanceof DishUseCase);
+        IDishServicePort servicePort = beanConfiguration.dishServicePort(persistencePort);
+
+        assertNotNull(servicePort);
+        assertTrue(servicePort instanceof DishUseCase);
     }
 
     @Test
-    void testOrderPersistencePortBean() {
+    void testOrderPersistencePort() {
         IOrderRepository orderRepository = mock(IOrderRepository.class);
         IOrderDishRepository orderDishRepository = mock(IOrderDishRepository.class);
         IDishRepository dishRepository = mock(IDishRepository.class);
@@ -85,37 +92,56 @@ class BeanConfigurationTest {
         IRestaurantRepository restaurantRepository = mock(IRestaurantRepository.class);
         IOrderEntityMapper orderEntityMapper = mock(IOrderEntityMapper.class);
         IOrderDishEntityMapper orderDishEntityMapper = mock(IOrderDishEntityMapper.class);
+        IUserServiceClient userServiceClient = mock(IUserServiceClient.class);
 
-        IOrderPersistencePort result = beanConfiguration.orderPersistencePort(
+        IOrderPersistencePort port = beanConfiguration.orderPersistencePort(
                 orderRepository,
                 orderDishRepository,
                 dishRepository,
                 employeeRestaurantRepository,
                 restaurantRepository,
                 orderEntityMapper,
-                orderDishEntityMapper
+                orderDishEntityMapper,
+                userServiceClient
         );
 
-        assertNotNull(result);
-        assertTrue(result instanceof OrderMysqlAdapter);
+        assertNotNull(port);
+        assertTrue(port instanceof OrderMysqlAdapter);
     }
 
     @Test
-    void testMessagingServicePortBean() {
+    void testMessagingServicePort() {
         IMessagingServiceClient client = mock(IMessagingServiceClient.class);
 
-        IMessagingServicePort result = beanConfiguration.messagingServicePort(client);
-        assertNotNull(result);
-        assertTrue(result instanceof MessagingServiceAdapter);
+        IMessagingServicePort port = beanConfiguration.messagingServicePort(client);
+
+        assertNotNull(port);
+        assertTrue(port instanceof MessagingServiceAdapter);
     }
 
     @Test
-    void testOrderServicePortBean() {
+    void testTraceabilityServicePort() {
+        ITraceabilityServiceClient client = mock(ITraceabilityServiceClient.class);
+
+        ITraceabilityServicePort port = beanConfiguration.traceabilityServicePort(client);
+
+        assertNotNull(port);
+        assertTrue(port instanceof TraceabilityServiceAdapter);
+    }
+
+    @Test
+    void testOrderServicePort() {
         IOrderPersistencePort orderPersistencePort = mock(IOrderPersistencePort.class);
         IMessagingServicePort messagingServicePort = mock(IMessagingServicePort.class);
+        ITraceabilityServicePort traceabilityServicePort = mock(ITraceabilityServicePort.class);
 
-        IOrderServicePort result = beanConfiguration.orderServicePort(orderPersistencePort, messagingServicePort);
-        assertNotNull(result);
-        assertTrue(result instanceof OrderUseCase);
+        IOrderServicePort servicePort = beanConfiguration.orderServicePort(
+                orderPersistencePort,
+                messagingServicePort,
+                traceabilityServicePort
+        );
+
+        assertNotNull(servicePort);
+        assertTrue(servicePort instanceof OrderUseCase);
     }
 }

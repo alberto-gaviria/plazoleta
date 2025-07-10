@@ -36,6 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuarios/cliente").permitAll()
                         .requestMatchers(HttpMethod.GET, "/usuarios/{id}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/usuarios/*/email").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuarios/propietario").hasAuthority("ADMINISTRADOR")

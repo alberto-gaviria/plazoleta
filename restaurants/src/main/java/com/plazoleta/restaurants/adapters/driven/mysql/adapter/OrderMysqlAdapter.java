@@ -6,6 +6,7 @@ import com.plazoleta.restaurants.adapters.driven.mysql.mapper.IOrderEntityMapper
 import com.plazoleta.restaurants.adapters.driven.mysql.mapper.IOrderDishEntityMapper;
 import com.plazoleta.restaurants.adapters.driven.mysql.repository.*;
 import com.plazoleta.restaurants.adapters.driven.mysql.util.AdapterConstants;
+import com.plazoleta.restaurants.adapters.driven.users.client.IUserServiceClient;
 import com.plazoleta.restaurants.domain.model.Order;
 import com.plazoleta.restaurants.domain.model.OrderDish;
 import com.plazoleta.restaurants.domain.util.paged.Page;
@@ -25,6 +26,7 @@ public class OrderMysqlAdapter implements IOrderPersistencePort {
     private final IRestaurantRepository restaurantRepository;
     private final IOrderEntityMapper orderEntityMapper;
     private final IOrderDishEntityMapper orderDishEntityMapper;
+    private final IUserServiceClient userServiceClient;
 
     public OrderMysqlAdapter(IOrderRepository orderRepository,
                              IOrderDishRepository orderDishRepository,
@@ -32,7 +34,8 @@ public class OrderMysqlAdapter implements IOrderPersistencePort {
                              IEmployeeRestaurantRepository employeeRestaurantRepository,
                              IRestaurantRepository restaurantRepository,
                              IOrderEntityMapper orderEntityMapper,
-                             IOrderDishEntityMapper orderDishEntityMapper) {
+                             IOrderDishEntityMapper orderDishEntityMapper,
+                             IUserServiceClient userServiceClient) {
         this.orderRepository = orderRepository;
         this.orderDishRepository = orderDishRepository;
         this.dishRepository = dishRepository;
@@ -40,6 +43,7 @@ public class OrderMysqlAdapter implements IOrderPersistencePort {
         this.restaurantRepository = restaurantRepository;
         this.orderEntityMapper = orderEntityMapper;
         this.orderDishEntityMapper = orderDishEntityMapper;
+        this.userServiceClient = userServiceClient;
     }
 
     @Override
@@ -171,6 +175,24 @@ public class OrderMysqlAdapter implements IOrderPersistencePort {
         }
 
         return restaurantEntity.get().getNombre();
+    }
+
+    @Override
+    public String getClientEmailById(Long clientId) {
+        try {
+            return userServiceClient.getUserEmail(clientId);
+        } catch (Exception e) {
+            return AdapterConstants.TemporaryData.DEFAULT_CLIENT_EMAIL_PREFIX + clientId + AdapterConstants.TemporaryData.DEFAULT_EMAIL_DOMAIN;
+        }
+    }
+
+    @Override
+    public String getEmployeeEmailById(Long employeeId) {
+        try {
+            return userServiceClient.getUserEmail(employeeId);
+        } catch (Exception e) {
+            return AdapterConstants.TemporaryData.DEFAULT_EMPLOYEE_EMAIL_PREFIX + employeeId + AdapterConstants.TemporaryData.DEFAULT_EMAIL_DOMAIN;
+        }
     }
 
     private Order convertToOrderWithDishes(OrderEntity orderEntity) {
