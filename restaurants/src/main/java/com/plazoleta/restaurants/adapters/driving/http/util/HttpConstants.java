@@ -27,6 +27,8 @@ public final class HttpConstants {
         public static final String MARK_ORDER_READY = "/marcar-listo";
         public static final String DELIVER_ORDER = "/entregar";
         public static final String CANCEL_ORDER = "/cancelar";
+        public static final String EFICIENCIA = "/eficiencia";
+        public static final String RESTAURANT_EFFICIENCY = "/restaurante/{restaurantId}";
 
         private Paths() {
             throw new IllegalStateException("Clase de constantes");
@@ -78,7 +80,10 @@ public final class HttpConstants {
         public static final String INTERNAL_ERROR = "Error interno del servidor";
         public static final String NOTIFICATION_ERROR = "Error enviando notificación";
         public static final String INVALID_PIN = "PIN de seguridad inválido";
-        public static final String ORDER_ALREADY_IN_PREPARATION = "Lo sentimos, tu pedido ya está en preparación y no puede cancelarse"; // NUEVO HU16
+        public static final String ORDER_ALREADY_IN_PREPARATION = "Lo sentimos, tu pedido ya está en preparación y no puede cancelarse";
+        public static final String GET_EFFICIENCY_SUCCESS = "Eficiencia del restaurante obtenida exitosamente";
+        public static final String EFFICIENCY_NO_DATA = "No hay datos de eficiencia disponibles";
+
 
         private Messages() {
             throw new IllegalStateException("Clase de constantes");

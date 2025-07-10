@@ -44,6 +44,11 @@ public final class DomainConstants {
         public static final String ERROR_PAGE_SIZE_INVALID = "El tamaño de página debe ser mayor o igual a " + MIN_PAGE_SIZE;
         public static final String ERROR_PAGE_SIZE_TOO_LARGE = "El tamaño de página no puede ser mayor a " + MAX_PAGE_SIZE;
 
+        public static final String ERROR_RESTAURANT_ID_REQUERIDO = "El ID del restaurante es obligatorio";
+        public static final String ERROR_PROPIETARIO_ID_REQUERIDO = "El ID del propietario es obligatorio";
+        public static final String ERROR_PROPIETARIO_NO_AUTORIZADO = "Solo el propietario del restaurante puede realizar esta acción";
+        public static final String ERROR_RESTAURANT_NO_ENCONTRADO = "No se encontró el restaurante especificado";
+
         private Restaurant() {
             throw new IllegalStateException("Clase de constantes");
         }
@@ -137,6 +142,46 @@ public final class DomainConstants {
         public static final String FALLBACK_EMPLOYEE_EMAIL = "empleado.no.disponible@plazoleta.com";
 
         private Order() {
+            throw new IllegalStateException("Clase de constantes");
+        }
+    }
+
+    // ✅ NUEVA CLASE DE CONSTANTES PARA EFICIENCIA
+    public static final class Efficiency {
+        // Mensajes de error
+        public static final String ERROR_RESTAURANT_ID_REQUERIDO = "El ID del restaurante es obligatorio";
+        public static final String ERROR_PROPIETARIO_ID_REQUERIDO = "El ID del propietario es obligatorio";
+        public static final String ERROR_RESTAURANT_NO_ENCONTRADO = "No se encontró el restaurante especificado";
+        public static final String ERROR_PROPIETARIO_NO_AUTORIZADO = "Solo el propietario del restaurante puede consultar la eficiencia";
+        public static final String ERROR_NO_HAY_PEDIDOS_COMPLETADOS = "No hay pedidos completados para mostrar eficiencia";
+        public static final String ERROR_NO_HAY_EMPLEADOS_CON_PEDIDOS = "No hay empleados con pedidos asignados para mostrar ranking";
+
+        // Valores por defecto para empleados
+        public static final String DEFAULT_EMPLOYEE_NAME_PREFIX = "Empleado";
+        public static final String NAME_SEPARATOR = " ";
+        public static final String DEFAULT_EMAIL_DOMAIN = "@plazoleta.com";
+        public static final String DEFAULT_EMPLOYEE_EMAIL_PREFIX = "empleado.";
+
+        // Constantes de validación
+        public static final int MIN_ORDERS_FOR_EFFICIENCY = 1;
+        public static final double MIN_TIME_MINUTES = 0.0;
+        public static final double MAX_TIME_HOURS = 24.0;
+        public static final double MINUTES_PER_HOUR = 60.0;
+        public static final double MAX_TIME_MINUTES = MAX_TIME_HOURS * MINUTES_PER_HOUR;
+
+        // Constantes de formateo
+        public static final int RANKING_START_VALUE = 1;
+        public static final String EMPTY_STRING = "";
+
+        // Constantes para formateo de tiempo
+        public static final String MINUTES_UNIT_SINGULAR = "minuto";
+        public static final String MINUTES_UNIT_PLURAL = "minutos";
+        public static final String SECONDS_UNIT_SINGULAR = "segundo";
+        public static final String SECONDS_UNIT_PLURAL = "segundos";
+        public static final String TIME_UNIT_SEPARATOR = " ";
+        public static final int SECONDS_PER_MINUTE = 60;
+
+        private Efficiency() {
             throw new IllegalStateException("Clase de constantes");
         }
     }

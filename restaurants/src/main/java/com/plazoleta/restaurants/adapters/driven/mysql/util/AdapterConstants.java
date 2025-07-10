@@ -57,7 +57,6 @@ public final class AdapterConstants {
     }
 
     public static final class TemporaryData {
-
         public static final String DEFAULT_CLIENT_PHONE = "+573001234567";
         public static final String DUMMY_CLIENT_PHONE = "+573107096798";
         public static final String DEFAULT_CLIENT_EMAIL_PREFIX = "cliente.";
@@ -90,6 +89,75 @@ public final class AdapterConstants {
         public static final String ESTADO_CANCELADO = "CANCELADO";
 
         private OrderConstants() {
+            throw new IllegalStateException("Clase de constantes");
+        }
+    }
+
+    public static final class EfficiencyConstants {
+
+        public static final int ORDER_ID_INDEX = 0;
+        public static final int START_DATE_INDEX = 1;
+        public static final int END_DATE_INDEX = 2;
+        public static final int EMPLOYEE_ID_INDEX = 3;
+        public static final int STATUS_INDEX = 4;
+
+        public static final int EMPLOYEE_STAT_ID_INDEX = 0;
+        public static final int TOTAL_ORDERS_INDEX = 1;
+        public static final int AVG_TIME_INDEX = 2;
+
+        public static final Long DEFAULT_TIME_MINUTES = 0L;
+        public static final String DEFAULT_EMPLOYEE_NAME = "Empleado";
+
+        public static final int RANKING_START_INDEX = 0;
+        public static final int RANKING_INCREMENT = 1;
+
+        public static final String EMAIL_SEPARATOR = "@";
+        public static final int EMAIL_PREFIX_INDEX = 0;
+
+        public static final int MIN_DELIVERY_TIME = 30;
+        public static final int MAX_DELIVERY_TIME = 90;
+        public static final int MIN_CANCELLED_TIME = 5;
+        public static final int MAX_CANCELLED_TIME = 25;
+        public static final int DEFAULT_PROCESSING_TIME = 45;
+
+        private EfficiencyConstants() {
+            throw new IllegalStateException("Clase de constantes");
+        }
+    }
+
+    public static final class TimeFormatConstants {
+        public static final String MINUTES_SINGULAR = "minuto";
+        public static final String MINUTES_PLURAL = "minutos";
+        public static final String SECONDS_SINGULAR = "segundo";
+        public static final String SECONDS_PLURAL = "segundos";
+        public static final String TIME_SEPARATOR = " ";
+        public static final int SECONDS_PER_MINUTE = 60;
+        public static final int MIN_SECONDS_FOR_DISPLAY = 1;
+
+        private TimeFormatConstants() {
+            throw new IllegalStateException("Clase de constantes");
+        }
+    }
+
+    public static final class EfficiencyQueryConstants {
+        public static final String COMPLETED_STATES = "('ENTREGADO', 'CANCELADO')";
+        public static final String ORDER_BY_DATE_DESC = "ORDER BY o.fecha DESC";
+        public static final String ORDER_BY_AVG_TIME_ASC = "ORDER BY tiempo_promedio_minutos ASC";
+        public static final String GROUP_BY_EMPLOYEE = "GROUP BY o.id_empleado";
+        public static final String HAVING_COUNT_GREATER_ZERO = "HAVING COUNT(o.id) > 0";
+
+        private EfficiencyQueryConstants() {
+            throw new IllegalStateException("Clase de constantes");
+        }
+    }
+
+    public static final class EfficiencyValidationConstants {
+        public static final int MIN_ORDERS_FOR_RANKING = 1;
+        public static final double MIN_TIME_MINUTES = 0.0;
+        public static final double MAX_TIME_MINUTES = 1440.0; // 24 horas
+        public static final int MAX_RANKING_POSITION = 1000;
+
+        private EfficiencyValidationConstants() {
             throw new IllegalStateException("Clase de constantes");
         }
     }

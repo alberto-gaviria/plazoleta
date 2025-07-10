@@ -3,6 +3,7 @@ package com.plazoleta.restaurants.infrastructure.configuration;
 import com.plazoleta.restaurants.adapters.driven.messaging.adapter.MessagingServiceAdapter;
 import com.plazoleta.restaurants.adapters.driven.messaging.client.IMessagingServiceClient;
 import com.plazoleta.restaurants.adapters.driven.mysql.adapter.DishMysqlAdapter;
+import com.plazoleta.restaurants.adapters.driven.mysql.adapter.EfficiencyMysqlAdapter;
 import com.plazoleta.restaurants.adapters.driven.mysql.adapter.OrderMysqlAdapter;
 import com.plazoleta.restaurants.adapters.driven.mysql.adapter.RestaurantMysqlAdapter;
 import com.plazoleta.restaurants.adapters.driven.mysql.mapper.*;
@@ -10,15 +11,13 @@ import com.plazoleta.restaurants.adapters.driven.mysql.repository.*;
 import com.plazoleta.restaurants.adapters.driven.traceability.adapter.TraceabilityServiceAdapter;
 import com.plazoleta.restaurants.adapters.driven.traceability.client.ITraceabilityServiceClient;
 import com.plazoleta.restaurants.adapters.driven.users.client.IUserServiceClient;
-import com.plazoleta.restaurants.domain.api.IDishServicePort;
-import com.plazoleta.restaurants.domain.api.IMessagingServicePort;
-import com.plazoleta.restaurants.domain.api.IOrderServicePort;
-import com.plazoleta.restaurants.domain.api.IRestaurantServicePort;
-import com.plazoleta.restaurants.domain.api.ITraceabilityServicePort;
+import com.plazoleta.restaurants.domain.api.*;
 import com.plazoleta.restaurants.domain.spi.IDishPersistencePort;
+import com.plazoleta.restaurants.domain.spi.IEfficiencyPersistencePort;
 import com.plazoleta.restaurants.domain.spi.IOrderPersistencePort;
 import com.plazoleta.restaurants.domain.spi.IRestaurantPersistencePort;
 import com.plazoleta.restaurants.domain.usecase.DishUseCase;
+import com.plazoleta.restaurants.domain.usecase.EfficiencyUseCase;
 import com.plazoleta.restaurants.domain.usecase.OrderUseCase;
 import com.plazoleta.restaurants.domain.usecase.RestaurantUseCase;
 import org.springframework.context.annotation.Bean;
@@ -95,5 +94,19 @@ public class BeanConfiguration {
                                               IMessagingServicePort messagingServicePort,
                                               ITraceabilityServicePort traceabilityServicePort) {
         return new OrderUseCase(orderPersistencePort, messagingServicePort, traceabilityServicePort);
+    }
+
+    @Bean
+    public IEfficiencyPersistencePort efficiencyPersistencePort(
+            IOrderRepository orderRepository,
+            IRestaurantRepository restaurantRepository,
+            IUserServiceClient userServiceClient) {
+        return new EfficiencyMysqlAdapter(orderRepository, restaurantRepository, userServiceClient);
+    }
+
+    @Bean
+    public IEfficiencyServicePort efficiencyServicePort(
+            IEfficiencyPersistencePort efficiencyPersistencePort) {
+        return new EfficiencyUseCase(efficiencyPersistencePort);
     }
 }

@@ -9,27 +9,30 @@ import static org.junit.jupiter.api.Assertions.*;
 class AdapterConstantsTest {
 
     @Test
-    void testPrivateConstructors() throws Exception {
-        // Probar constructor privado de AdapterConstants
-        assertThrows(IllegalStateException.class, () -> invokePrivateConstructor(AdapterConstants.class));
-
-        // Probar constructor privado de cada clase interna
-        assertThrows(IllegalStateException.class, () -> invokePrivateConstructor(AdapterConstants.DatabaseColumns.class));
-        assertThrows(IllegalStateException.class, () -> invokePrivateConstructor(AdapterConstants.ErrorMessages.class));
-        assertThrows(IllegalStateException.class, () -> invokePrivateConstructor(AdapterConstants.LogMessages.class));
-        assertThrows(IllegalStateException.class, () -> invokePrivateConstructor(AdapterConstants.TemporaryData.class));
-        assertThrows(IllegalStateException.class, () -> invokePrivateConstructor(AdapterConstants.ValidationMessages.class));
-        assertThrows(IllegalStateException.class, () -> invokePrivateConstructor(AdapterConstants.OrderConstants.class));
+    void testPrivateConstructorsThrowException() {
+        assertIllegalStateException(AdapterConstants.class);
+        assertIllegalStateException(AdapterConstants.DatabaseColumns.class);
+        assertIllegalStateException(AdapterConstants.ErrorMessages.class);
+        assertIllegalStateException(AdapterConstants.LogMessages.class);
+        assertIllegalStateException(AdapterConstants.TemporaryData.class);
+        assertIllegalStateException(AdapterConstants.ValidationMessages.class);
+        assertIllegalStateException(AdapterConstants.OrderConstants.class);
+        assertIllegalStateException(AdapterConstants.EfficiencyConstants.class);
+        assertIllegalStateException(AdapterConstants.TimeFormatConstants.class);
+        assertIllegalStateException(AdapterConstants.EfficiencyQueryConstants.class);
+        assertIllegalStateException(AdapterConstants.EfficiencyValidationConstants.class);
     }
 
-    private void invokePrivateConstructor(Class<?> clazz) throws Exception {
-        Constructor<?> constructor = clazz.getDeclaredConstructor();
-        constructor.setAccessible(true);
+    private void assertIllegalStateException(Class<?> clazz) {
         try {
+            Constructor<?> constructor = clazz.getDeclaredConstructor();
+            constructor.setAccessible(true);
             constructor.newInstance();
+            fail("Expected IllegalStateException for class: " + clazz.getName());
         } catch (Exception e) {
-            // Re-lanza la causa si es una IllegalStateException como en este caso
-            throw (Exception) e.getCause();
+            Throwable cause = e.getCause();
+            assertTrue(cause instanceof IllegalStateException,
+                       "Expected IllegalStateException for class: " + clazz.getName() + ", but got: " + (cause != null ? cause.getClass().getName() : e.getClass().getName()));
         }
     }
 }
